@@ -1,0 +1,22 @@
+{
+    "name":"PresideCMS Extension: Admin dashboards",
+    "version":"1.0.0",
+    "location":"https://github.com/pixl8/preside-ext-admin-dashboards/archive/v1.0.0.zip",
+    "author":"Pixl8 Interactive",
+    "directory":"application/extensions",
+    "homepage":"",
+    "documentation":"",
+    "repository":{
+        "type":"git",
+        "URL":"https://github.com/pixl8/preside-ext-admin-dashboards"
+    },
+    "slug":"preside-ext-admin-dashboards",
+    "type":"preside-extensions",
+    "projectURL":"",
+    "ignore":[
+        ".git/*",
+        ".gitignore",
+        ".twgit_features_subject",
+        "jmimemagic.log"
+    ]
+}
