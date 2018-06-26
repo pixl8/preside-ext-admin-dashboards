@@ -1,0 +1,1 @@
+{"version":3,"sources":["modalConfig.js"],"names":["$","window","getAdminDashboardWidgetConfig","serializeObject","presideJQuery"],"mappings":"CAAA,SAAYA,GACXC,OAAOC,8BAAgC,WACtC,MAAOF,GAAG,uCAAwCG,oBAE/CC","file":"_configmodal.min.js"}
