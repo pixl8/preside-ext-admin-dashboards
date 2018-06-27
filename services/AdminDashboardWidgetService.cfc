@@ -16,24 +16,40 @@ component {
 	}
 
 // PUBLIC API METHODS
-	public string function renderDashboard( required string dashboardId, required array widgets ) {
+	public string function renderDashboard( required string dashboardId, required array widgets, numeric columnCount=2 ) {
 		var rendered = "";
+		var colsize = 6;
+
+		switch( arguments.columnCount ) {
+			case 4:
+				colsize = 3;
+			break;
+			case 3:
+				colsize = 4;
+			break;
+			case 1:
+				colsize = 12
+			break;
+			default:
+				colsize = 6;
+		}
 
 		for( var widgetId in widgets ) {
 			if ( userCanViewWidget( widgetId ) ) {
-				rendered &= renderWidgetContainer( arguments.dashboardId, widgetId );
+				rendered &= renderWidgetContainer( arguments.dashboardId, widgetId, colsize );
 			}
 		}
 
 		return rendered;
 	}
 
-	public string function renderWidgetContainer( required string dashboardId, required string widgetId ) {
+	public string function renderWidgetContainer( required string dashboardId, required string widgetId, numeric columnSize=6 ) {
 		return $renderViewlet( event="admin.admindashboards.widgetContainer", args={
 			  title       = $translateResource( uri="admin.admindashboards.widget.#widgetId#:title"      , defaultValue=widgetId )
 			, icon        = $translateResource( uri="admin.admindashboards.widget.#widgetId#:iconClass"  , defaultValue="" )
 			, description = $translateResource( uri="admin.admindashboards.widget.#widgetId#:description", defaultValue="" )
 			, widgetId    = arguments.widgetId
+			, columnSize  = arguments.columnSize
 			, hasConfig   = widgetHasConfigForm( arguments.widgetId )
 		} );
 	}
