@@ -3,13 +3,14 @@
 <cfparam name="args.description" default="" />
 <cfparam name="args.widgetId"    default="" />
 <cfparam name="args.hasConfig"   default="false" />
+<cfparam name="args.columnSize"  default="6" />
 
 <cfscript>
 	editModalTitle = translateResource( uri="admindashboards:configure.widget.dialog.title", data=[ args.title ] );
 </cfscript>
 
 <cfoutput>
-	<div class="col-md-4">
+	<div class="col-md-#args.columnSize#">
 		<div class="widget-box admin-dashboard-widget" data-widget-id="#args.widgetId#" data-has-config="#args.hasConfig#" data-config-modal-title="#HtmlEditFormat( editModalTitle )#">
 			<div class="widget-header">
 				<h4 class="widget-title lighter smaller">
