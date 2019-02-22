@@ -51,6 +51,7 @@
 	getWidgetDetails = function( $widgetEl ){
 		return {
 			  widgetId : $widgetEl.data( "widgetId" )
+			, instanceId : $widgetEl.data( "instanceId" )
 			, dashboardId : $widgetEl.closest( ".admin-dashboard-container" ).data( "dashboardId" )
 		};
 	};

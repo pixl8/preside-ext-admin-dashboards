@@ -79,18 +79,18 @@ component {
 		} );
 	}
 
-	public string function renderWidgetContent( required string dashboardId, required string widgetId, required struct requestData ) {
+	public string function renderWidgetContent( required string dashboardId, required string widgetId, required string instanceId, required struct requestData ) {
 		return $renderViewlet( event="admin.admindashboards.widget.#widgetId#.render", args={
 			  dashboardId = arguments.dashboardId
-			, config      = getWidgetConfiguration( arguments.dashboardId, arguments.widgetId )
+			, config      = getWidgetConfiguration( arguments.dashboardId, arguments.widgetId, arguments.instanceId )
 			, contextData = _getContextDataFromRequest( arguments.requestData )
 		} );
 	}
 
-	public string function renderWidgetConfigForm( required string dashboardId, required string widgetId ) {
+	public string function renderWidgetConfigForm( required string dashboardId, required string widgetId, required string instanceId ) {
 		return _getFormsService().renderForm(
 			  formName  = "admin.admindashboards.widget.#widgetId#"
-			, savedData = getWidgetConfiguration( arguments.dashboardId, arguments.widgetId )
+			, savedData = getWidgetConfiguration( arguments.dashboardId, arguments.widgetId, arguments.instanceId )
 		);
 	}
 
@@ -121,12 +121,26 @@ component {
 		}
 	}
 
-	public struct function getWidgetConfiguration( required string dashboardId, required string widgetId ) {
+	public struct function getWidgetConfiguration( required string dashboardId, required string widgetId, required string instanceId ) {
 		var configRecord = $getPresideObject( "admin_dashboard_widget_configuration" ).selectData( filter={
 			    dashboard_id = arguments.dashboardId
 			  , widget_id    = arguments.widgetId
+			  , instance_id  = arguments.instanceId
 			  , user         = $getAdminLoggedInUserId()
 		} );
+
+		// backwards compat: attempt to get config
+		// record where instance ID is null if nothing found for
+		// specific instance
+		if ( !configRecord.recordCount ) {
+			configRecord = $getPresideObject( "admin_dashboard_widget_configuration" ).selectData( filter={
+				    dashboard_id = arguments.dashboardId
+				  , widget_id    = arguments.widgetId
+				  , instance_id  = ""
+				  , user         = $getAdminLoggedInUserId()
+			} );
+		}
+
 		var result = {};
 
 		try {

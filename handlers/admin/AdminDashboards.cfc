@@ -3,23 +3,26 @@ component extends="preside.system.base.AdminHandler" {
 	property name="widgetService" inject="adminDashboardWidgetService";
 
 	public void function renderWidgetContent( event, rc, prc ) {
-		var widgetId    = rc.widgetId ?: "";
+		var widgetId    = rc.widgetId    ?: "";
 		var dashboardId = rc.dashboardId ?: "";
+		var instanceId  = rc.instanceId  ?: "";
 
 		if ( !widgetService.userCanViewWidget( widgetId ) ) {
 			event.adminAccessDenied();
 		}
 
 		event.renderData( type="html", data=widgetService.renderWidgetContent(
-			  dashboardId = dashboardId ?: ""
-			, widgetId    = widgetId    ?: ""
+			  dashboardId = dashboardId
+			, widgetId    = widgetId
+			, instanceId  = instanceId
 			, requestData = rc
 		) );
 	}
 
 	public void function configModal( event, rc, prc ) {
-		var widgetId    = rc.widgetId ?: "";
+		var widgetId    = rc.widgetId    ?: "";
 		var dashboardId = rc.dashboardId ?: "";
+		var instanceId  = rc.instanceId  ?: "";
 
 		if ( !widgetService.userCanViewWidget( widgetId ) ) {
 			event.adminAccessDenied();
@@ -31,6 +34,7 @@ component extends="preside.system.base.AdminHandler" {
 		prc.configForm = widgetService.renderWidgetConfigForm(
 			  dashboardId = dashboardId
 			, widgetId    = widgetId
+			, instanceId  = instanceId
 		);
 
 		event.include( "/js/admin/specific/admindashboards/configmodal/" );
