@@ -16,7 +16,12 @@ component {
 	}
 
 // PUBLIC API METHODS
-	public string function renderDashboard( required string dashboardId, required array widgets, numeric columnCount=2 ) {
+	public string function renderDashboard(
+		  required string  dashboardId
+		, required array   widgets
+		,          numeric columnCount = 2
+		,          struct  contextData = {}
+	) {
 		var rendered = "";
 		var colsize = 6;
 
@@ -34,30 +39,51 @@ component {
 				colsize = 6;
 		}
 
-		for( var widgetId in widgets ) {
-			if ( userCanViewWidget( widgetId ) ) {
-				rendered &= renderWidgetContainer( arguments.dashboardId, widgetId, colsize );
+		for( var widget in widgets ) {
+			if ( isSimpleValue( widget ) ) {
+				widget = {
+					  id          = widget
+					, contextData = arguments.contextData
+				};
+			} else {
+				widget.id          = widget.id ?: "";
+				widget.contextData = widget.contextData ?: {};
+				widget.contextData.append( arguments.contextData, false );
+			}
+
+			if ( userCanViewWidget( widget.id ) ) {
+				rendered &= renderWidgetContainer( arguments.dashboardId, widget.id, colsize, _namespaceContextData( widget.contextData ) );
 			}
 		}
 
 		return rendered;
 	}
 
-	public string function renderWidgetContainer( required string dashboardId, required string widgetId, numeric columnSize=6 ) {
+	public string function renderWidgetContainer(
+		  required string  dashboardId
+		, required string  widgetId
+		,          numeric columnSize  = 6
+		,          struct  contextData = {}
+	) {
+		var instanceId = "dashboard-widget-" & LCase( Hash( arguments.dashboardId & arguments.widgetId & SerializeJson( arguments.contextData ) ) );
+
 		return $renderViewlet( event="admin.admindashboards.widgetContainer", args={
 			  title       = $translateResource( uri="admin.admindashboards.widget.#widgetId#:title"      , defaultValue=widgetId )
 			, icon        = $translateResource( uri="admin.admindashboards.widget.#widgetId#:iconClass"  , defaultValue="" )
 			, description = $translateResource( uri="admin.admindashboards.widget.#widgetId#:description", defaultValue="" )
 			, widgetId    = arguments.widgetId
 			, columnSize  = arguments.columnSize
+			, contextData = arguments.contextData
+			, instanceId  = instanceId
 			, hasConfig   = widgetHasConfigForm( arguments.widgetId )
 		} );
 	}
 
-	public string function renderWidgetContent( required string dashboardId, required string widgetId ) {
+	public string function renderWidgetContent( required string dashboardId, required string widgetId, required struct requestData ) {
 		return $renderViewlet( event="admin.admindashboards.widget.#widgetId#.render", args={
 			  dashboardId = arguments.dashboardId
 			, config      = getWidgetConfiguration( arguments.dashboardId, arguments.widgetId )
+			, contextData = _getContextDataFromRequest( arguments.requestData )
 		} );
 	}
 
@@ -127,6 +153,30 @@ component {
 
 		return IsBoolean( result ?: "" ) && result;
 	}
+
+// PRVIATE HELPERS
+	private struct function _namespaceContextData( required struct data ) {
+		var namespaced = {};
+
+		for( var key in arguments.data ){
+			namespaced[ "dashboard.widget.data.#key#" ] = arguments.data[ key ];
+		}
+
+		return namespaced;
+	}
+
+	private struct function _getContextDataFromRequest( required struct requestData ) {
+		var contextData = {};
+
+		for( var key in arguments.requestData ) {
+			if ( key.startsWith( "dashboard.widget.data." ) ) {
+				contextData[ key.reReplace( "^dashboard\.widget\.data.", "" ) ] = arguments.requestData[ key ];
+			}
+		}
+
+		return contextData;
+	}
+
 
 // GETTERS AND SETTERS
 	private any function _getFormsService() {

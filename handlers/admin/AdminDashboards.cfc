@@ -13,6 +13,7 @@ component extends="preside.system.base.AdminHandler" {
 		event.renderData( type="html", data=widgetService.renderWidgetContent(
 			  dashboardId = dashboardId ?: ""
 			, widgetId    = widgetId    ?: ""
+			, requestData = rc
 		) );
 	}
 

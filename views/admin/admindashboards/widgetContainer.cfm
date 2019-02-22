@@ -4,14 +4,18 @@
 <cfparam name="args.widgetId"    default="" />
 <cfparam name="args.hasConfig"   default="false" />
 <cfparam name="args.columnSize"  default="6" />
+<cfparam name="args.contextData" default="#StructNew()#" />
+<cfparam name="args.instanceId"  default="#CreateUUId()#" />
 
 <cfscript>
 	editModalTitle = translateResource( uri="admindashboards:configure.widget.dialog.title", data=[ args.title ] );
+
+	event.includeData( { "#args.instanceId#"=args.contextData } );
 </cfscript>
 
 <cfoutput>
 	<div class="col-md-#args.columnSize#">
-		<div class="widget-box admin-dashboard-widget" data-widget-id="#args.widgetId#" data-has-config="#args.hasConfig#" data-config-modal-title="#HtmlEditFormat( editModalTitle )#">
+		<div class="widget-box admin-dashboard-widget" data-widget-id="#args.widgetId#" data-instance-id="#args.instanceId#" data-has-config="#args.hasConfig#" data-config-modal-title="#HtmlEditFormat( editModalTitle )#">
 			<div class="widget-header">
 				<h4 class="widget-title lighter smaller">
 					<cfif args.icon.len()>

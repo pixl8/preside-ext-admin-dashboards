@@ -13,15 +13,15 @@
 				buttonList : [ "ok", "cancel" ]
 			}
 		  , callbacks = {
-		  		onLoad : function( iframe ) { dialogIframe = iframe; },
-		  		onok : function(){
-		  			var config = $.extend( {}, dialogIframe.getAdminDashboardWidgetConfig(), getWidgetDetails( $widgetEl ) );
+				onLoad : function( iframe ) { dialogIframe = iframe; },
+				onok : function(){
+					var config = $.extend( {}, dialogIframe.getAdminDashboardWidgetConfig(), getWidgetDetails( $widgetEl ), getWidgetContextData( $widgetEl ) );
 
-		  			$.ajax( buildAdminLink( "admindashboards", "saveWidgetConfig" ), {
+					$.ajax( buildAdminLink( "admindashboards", "saveWidgetConfig" ), {
 						  data     : config
 						, complete : function() { loadContent( $widgetEl ); }
 					} );
-		  		}
+				}
 			}
 		  , browserIframeModal = new PresideIframeModal( iframeSrc, "100%", "100%", callbacks, modalOptions )
 		  , dialogIframe;
@@ -31,8 +31,9 @@
 
 	loadContent = function( $widgetEl ){
 		$widgetEl.find( ".widget-dynamic-content" ).presideLoadingSheen( true );
+
 		$.ajax( buildAdminLink( "admindashboards", "renderWidgetContent" ), {
-			  data     : getWidgetDetails( $widgetEl )
+			  data     : $.extend( {}, getWidgetDetails( $widgetEl ), getWidgetContextData( $widgetEl ) )
 			, success  : function( data ) { onWidgetContentFetchSuccess( $widgetEl, data ); }
 			, error    : function() { onWidgetContentFetchError( $widgetEl ); }
 			, complete : function() { $widgetEl.find( ".widget-dynamic-content" ).presideLoadingSheen( false ); }
@@ -52,6 +53,13 @@
 			  widgetId : $widgetEl.data( "widgetId" )
 			, dashboardId : $widgetEl.closest( ".admin-dashboard-container" ).data( "dashboardId" )
 		};
+	};
+	getWidgetContextData = function( $widgetEl ){
+		var widgetInstanceId = $widgetEl.data( "instanceId" );
+		if ( typeof widgetInstanceId !== "undefined" && typeof cfrequest[ widgetInstanceId ] !== "undefined" ) {
+			return cfrequest[ widgetInstanceId ];
+		}
+		return {};
 	};
 
 	$dashBoardContainer.on( "click", ".admin-dashboard-widget .widget-configuration-link", function(){
