@@ -8,6 +8,7 @@
 <cfparam name="args.instanceId"       default="#CreateUUId()#" />
 <cfparam name="args.configInstanceId" default="" />
 <cfparam name="args.additionalMenu"   default="" />
+<cfparam name="args.ajax"             default="true" />
 
 <cfscript>
 	editModalTitle = translateResource( uri="admindashboards:configure.widget.dialog.title", data=[ args.title ] );
@@ -17,7 +18,7 @@
 
 <cfoutput>
 	<div class="col-md-#args.columnSize#">
-		<div class="widget-box admin-dashboard-widget" data-widget-id="#args.widgetId#" data-instance-id="#args.instanceId#" data-has-config="#args.hasConfig#" data-config-modal-title="#HtmlEditFormat( editModalTitle )#" data-config-instance-id="#args.configInstanceId#">
+		<div class="widget-box admin-dashboard-widget" data-ajax="#IsTrue( args.ajax )#" data-widget-id="#args.widgetId#" data-instance-id="#args.instanceId#" data-has-config="#args.hasConfig#" data-config-modal-title="#HtmlEditFormat( editModalTitle )#" data-config-instance-id="#args.configInstanceId#">
 			<div class="widget-header">
 				<h4 class="widget-title lighter smaller">
 					<cfif args.icon.len()>
@@ -41,6 +42,9 @@
 					</cfif>
 
 					<div class="widget-dynamic-content">
+						<cfif !args.ajax>
+							#args.content#
+						</cfif>
 					</div>
 				</div>
 			</div>

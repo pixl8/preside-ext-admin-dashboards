@@ -52,14 +52,16 @@ component {
 			}
 
 			widget.configInstanceId = widget.configInstanceId ?: LCase( Hash( SerializeJson( widget.contextData ) ) );
+			widget.ajax             = !IsBoolean( widget.ajax ?: "" ) || widget.ajax;
 
 			if ( userCanViewWidget( widget.id ) ) {
 				rendered &= renderWidgetContainer(
-					  arguments.dashboardId
-					, widget.id
-					, colsize
-					, _namespaceContextData( widget.contextData )
-					, widget.configInstanceId
+					  dashboardId      = arguments.dashboardId
+					, widgetId         = widget.id
+					, columnSize       = colsize
+					, contextData      = _namespaceContextData( widget.contextData )
+					, configInstanceId = widget.configInstanceId
+					, ajax             = widget.ajax
 				);
 			}
 		}
@@ -70,17 +72,27 @@ component {
 	public string function renderWidgetContainer(
 		  required string  dashboardId
 		, required string  widgetId
-		,          numeric columnSize  = 6
-		,          struct  contextData = {}
+		,          numeric columnSize       = 6
+		,          struct  contextData      = {}
 		,          string  configInstanceId = ""
+		,          boolean ajax             = true
 	) {
 		var instanceId     = "dashboard-widget-" & LCase( Hash( arguments.dashboardId & arguments.widgetId & SerializeJson( arguments.contextData ) ) );
 		var menuViewlet    = "admin.admindashboards.widget.#arguments.widgetId#.additionalMenu";
 		var additionalMenu = "";
-
+		var content        = "";
 
 		if ( $getColdbox().viewletExists( menuViewlet ) ) {
 			additionalMenu = $renderViewlet( event=menuViewlet, args=arguments );
+		}
+
+		if ( !arguments.ajax ) {
+			content = renderWidgetContent(
+				  dashboardId = arguments.dashboardId
+				, widgetId    = arguments.widgetId
+				, instanceId  = instanceId
+				, requestData = contextData
+			);
 		}
 
 		return $renderViewlet( event="admin.admindashboards.widgetContainer", args={
@@ -90,10 +102,12 @@ component {
 			, widgetId         = arguments.widgetId
 			, columnSize       = arguments.columnSize
 			, contextData      = arguments.contextData
+			, ajax             = arguments.ajax
 			, instanceId       = instanceId
 			, configInstanceId = arguments.configInstanceId
 			, hasConfig        = widgetHasConfigForm( arguments.widgetId )
 			, additionalMenu   = additionalMenu
+			, content          = content
 		} );
 	}
 

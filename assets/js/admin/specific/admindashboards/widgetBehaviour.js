@@ -19,7 +19,7 @@
 
 					$.ajax( buildAdminLink( "admindashboards", "saveWidgetConfig" ), {
 						  data     : config
-						, complete : function() { loadContent( $widgetEl ); }
+						, complete : function() { loadContent( $widgetEl, true ); }
 					} );
 				}
 			}
@@ -29,15 +29,19 @@
 		browserIframeModal.open();
 	};
 
-	loadContent = function( $widgetEl ){
-		$widgetEl.find( ".widget-dynamic-content" ).presideLoadingSheen( true );
+	loadContent = function( $widgetEl, refresh ){
+		if ( $widgetEl.data( "ajax" ) ) {
+			$widgetEl.find( ".widget-dynamic-content" ).presideLoadingSheen( true );
 
-		$.ajax( buildAdminLink( "admindashboards", "renderWidgetContent" ), {
-			  data     : $.extend( {}, getWidgetDetails( $widgetEl ), getWidgetContextData( $widgetEl ) )
-			, success  : function( data ) { onWidgetContentFetchSuccess( $widgetEl, data ); }
-			, error    : function() { onWidgetContentFetchError( $widgetEl ); }
-			, complete : function() { $widgetEl.find( ".widget-dynamic-content" ).presideLoadingSheen( false ); }
-		} );
+			$.ajax( buildAdminLink( "admindashboards", "renderWidgetContent" ), {
+				  data     : $.extend( {}, getWidgetDetails( $widgetEl ), getWidgetContextData( $widgetEl ) )
+				, success  : function( data ) { onWidgetContentFetchSuccess( $widgetEl, data ); }
+				, error    : function() { onWidgetContentFetchError( $widgetEl ); }
+				, complete : function() { $widgetEl.find( ".widget-dynamic-content" ).presideLoadingSheen( false ); }
+			} );
+		} else if ( refresh ) {
+			location.reload();
+		}
 	};
 
 	onWidgetContentFetchSuccess = function( $widgetEl, data ){
@@ -69,6 +73,7 @@
 
 		return false;
 	} );
-	$widgets.each( function(){ loadContent( $( this ) ); } );
+
+	$widgets.each( function(){ loadContent( $( this ), false ); } );
 
 } )( presideJQuery );
