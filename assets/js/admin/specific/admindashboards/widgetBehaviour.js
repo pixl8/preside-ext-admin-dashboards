@@ -13,15 +13,15 @@
 				buttonList : [ "ok", "cancel" ]
 			}
 		  , callbacks = {
-		  		onLoad : function( iframe ) { dialogIframe = iframe; },
-		  		onok : function(){
-		  			var config = $.extend( {}, dialogIframe.getAdminDashboardWidgetConfig(), getWidgetDetails( $widgetEl ) );
+				onLoad : function( iframe ) { dialogIframe = iframe; },
+				onok : function(){
+					var config = $.extend( {}, dialogIframe.getAdminDashboardWidgetConfig(), getWidgetDetails( $widgetEl ), getWidgetContextData( $widgetEl ) );
 
-		  			$.ajax( buildAdminLink( "admindashboards", "saveWidgetConfig" ), {
+					$.ajax( buildAdminLink( "admindashboards", "saveWidgetConfig" ), {
 						  data     : config
-						, complete : function() { loadContent( $widgetEl ); }
+						, complete : function() { loadContent( $widgetEl, true ); }
 					} );
-		  		}
+				}
 			}
 		  , browserIframeModal = new PresideIframeModal( iframeSrc, "100%", "100%", callbacks, modalOptions )
 		  , dialogIframe;
@@ -29,14 +29,19 @@
 		browserIframeModal.open();
 	};
 
-	loadContent = function( $widgetEl ){
-		$widgetEl.find( ".widget-dynamic-content" ).presideLoadingSheen( true );
-		$.ajax( buildAdminLink( "admindashboards", "renderWidgetContent" ), {
-			  data     : getWidgetDetails( $widgetEl )
-			, success  : function( data ) { onWidgetContentFetchSuccess( $widgetEl, data ); }
-			, error    : function() { onWidgetContentFetchError( $widgetEl ); }
-			, complete : function() { $widgetEl.find( ".widget-dynamic-content" ).presideLoadingSheen( false ); }
-		} );
+	loadContent = function( $widgetEl, refresh ){
+		if ( $widgetEl.data( "ajax" ) ) {
+			$widgetEl.find( ".widget-dynamic-content" ).presideLoadingSheen( true );
+
+			$.ajax( buildAdminLink( "admindashboards", "renderWidgetContent" ), {
+				  data     : $.extend( {}, getWidgetDetails( $widgetEl ), getWidgetContextData( $widgetEl ) )
+				, success  : function( data ) { onWidgetContentFetchSuccess( $widgetEl, data ); }
+				, error    : function() { onWidgetContentFetchError( $widgetEl ); }
+				, complete : function() { $widgetEl.find( ".widget-dynamic-content" ).presideLoadingSheen( false ); }
+			} );
+		} else if ( refresh ) {
+			location.reload();
+		}
 	};
 
 	onWidgetContentFetchSuccess = function( $widgetEl, data ){
@@ -50,8 +55,17 @@
 	getWidgetDetails = function( $widgetEl ){
 		return {
 			  widgetId : $widgetEl.data( "widgetId" )
+			, instanceId : $widgetEl.data( "instanceId" )
+			, configInstanceId : $widgetEl.data( "configInstanceId" )
 			, dashboardId : $widgetEl.closest( ".admin-dashboard-container" ).data( "dashboardId" )
 		};
+	};
+	getWidgetContextData = function( $widgetEl ){
+		var widgetInstanceId = $widgetEl.data( "instanceId" );
+		if ( typeof widgetInstanceId !== "undefined" && typeof cfrequest[ widgetInstanceId ] !== "undefined" ) {
+			return cfrequest[ widgetInstanceId ];
+		}
+		return {};
 	};
 
 	$dashBoardContainer.on( "click", ".admin-dashboard-widget .widget-configuration-link", function(){
@@ -59,6 +73,7 @@
 
 		return false;
 	} );
-	$widgets.each( function(){ loadContent( $( this ) ); } );
+
+	$widgets.each( function(){ loadContent( $( this ), false ); } );
 
 } )( presideJQuery );
