@@ -74,7 +74,14 @@ component {
 		,          struct  contextData = {}
 		,          string  configInstanceId = ""
 	) {
-		var instanceId = "dashboard-widget-" & LCase( Hash( arguments.dashboardId & arguments.widgetId & SerializeJson( arguments.contextData ) ) );
+		var instanceId     = "dashboard-widget-" & LCase( Hash( arguments.dashboardId & arguments.widgetId & SerializeJson( arguments.contextData ) ) );
+		var menuViewlet    = "admin.admindashboards.widget.#arguments.widgetId#.additionalMenu";
+		var additionalMenu = "";
+
+
+		if ( $getColdbox().viewletExists( menuViewlet ) ) {
+			additionalMenu = $renderViewlet( event=menuViewlet, args=arguments );
+		}
 
 		return $renderViewlet( event="admin.admindashboards.widgetContainer", args={
 			  title            = $translateResource( uri="admin.admindashboards.widget.#widgetId#:title"      , defaultValue=widgetId )
@@ -86,6 +93,7 @@ component {
 			, instanceId       = instanceId
 			, configInstanceId = arguments.configInstanceId
 			, hasConfig        = widgetHasConfigForm( arguments.widgetId )
+			, additionalMenu   = additionalMenu
 		} );
 	}
 
