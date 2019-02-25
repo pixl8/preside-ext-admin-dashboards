@@ -52,6 +52,7 @@
 		return {
 			  widgetId : $widgetEl.data( "widgetId" )
 			, instanceId : $widgetEl.data( "instanceId" )
+			, configInstanceId : $widgetEl.data( "configInstanceId" )
 			, dashboardId : $widgetEl.closest( ".admin-dashboard-container" ).data( "dashboardId" )
 		};
 	};

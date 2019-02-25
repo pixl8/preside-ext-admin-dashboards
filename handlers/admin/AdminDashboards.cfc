@@ -22,7 +22,7 @@ component extends="preside.system.base.AdminHandler" {
 	public void function configModal( event, rc, prc ) {
 		var widgetId    = rc.widgetId    ?: "";
 		var dashboardId = rc.dashboardId ?: "";
-		var instanceId  = rc.instanceId  ?: "";
+		var instanceId  = rc.configInstanceId  ?: "";
 
 		if ( !widgetService.userCanViewWidget( widgetId ) ) {
 			event.adminAccessDenied();
@@ -45,6 +45,7 @@ component extends="preside.system.base.AdminHandler" {
 	public void function saveWidgetConfig( event, rc, prc ) {
 		var widgetId    = rc.widgetId ?: "";
 		var dashboardId = rc.dashboardId ?: "";
+		var instanceId  = rc.configInstanceId ?: "";
 
 		if ( !widgetService.userCanViewWidget( widgetId ) ) {
 			event.adminAccessDenied();
@@ -56,6 +57,7 @@ component extends="preside.system.base.AdminHandler" {
 		widgetService.saveWidgetConfiguration(
 			  dashboardId = dashboardId
 			, widgetId    = widgetId
+			, instanceId  = instanceId
 			, requestData = event.getCollectionWithoutSystemVars()
 		);
 

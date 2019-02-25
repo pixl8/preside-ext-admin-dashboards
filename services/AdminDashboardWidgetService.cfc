@@ -51,8 +51,16 @@ component {
 				widget.contextData.append( arguments.contextData, false );
 			}
 
+			widget.configInstanceId = widget.configInstanceId ?: LCase( Hash( SerializeJson( widget.contextData ) ) );
+
 			if ( userCanViewWidget( widget.id ) ) {
-				rendered &= renderWidgetContainer( arguments.dashboardId, widget.id, colsize, _namespaceContextData( widget.contextData ) );
+				rendered &= renderWidgetContainer(
+					  arguments.dashboardId
+					, widget.id
+					, colsize
+					, _namespaceContextData( widget.contextData )
+					, widget.configInstanceId
+				);
 			}
 		}
 
@@ -64,18 +72,20 @@ component {
 		, required string  widgetId
 		,          numeric columnSize  = 6
 		,          struct  contextData = {}
+		,          string  configInstanceId = ""
 	) {
 		var instanceId = "dashboard-widget-" & LCase( Hash( arguments.dashboardId & arguments.widgetId & SerializeJson( arguments.contextData ) ) );
 
 		return $renderViewlet( event="admin.admindashboards.widgetContainer", args={
-			  title       = $translateResource( uri="admin.admindashboards.widget.#widgetId#:title"      , defaultValue=widgetId )
-			, icon        = $translateResource( uri="admin.admindashboards.widget.#widgetId#:iconClass"  , defaultValue="" )
-			, description = $translateResource( uri="admin.admindashboards.widget.#widgetId#:description", defaultValue="" )
-			, widgetId    = arguments.widgetId
-			, columnSize  = arguments.columnSize
-			, contextData = arguments.contextData
-			, instanceId  = instanceId
-			, hasConfig   = widgetHasConfigForm( arguments.widgetId )
+			  title            = $translateResource( uri="admin.admindashboards.widget.#widgetId#:title"      , defaultValue=widgetId )
+			, icon             = $translateResource( uri="admin.admindashboards.widget.#widgetId#:iconClass"  , defaultValue="" )
+			, description      = $translateResource( uri="admin.admindashboards.widget.#widgetId#:description", defaultValue="" )
+			, widgetId         = arguments.widgetId
+			, columnSize       = arguments.columnSize
+			, contextData      = arguments.contextData
+			, instanceId       = instanceId
+			, configInstanceId = arguments.configInstanceId
+			, hasConfig        = widgetHasConfigForm( arguments.widgetId )
 		} );
 	}
 
@@ -98,7 +108,7 @@ component {
 		return _getFormsService().formExists( "admin.admindashboards.widget.#widgetId#" );
 	}
 
-	public void function saveWidgetConfiguration( required string dashboardId, required string widgetId, required struct requestData ) {
+	public void function saveWidgetConfiguration( required string dashboardId, required string widgetId, required string instanceId, required struct requestData ) {
 		var fields  = _getFormsService().listFields( formName="admin.admindashboards.widget.#widgetId#" );
 		var config  = {};
 
@@ -107,7 +117,7 @@ component {
 		}
 
 		var existed = $getPresideObject( "admin_dashboard_widget_configuration" ).updateData(
-			  filter = { dashboard_id=arguments.dashboardId, widget_id=arguments.widgetId, user=$getAdminLoggedInUserId() }
+			  filter = { dashboard_id=arguments.dashboardId, widget_id=arguments.widgetId, instance_id=arguments.instanceId, user=$getAdminLoggedInUserId() }
 			, data   = { config = SerializeJson( config ) }
 		);
 
@@ -115,6 +125,7 @@ component {
 			$getPresideObject( "admin_dashboard_widget_configuration" ).insertData( {
 				  dashboard_id = arguments.dashboardId
 				, widget_id    = arguments.widgetId
+				, instance_id  = arguments.instanceId
 				, user         = $getAdminLoggedInUserId()
 				, config       = SerializeJson( config )
 			} );
