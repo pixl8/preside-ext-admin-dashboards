@@ -83,15 +83,18 @@ component {
 		var content        = "";
 
 		if ( $getColdbox().viewletExists( menuViewlet ) ) {
-			additionalMenu = $renderViewlet( event=menuViewlet, args=arguments );
+			var args = StructCopy( arguments );
+			args.contextData = _getContextDataFromRequest( arguments.contextData );
+			additionalMenu = $renderViewlet( event=menuViewlet, args=args );
 		}
 
 		if ( !arguments.ajax ) {
 			content = renderWidgetContent(
-				  dashboardId = arguments.dashboardId
-				, widgetId    = arguments.widgetId
-				, instanceId  = instanceId
-				, requestData = contextData
+				  dashboardId      = arguments.dashboardId
+				, widgetId         = arguments.widgetId
+				, instanceId       = instanceId
+				, configInstanceId = configInstanceId
+				, requestData      = arguments.contextData
 			);
 		}
 
@@ -111,10 +114,10 @@ component {
 		} );
 	}
 
-	public string function renderWidgetContent( required string dashboardId, required string widgetId, required string instanceId, required struct requestData ) {
+	public string function renderWidgetContent( required string dashboardId, required string widgetId, required string instanceId, required string configInstanceId, required struct requestData ) {
 		return $renderViewlet( event="admin.admindashboards.widget.#widgetId#.render", args={
 			  dashboardId = arguments.dashboardId
-			, config      = getWidgetConfiguration( arguments.dashboardId, arguments.widgetId, arguments.instanceId )
+			, config      = getWidgetConfiguration( arguments.dashboardId, arguments.widgetId, arguments.configInstanceId )
 			, contextData = _getContextDataFromRequest( arguments.requestData )
 		} );
 	}

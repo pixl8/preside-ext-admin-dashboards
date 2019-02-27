@@ -3,19 +3,21 @@ component extends="preside.system.base.AdminHandler" {
 	property name="widgetService" inject="adminDashboardWidgetService";
 
 	public void function renderWidgetContent( event, rc, prc ) {
-		var widgetId    = rc.widgetId    ?: "";
-		var dashboardId = rc.dashboardId ?: "";
-		var instanceId  = rc.instanceId  ?: "";
+		var widgetId         = rc.widgetId         ?: "";
+		var dashboardId      = rc.dashboardId      ?: "";
+		var instanceId       = rc.instanceId       ?: "";
+		var configInstanceId = rc.configInstanceId ?: "";
 
 		if ( !widgetService.userCanViewWidget( widgetId ) ) {
 			event.adminAccessDenied();
 		}
 
 		event.renderData( type="html", data=widgetService.renderWidgetContent(
-			  dashboardId = dashboardId
-			, widgetId    = widgetId
-			, instanceId  = instanceId
-			, requestData = rc
+			  dashboardId      = dashboardId
+			, widgetId         = widgetId
+			, instanceId       = instanceId
+			, configInstanceId = configInstanceId
+			, requestData      = rc
 		) );
 	}
 
