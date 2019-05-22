@@ -26,12 +26,12 @@
 					</cfif>
 					#args.title#
 				</h4>
-				<cfif args.hasConfig>
-					<div class="widget-toolbar">
-						#args.additionalMenu#
+				<div class="widget-toolbar">
+					#args.additionalMenu#
+					<cfif args.hasConfig>
 						<a class="widget-configuration-link grey" href="##"><i class="fa fa-fw fa-cog"></i></a>
-					</div>
-				</cfif>
+					</cfif>
+				</div>
 			</div>
 
 			<div class="widget-body">
