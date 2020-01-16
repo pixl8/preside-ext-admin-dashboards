@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.0.3
+
+* Add German translations
+
 ## v2.0.2
 
 * Fix [#1](https://github.com/pixl8/preside-ext-admin-dashboards/issues/1): additional menu would not show unless widget had config
