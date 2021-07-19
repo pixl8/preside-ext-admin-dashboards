@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form i18nBaseUri="preside-objects.admin_dashboard:">
+	<tab id="main">
+		<fieldset id="main">
+			<field binding="admin_dashboard.name"        sortOrder="10" />
+			<field binding="admin_dashboard.description" sortOrder="20" />
+		</fieldset>
+	</tab>
+</form>
