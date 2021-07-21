@@ -1,6 +1,6 @@
 {
 	  "id"        : "preside-ext-admin-dashboards"
 	, "title"     : "Admin Dashboards"
-	, "author"    : "Pixl8 Interactive"
-	, "version"   : "2.0.5"
+	, "author"    : "Pixl8 Group"
+	, "version"   : "$VERSION_NUMBER"
 }
