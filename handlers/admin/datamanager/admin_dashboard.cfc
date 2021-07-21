@@ -180,34 +180,34 @@ component extends="preside.system.base.AdminHandler" {
 	}
 
 	public void function sharingAction( event, rc, prc, args={} ) {
-		var object           = "admin_dashboard";
-		var formName         = "preside-objects.admin_dashboard.sharing";
-		var formData         = event.getCollectionForForm( formName );
-		var recordId         = rc.id ?: "";
-		var validationResult = "";
-		var persist          = "";
+		var recordId = rc.id ?: "";
 
 		if ( !adminDashboardService.userCanEditDashboard( event.getAdminUserId(), recordId ) ) {
 			event.accessDenied();
 		}
 
-		validationResult = validateForm( formName=formName, formData=formData );
-
-		if ( !validationResult.validated() ) {
-			messageBox.error( translateResource( "preside-objects.admin_dashboard:sharing.update.error" ) );
-			persist = formData;
-			persist.validationResult = validationResult;
-			setNextEvent( url=event.buildAdminLink( objectName="admin_dashboard", recordId=recordId, persistStruct=persist ) );
+		if ( ( rc.view_access ?: "" ) != "specific" ) {
+			rc.view_groups = "";
+			rc.view_users  = "";
+		}
+		if ( ( rc.edit_access ?: "" ) != "specific" ) {
+			rc.edit_groups = "";
+			rc.edit_users  = "";
 		}
 
-		getPresideObject( object ).updateData(
-			  id                      = recordId
-			, data                    = formData
-			, updateManyToManyRecords = true
+		runEvent(
+			  event          = "admin.datamanager._editRecordAction"
+			, prepostExempt  = true
+			, private        = true
+			, eventArguments = {
+				  object      = "admin_dashboard"
+				, formName    = "preside-objects.admin_dashboard.sharing"
+				, errorUrl    = event.buildAdminLink( objectName="admin_dashboard", recordId=recordId, operation="sharing" )
+				, successUrl  = event.buildAdminLink( objectName="admin_dashboard", recordId=recordId )
+				, audit       = true
+				, auditAction = "edit_sharing_options"
+			  }
 		);
-
-		messageBox.info( translateResource( "preside-objects.admin_dashboard:sharing.update.success" ) );
-		setNextEvent( url=event.buildAdminLink( objectName="admin_dashboard", recordId=recordId ) );
 	}
 
 
