@@ -1,5 +1,17 @@
 # Changelog
 
+## v2.0.6
+
+* Move build pipeline to Github Actions
+
+## v2.0.5
+
+* Version bump
+
+## v2.0.4
+
+* Fix Travis build
+
 ## v2.0.3
 
 * Add German translations
@@ -7,7 +19,6 @@
 ## v2.0.2
 
 * Fix [#1](https://github.com/pixl8/preside-ext-admin-dashboards/issues/1): additional menu would not show unless widget had config
-
 
 ## v2.0.1
 
