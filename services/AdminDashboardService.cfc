@@ -19,7 +19,10 @@ component {
 		return $getPresideObject( "admin_dashboard" ).dataExists(
 			  filter       = { "admin_dashboard.id"=arguments.dashboardId }
 			, extraFilters = [ {
-				  filter       = "admin_dashboard.owner = :adminUserId or view_users.id = :adminUserId or view_groups.id in ( :adminUserGroups ) or edit_users.id = :adminUserId or edit_groups.id in ( :adminUserGroups )"
+				  filter       = "view_access = 'public'
+						or admin_dashboard.owner = :adminUserId
+						or ( view_access = 'specific' and ( view_users.id = :adminUserId or view_groups.id in ( :adminUserGroups ) ) )
+						or ( edit_access = 'specific' and ( edit_users.id = :adminUserId or edit_groups.id in ( :adminUserGroups ) ) )"
 				, filterParams = {
 					  adminUserId     = { type="varchar", value=adminUserId }
 					, adminUserGroups = { type="varchar", value=adminUserGroups, list=true }
@@ -32,7 +35,8 @@ component {
 		return $getPresideObject( "admin_dashboard" ).dataExists(
 			  filter       = { "admin_dashboard.id"=arguments.dashboardId }
 			, extraFilters = [ {
-				  filter       = "admin_dashboard.owner = :adminUserId or edit_users.id = :adminUserId or edit_groups$users.id = :adminUserId"
+				  filter       = "admin_dashboard.owner = :adminUserId
+						or ( edit_access = 'specific' and ( edit_users.id = :adminUserId or edit_groups$users.id = :adminUserId ) )"
 				, filterParams = { adminUserId={ type="varchar", value=arguments.adminUserId } }
 			} ]
 		);

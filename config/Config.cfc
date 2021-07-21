@@ -4,9 +4,15 @@ component {
 		var conf     = arguments.config;
 		var settings = conf.settings ?: {};
 
+		_setupEnums( settings );
 		_setupPermissionsAndRoles( settings );
 
 		settings.adminSideBarItems.append( "dashboards" );
+	}
+
+	private void function _setupEnums( settings ) {
+		settings.enum.adminDashboardViewAccess = [ "private", "public", "specific" ];
+		settings.enum.adminDashboardEditAccess = [ "private", "specific" ];
 	}
 
 	private void function _setupPermissionsAndRoles( required struct settings ) {

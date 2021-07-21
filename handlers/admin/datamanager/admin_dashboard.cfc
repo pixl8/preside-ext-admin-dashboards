@@ -45,7 +45,10 @@ component extends="preside.system.base.AdminHandler" {
 
 		args.extraFilters = args.extraFilters ?: [];
 		args.extraFilters.append( {
-			  filter       = "admin_dashboard.owner = :adminUserId or view_users.id = :adminUserId or view_groups.id in ( :adminUserGroups ) or edit_users.id = :adminUserId or edit_groups.id in ( :adminUserGroups )"
+			  filter       = "view_access = 'public'
+					or admin_dashboard.owner = :adminUserId
+					or ( view_access = 'specific' and ( view_users.id = :adminUserId or view_groups.id in ( :adminUserGroups ) ) )
+					or ( edit_access = 'specific' and ( edit_users.id = :adminUserId or edit_groups.id in ( :adminUserGroups ) ) )"
 			, filterParams = {
 				  adminUserId     = { type="varchar", value=adminUserId }
 				, adminUserGroups = { type="varchar", value=adminUserGroups, list=true }
@@ -61,12 +64,14 @@ component extends="preside.system.base.AdminHandler" {
 		var canView         = [];
 		var canEdit         = [];
 		var canDelete       = [];
+		var canViewThis     = false;
 		var canEditThis     = false;
 
 		for( var r in records ){
-			canEditThis = r.owner_id == adminUserId || listFind( r.edit_users_list, adminUserId ) || _listFindOneOf( r.edit_groups_list, adminUserGroups );
+			canEditThis = r.owner_id == adminUserId || ( r.edit_access == "specific" && ( listFind( r.edit_users_list, adminUserId ) || _listFindOneOf( r.edit_groups_list, adminUserGroups ) ) );
+			canViewThis = canEditThis || r.view_access == "public" || ( r.view_access == "specific" && ( listFind( r.view_users_list, adminUserId ) || _listFindOneOf( r.view_groups_list, adminUserGroups ) ) )
 			canEdit.append( canEditThis );
-			canView.append( canEditThis || listFind( r.view_users_list, adminUserId ) || _listFindOneOf( r.view_groups_list, adminUserGroups ) );
+			canView.append( canViewThis );
 			canDelete.append( r.owner_id == adminUserId );
 		}
 
@@ -146,6 +151,11 @@ component extends="preside.system.base.AdminHandler" {
 		} );
 	}
 
+	private void function preCloneRecordAction( event, rc, prc, args={} ) {
+		args.formData.view_access = "private";
+		args.formData.edit_access = "private";
+	}
+
 	public void function sharing() {
 		var recordId = rc.id ?: "";
 
@@ -162,6 +172,7 @@ component extends="preside.system.base.AdminHandler" {
 			  title = translateResource( "preside-objects.admin_dashboard:sharing.breadcrumb.title" )
 			, link  = ""
 		);
+		event.include( "/js/admin/specific/admindashboards/sharing/" );
 
 		prc.savedData    = queryGetRow( prc.record, prc.record.recordcount );
 		prc.formName     = "preside-objects.admin_dashboard.sharing";

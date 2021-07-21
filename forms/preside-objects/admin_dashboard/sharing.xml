@@ -2,12 +2,14 @@
 <form i18nBaseUri="preside-objects.admin_dashboard:">
 	<tab id="main">
 		<fieldset id="view_permissions">
-			<field binding="admin_dashboard.view_groups" sortOrder="10" />
-			<field binding="admin_dashboard.view_users"  sortOrder="20" />
+			<field binding="admin_dashboard.view_access" sortOrder="10" control="enumRadioList" />
+			<field binding="admin_dashboard.view_groups" sortOrder="20" />
+			<field binding="admin_dashboard.view_users"  sortOrder="30" />
 		</fieldset>
 		<fieldset id="edit_permissions">
-			<field binding="admin_dashboard.edit_groups" sortOrder="10" />
-			<field binding="admin_dashboard.edit_users"  sortOrder="20" />
+			<field binding="admin_dashboard.edit_access" sortOrder="10" control="enumRadioList" />
+			<field binding="admin_dashboard.edit_groups" sortOrder="20" />
+			<field binding="admin_dashboard.edit_users"  sortOrder="30" />
 		</fieldset>
 	</tab>
 </form>
