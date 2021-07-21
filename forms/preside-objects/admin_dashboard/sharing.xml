@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form i18nBaseUri="preside-objects.admin_dashboard:">
+	<tab id="main">
+		<fieldset id="view_permissions">
+			<field binding="admin_dashboard.view_groups" sortOrder="10" />
+			<field binding="admin_dashboard.view_users"  sortOrder="20" />
+		</fieldset>
+		<fieldset id="edit_permissions">
+			<field binding="admin_dashboard.edit_groups" sortOrder="10" />
+			<field binding="admin_dashboard.edit_users"  sortOrder="20" />
+		</fieldset>
+	</tab>
+</form>
