@@ -42,6 +42,12 @@ component {
 		);
 	}
 
+	public boolean function userCanShareDashboard( required string adminUserId, required string dashboardId ) {
+		return $getPresideObject( "admin_dashboard" ).dataExists(
+			filter = { id=arguments.dashboardId, owner=arguments.adminUserId }
+		);
+	}
+
 	public boolean function userCanDeleteDashboard( required string adminUserId, required string dashboardId ) {
 		return $getPresideObject( "admin_dashboard" ).dataExists(
 			filter = { id=arguments.dashboardId, owner=arguments.adminUserId }
