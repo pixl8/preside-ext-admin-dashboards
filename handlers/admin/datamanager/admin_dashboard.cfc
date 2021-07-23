@@ -63,6 +63,7 @@ component extends="preside.system.base.AdminHandler" {
 
 		var canView         = [];
 		var canEdit         = [];
+		var canShare        = [];
 		var canDelete       = [];
 		var canViewThis     = false;
 		var canEditThis     = false;
@@ -72,11 +73,13 @@ component extends="preside.system.base.AdminHandler" {
 			canViewThis = canEditThis || r.view_access == "public" || ( r.view_access == "specific" && ( listFind( r.view_users_list, adminUserId ) || _listFindOneOf( r.view_groups_list, adminUserGroups ) ) )
 			canEdit.append( canEditThis );
 			canView.append( canViewThis );
+			canShare.append( r.owner_id == adminUserId );
 			canDelete.append( r.owner_id == adminUserId );
 		}
 
 		QueryAddColumn( records, "canView", canView );
 		QueryAddColumn( records, "canEdit", canEdit );
+		QueryAddColumn( records, "canShare", canShare );
 		QueryAddColumn( records, "canDelete", canDelete );
 	}
 
@@ -139,7 +142,7 @@ component extends="preside.system.base.AdminHandler" {
 
 		args.actions   = args.actions    ?: [];
 
-		if ( !adminDashboardService.userCanEditDashboard( event.getAdminUserId(), recordId ) ) {
+		if ( !adminDashboardService.userCanShareDashboard( event.getAdminUserId(), recordId ) ) {
 			return;
 		}
 
@@ -164,7 +167,7 @@ component extends="preside.system.base.AdminHandler" {
 			, recordId   = recordId
 		);
 
-		if ( !adminDashboardService.userCanEditDashboard( event.getAdminUserId(), recordId ) ) {
+		if ( !adminDashboardService.userCanShareDashboard( event.getAdminUserId(), recordId ) ) {
 			event.accessDenied();
 		}
 
