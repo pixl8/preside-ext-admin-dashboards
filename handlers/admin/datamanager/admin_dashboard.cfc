@@ -1,8 +1,9 @@
 component extends="preside.system.base.AdminHandler" {
 
-	property name="adminDashboardService" inject="adminDashboardService";
-	property name="datamanagerService"    inject="datamanagerService";
-	property name="presideObjectService"  inject="presideObjectService";
+	property name="dashboardService"     inject="adminDashboardService";
+	property name="widgetService"        inject="adminDashboardWidgetService";
+	property name="datamanagerService"   inject="datamanagerService";
+	property name="presideObjectService" inject="presideObjectService";
 
 	private boolean function checkPermission( event, rc, prc, args={} ) {
 		var adminUserId      = event.getAdminUserId();
@@ -21,13 +22,13 @@ component extends="preside.system.base.AdminHandler" {
 			switch( args.key ) {
 				case "read":
 				case "clone":
-					hasPermission = adminDashboardService.userCanViewDashboard( adminUserId, recordId );
+					hasPermission = dashboardService.userCanViewDashboard( adminUserId, recordId );
 					break;
 				case "edit":
-					hasPermission = adminDashboardService.userCanEditDashboard( adminUserId, recordId );
+					hasPermission = dashboardService.userCanEditDashboard( adminUserId, recordId );
 					break;
 				case "delete":
-					hasPermission = adminDashboardService.userCanDeleteDashboard( adminUserId, recordId );
+					hasPermission = dashboardService.userCanDeleteDashboard( adminUserId, recordId );
 					break;
 			}
 		}
@@ -139,19 +140,54 @@ component extends="preside.system.base.AdminHandler" {
 		var objectName = args.objectName ?: "";
 		var recordId   = prc.recordId    ?: "";
 		var record     = prc.record      ?: {};
-
 		args.actions   = args.actions    ?: [];
 
-		if ( !adminDashboardService.userCanShareDashboard( event.getAdminUserId(), recordId ) ) {
-			return;
+		if ( dashboardService.userCanEditDashboard( event.getAdminUserId(), recordId ) ) {
+			var addTitle = translateResource( "preside-objects.admin_dashboard:widget.add.btn" );
+			var addLink  = event.buildAdminLink( linkTo="adminDashboards.widgetDialog", queryString="dashboard=#recordId#" );
+
+			args.actions.prepend( '<a class="pull-right inline" href="#addLink#" data-toggle="bootbox-modal" data-buttons="cancel" data-modal-class="page-type-picker" title="#addTitle#">
+				<button class="btn btn-success btn-sm">
+					<i class="fa fa-fw fa-plus"></i>
+					#addTitle#
+				</button>
+			</a>' );
+		}
+		if ( dashboardService.userCanShareDashboard( event.getAdminUserId(), recordId ) ) {
+			args.actions.prepend( {
+				  link      = event.buildAdminLink( objectName=objectName, operation="sharing", recordId=recordId )
+				, btnClass  = "btn-default"
+				, iconClass = "fa-users"
+				, title     = translateResource( "preside-objects.admin_dashboard:sharing.btn" )
+			} );
+		}
+	}
+
+	private string function renderRecord( event, rc, prc, args={} ) {
+		args.canEditDashboard = dashboardService.userCanEditDashboard( event.getAdminUserId(), prc.recordId );
+		args.widgets          = [];
+		var widget            = {};
+		var savedWidgets      = getPresideObject( "admin_dashboard_widget" ).selectData(
+			  filter  = { dashboard=prc.recordId }
+			, orderBy = "display_order"
+		);
+
+		for( var savedWidget in savedWidgets ) {
+			widget = {
+				  id               = savedWidget.widget_id
+				, title            = savedWidget.title
+				, configInstanceId = savedWidget.instance_id
+				, contextData      = isJSON( savedWidget.config ) ? deserializeJSON( savedWidget.config ) : {}
+				, ajax             = false
+			};
+
+			args.widgets.append( widget );
 		}
 
-		args.actions.prepend( {
-			  link      = event.buildAdminLink( objectName=objectName, operation="sharing", recordId=recordId )
-			, btnClass  = "btn-default"
-			, iconClass = "fa-users"
-			, title     = translateResource( "preside-objects.admin_dashboard:sharing.btn" )
-		} );
+		prc.pageTitle    = prc.recordLabel ?: prc.pageTitle;
+		prc.pageSubtitle = len( prc.recordLabel ?: "" ) ? "" : prc.pageSubtitle;
+
+		return renderView( view="/admin/adminDashboards/recordView", args=args );
 	}
 
 	private void function preCloneRecordAction( event, rc, prc, args={} ) {
@@ -167,7 +203,7 @@ component extends="preside.system.base.AdminHandler" {
 			, recordId   = recordId
 		);
 
-		if ( !adminDashboardService.userCanShareDashboard( event.getAdminUserId(), recordId ) ) {
+		if ( !dashboardService.userCanShareDashboard( event.getAdminUserId(), recordId ) ) {
 			event.accessDenied();
 		}
 
@@ -196,7 +232,7 @@ component extends="preside.system.base.AdminHandler" {
 	public void function sharingAction( event, rc, prc, args={} ) {
 		var recordId = rc.id ?: "";
 
-		if ( !adminDashboardService.userCanEditDashboard( event.getAdminUserId(), recordId ) ) {
+		if ( !dashboardService.userCanEditDashboard( event.getAdminUserId(), recordId ) ) {
 			event.accessDenied();
 		}
 

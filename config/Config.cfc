@@ -7,7 +7,7 @@ component {
 		_setupEnums( settings );
 		_setupPermissionsAndRoles( settings );
 
-		settings.adminSideBarItems.append( "dashboards" );
+		settings.adminConfigurationMenuItems.append( "adminDashboards" );
 	}
 
 	private void function _setupEnums( settings ) {

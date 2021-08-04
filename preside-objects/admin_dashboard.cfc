@@ -12,7 +12,8 @@ component  {
 	property name="name"         type="string" dbtype="varchar" maxlength="50" required=true uniqueIndexes="dashboardName";
 	property name="description"  type="string" dbtype="varchar" maxlength="300";
 
-	property name="owner"        relationship="many-to-one"  relatedTo="security_user"  required=true generate="insert" generator="adminDashboard.owner" cloneable=false;
+	property name="owner"        relationship="many-to-one" relatedTo="security_user" required=true generate="insert" generator="adminDashboard.owner" cloneable=false;
+	property name="widgets"      relationship="one-to-many" relatedto="admin_dashboard_widget" relationshipKey="dashboard" cloneable=true;
 
 	property name="view_access" type="string" dbtype="varchar" maxlength=10 enum="adminDashboardViewAccess" default="private";
 	property name="view_groups" adminRenderer="ObjectRelatedRecordsList" relationship="many-to-many" relatedTo="security_group" relatedVia="admin_dashboard_view_group" cloneable=false;

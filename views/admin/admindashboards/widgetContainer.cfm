@@ -3,11 +3,15 @@
 <cfparam name="args.description"      default="" />
 <cfparam name="args.widgetId"         default="" />
 <cfparam name="args.hasConfig"        default="false" />
+<cfparam name="args.canDeleteWidget"  default="false" />
+<cfparam name="args.hasConfig"        default="false" />
 <cfparam name="args.columnSize"       default="6" />
 <cfparam name="args.contextData"      default="#StructNew()#" />
 <cfparam name="args.instanceId"       default="#CreateUUId()#" />
 <cfparam name="args.configInstanceId" default="" />
+<cfparam name="args.dashboardId"      default="" />
 <cfparam name="args.additionalMenu"   default="" />
+<cfparam name="args.deleteMenu"       default="" />
 <cfparam name="args.ajax"             default="true" />
 
 <cfscript>
@@ -24,12 +28,15 @@
 					<cfif args.icon.len()>
 						<i class="fa fa-fw #args.icon#"></i>
 					</cfif>
-					#args.title#
+					<span>#args.title#</span>
 				</h4>
 				<div class="widget-toolbar">
 					#args.additionalMenu#
 					<cfif args.hasConfig>
 						<a class="widget-configuration-link grey" href="##"><i class="fa fa-fw fa-cog"></i></a>
+					</cfif>
+					<cfif args.canDeleteWidget>
+						<a class="widget-delete-link red" href="#event.buildAdminLink( linkTo="adminDashboards.deleteWidget", queryString="dashboardId=#args.dashboardId#&instanceId=#args.configInstanceId#" )#"><i class="fa fa-fw fa-trash"></i></a>
 					</cfif>
 				</div>
 			</div>
