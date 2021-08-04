@@ -19,7 +19,13 @@
 
 					$.ajax( buildAdminLink( "admindashboards", "saveWidgetConfig" ), {
 						  data     : config
-						, complete : function() { loadContent( $widgetEl, true ); }
+						, method   : "POST"
+						, complete : function() {
+							loadContent( $widgetEl, true );
+							if ( config.widget_title ) {
+								$( ".widget-title span", $widgetEl ).text( config.widget_title );
+							}
+						  }
 					} );
 				}
 			}
