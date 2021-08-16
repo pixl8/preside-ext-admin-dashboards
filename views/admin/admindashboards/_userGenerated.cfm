@@ -2,6 +2,7 @@
 	dashboardId      = args.id           ?: "";
 	widgets          = args.widgets      ?: [];
 	columns          = args.column_count ?: 1;
+	columns          = val( columns ) ? columns : 1;
 	columnWidth      = int( 12 / columns );
 	canEditDashboard = isTrue( args.canEdit ?: "" );
 
