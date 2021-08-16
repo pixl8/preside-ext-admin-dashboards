@@ -1,9 +1,9 @@
 <cfscript>
-	widgets     = prc.widgets ?: QueryNew('');
-	dashboardId = rc.dashboard ?: "";;
-	linkQs      = "dashboard=#dashboardId#";
+	widgets     = prc.widgets  ?: QueryNew('');
+	dashboardId = rc.dashboard ?: "";
+	column      = rc.column    ?: 1;
+	linkQs      = "dashboard=#dashboardId#&column=#column#";
 	baseLink    = event.buildAdminLink( linkTo="AdminDashboards.addWidget", queryString="#linkQs#&widget={widgetid}" );
-
 </cfscript>
 
 <cfoutput>

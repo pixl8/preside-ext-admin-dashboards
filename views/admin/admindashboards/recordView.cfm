@@ -5,9 +5,8 @@
 
 <cfoutput>
 	#renderAdminDashboard(
-	      dashboardId = dashboardId
-	    , widgets     = args.widgets
-	    , columnCount = 2
-		, contextData = { canEditDashboard=canEditDashboard }
+	      dashboardId   = dashboardId
+		, userGenerated = true
+		, allowEditing  = true
 	)#
 </cfoutput>

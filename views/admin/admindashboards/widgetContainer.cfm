@@ -13,6 +13,7 @@
 <cfparam name="args.additionalMenu"   default="" />
 <cfparam name="args.deleteMenu"       default="" />
 <cfparam name="args.ajax"             default="true" />
+<cfparam name="args.userGeneratedDashboard" default="false" />
 
 <cfscript>
 	editModalTitle = translateResource( uri="admindashboards:configure.widget.dialog.title", data=[ args.title ] );
@@ -21,7 +22,9 @@
 </cfscript>
 
 <cfoutput>
-	<div class="col-md-#args.columnSize#">
+	<cfif !args.userGeneratedDashboard>
+		<div class="col-md-#args.columnSize#">
+	</cfif>
 		<div class="widget-box admin-dashboard-widget" data-ajax="#IsTrue( args.ajax )#" data-widget-id="#args.widgetId#" data-instance-id="#args.instanceId#" data-has-config="#args.hasConfig#" data-config-modal-title="#HtmlEditFormat( editModalTitle )#" data-config-instance-id="#args.configInstanceId#">
 			<div class="widget-header">
 				<h4 class="widget-title lighter smaller">
@@ -56,5 +59,7 @@
 				</div>
 			</div>
 		</div>
-	</div>
+	<cfif !args.userGeneratedDashboard>
+		</div>
+	</cfif>
 </cfoutput>

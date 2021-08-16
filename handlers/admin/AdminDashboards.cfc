@@ -76,6 +76,21 @@ component extends="preside.system.base.AdminHandler" {
 		return renderView( view="/admin/admindashboards/_dashboard", args={ widgets=renderedWidgets, dashboardId=args.dashboardId ?: "" } );
 	}
 
+	private string function renderUserGeneratedDashboard( event, rc, prc, args={} ) {
+		var dashboardId  = args.dashboardId ?: "";
+		var allowEditing = isTrue( args.allowEditing ?: "" );
+		var dashboard    = widgetService.renderUserGeneratedDashboard( dashboardId=dashboardId, allowEditing=allowEditing );
+
+		event.include( "/js/admin/specific/admindashboards/" )
+		     .include( "/css/admin/specific/admindashboards/" );
+
+		if ( isTrue( dashboard.canEdit ?: "" ) ) {
+			event.include( "/js/admin/specific/admindashboards/editing/" );
+		}
+
+		return renderView( view="/admin/admindashboards/_userGenerated", args=dashboard );
+	}
+
 	public void function widgetDialog( event, rc, prc ) {
 		event.setLayout( "adminModalDialog" );
 		prc.widgets = _getSortedAndTranslatedAdminWidgets();
@@ -86,13 +101,18 @@ component extends="preside.system.base.AdminHandler" {
 	public function addWidget( event, rc, prc, args={} ) {
 		var dashboardId = rc.dashboard ?: "";
 		var widgetId    = rc.widget    ?: "";
+		var column      = rc.column    ?: 1;
 		var instanceId  = createUUID();
+		var nextRow     = widgetService.nextWidgetRow( dashboardId, column );
+		var title       = widgetService.getInstanceTitle( dashboardId, widgetId );
 
 		widgetService.addWidget(
 			  dashboardId = dashboardId
 			, widgetId    = widgetId
 			, instanceId  = instanceId
-			, title       = translateResource( uri="admin.admindashboards.widget.#widgetId#:title", defaultValue=widgetId )
+			, column      = column
+			, row         = nextRow
+			, title       = title
 			, config      = {}
 		);
 
@@ -109,6 +129,22 @@ component extends="preside.system.base.AdminHandler" {
 		);
 
 		setNextEvent( url=event.buildAdminLink( objectName="admin_dashboard", recordId=dashboardId ) );
+	}
+
+	public string function updateWidgetOrder( event, rc, prc, args={} ) {
+		var dashboardId = rc.dashboardId ?: "";
+		var column      = rc.column      ?: 1;
+		var widgets     = rc.widgets     ?: [];
+		var dao         = getPresideObject( "admin_dashboard_widget" );
+
+		widgets.each( function( widget, row ) {
+			dao.updateData(
+				  filter = { dashboard=dashboardId, instance_id=widget }
+				, data   = { column=column, row=row }
+			);
+		} );
+
+		return "OK";
 	}
 
 

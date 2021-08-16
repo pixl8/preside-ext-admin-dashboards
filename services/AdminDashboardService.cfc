@@ -13,7 +13,7 @@ component {
 	}
 
 // PUBLIC API METHODS
-	public boolean function userCanViewDashboard( required string adminUserId, required string dashboardId ) {
+	public boolean function userCanViewDashboard( required string dashboardId, string adminUserId=$getAdminLoggedInUserId() ) {
 		var adminUserGroups = _getAdminUserGroups( arguments.adminUserId );
 
 		return $getPresideObject( "admin_dashboard" ).dataExists(
@@ -31,7 +31,7 @@ component {
 		);
 	}
 
-	public boolean function userCanEditDashboard( required string adminUserId, required string dashboardId ) {
+	public boolean function userCanEditDashboard( required string dashboardId, string adminUserId=$getAdminLoggedInUserId() ) {
 		return $getPresideObject( "admin_dashboard" ).dataExists(
 			  filter       = { "admin_dashboard.id"=arguments.dashboardId }
 			, extraFilters = [ {
@@ -42,13 +42,13 @@ component {
 		);
 	}
 
-	public boolean function userCanShareDashboard( required string adminUserId, required string dashboardId ) {
+	public boolean function userCanShareDashboard( required string dashboardId, string adminUserId=$getAdminLoggedInUserId() ) {
 		return $getPresideObject( "admin_dashboard" ).dataExists(
 			filter = { id=arguments.dashboardId, owner=arguments.adminUserId }
 		);
 	}
 
-	public boolean function userCanDeleteDashboard( required string adminUserId, required string dashboardId ) {
+	public boolean function userCanDeleteDashboard( required string dashboardId, string adminUserId=$getAdminLoggedInUserId() ) {
 		return $getPresideObject( "admin_dashboard" ).dataExists(
 			filter = { id=arguments.dashboardId, owner=arguments.adminUserId }
 		);
