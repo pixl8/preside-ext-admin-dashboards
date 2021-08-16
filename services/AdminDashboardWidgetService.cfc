@@ -91,7 +91,7 @@ component {
 		var dashboard     = $getPresideObject( "admin_dashboard" ).selectData( id=arguments.dashboardId );
 		var savedWidgets  = $getPresideObject( "admin_dashboard_widget" ).selectData(
 			  filter  = { dashboard=arguments.dashboardId }
-			, orderBy = "column,row"
+			, orderBy = "column,slot"
 		);
 		var columns       = isNumeric( dashboard.column_count ) ? dashboard.column_count : 1;
 		var widget        = {};
@@ -116,7 +116,7 @@ component {
 				, contextData      = isJSON( savedWidget.config ) ? deserializeJSON( savedWidget.config ) : {}
 				, ajax             = false
 				, column           = savedWidget.column <= columns ? savedWidget.column : 1
-				, row              = savedWidget.row
+				, slot             = savedWidget.slot
 			};
 			widget.contextData.canEditDashboard = canEdit;
 
@@ -325,12 +325,12 @@ component {
 		return $helpers.isTrue( result ?: "" );
 	}
 
-	public numeric function nextWidgetRow( required string dashboardId, required numeric column ) {
+	public numeric function nextWidgetSlot( required string dashboardId, required numeric column ) {
 		var currentMax = $getPresideObject( "admin_dashboard_widget" ).selectData(
 			  filter       = { dashboard=arguments.dashboardId, column=arguments.column }
-			, selectFields = [ "max( row ) as row" ]
+			, selectFields = [ "max( slot ) as slot" ]
 		);
-		return val( currentMax.row ) + 1;
+		return val( currentMax.slot ) + 1;
 	}
 
 	public string function getInstanceTitle( required string dashboardId, required string widgetId ) {
@@ -355,7 +355,7 @@ component {
 		, required string  instanceId
 		, required string  title
 		, required numeric column
-		, required numeric row
+		, required numeric slot
 		,          struct  config = {}
 	) {
 		return $getPresideObject( "admin_dashboard_widget" ).insertData( data={
@@ -364,7 +364,7 @@ component {
 			, instance_id = arguments.instanceId
 			, title       = arguments.title
 			, column      = arguments.column
-			, row         = arguments.row
+			, slot        = arguments.slot
 			, config      = serializeJson( arguments.config )
 		} );
 	}

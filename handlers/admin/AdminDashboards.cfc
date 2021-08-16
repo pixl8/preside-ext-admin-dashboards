@@ -103,7 +103,7 @@ component extends="preside.system.base.AdminHandler" {
 		var widgetId    = rc.widget    ?: "";
 		var column      = rc.column    ?: 1;
 		var instanceId  = createUUID();
-		var nextRow     = widgetService.nextWidgetRow( dashboardId, column );
+		var nextSlot    = widgetService.nextWidgetSlot( dashboardId, column );
 		var title       = widgetService.getInstanceTitle( dashboardId, widgetId );
 
 		widgetService.addWidget(
@@ -111,7 +111,7 @@ component extends="preside.system.base.AdminHandler" {
 			, widgetId    = widgetId
 			, instanceId  = instanceId
 			, column      = column
-			, row         = nextRow
+			, slot         = nextSlot
 			, title       = title
 			, config      = {}
 		);
@@ -137,10 +137,10 @@ component extends="preside.system.base.AdminHandler" {
 		var widgets     = rc.widgets     ?: [];
 		var dao         = getPresideObject( "admin_dashboard_widget" );
 
-		widgets.each( function( widget, row ) {
+		widgets.each( function( widget, slot ) {
 			dao.updateData(
 				  filter = { dashboard=dashboardId, instance_id=widget }
-				, data   = { column=column, row=row }
+				, data   = { column=column, slot=slot }
 			);
 		} );
 
