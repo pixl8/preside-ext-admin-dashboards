@@ -6,16 +6,19 @@ component {
 // CONSTRUCTOR
 	/**
 	 * @configuredWidgets.inject       coldbox:setting:widgets
+	 * @dashboardService.inject        AdminDashboardService
 	 * @formsService.inject            FormsService
 	 * @autoDiscoverDirectories.inject presidecms:directories
 	 */
 	public any function init(
 		  required struct configuredWidgets
+		, required any    dashboardService
 		, required any    formsService
 		, required array  autoDiscoverDirectories
 	) {
-		_setAutoDicoverDirectories( arguments.autoDiscoverDirectories );
+		_setAutoDiscoverDirectories( arguments.autoDiscoverDirectories );
 		_setConfiguredWidgets( arguments.configuredWidgets );
+		_setDashboardService( arguments.dashboardService );
 		_setFormsService( arguments.formsService );
 
 		reload();
@@ -84,6 +87,55 @@ component {
 		return rendered;
 	}
 
+	public struct function renderUserGeneratedDashboard( required string dashboardId, boolean allowEditing=true, struct contextData={}	) {
+		var dashboard     = $getPresideObject( "admin_dashboard" ).selectData( id=arguments.dashboardId );
+		var savedWidgets  = $getPresideObject( "admin_dashboard_widget" ).selectData(
+			  filter  = { dashboard=arguments.dashboardId }
+			, orderBy = "column,row"
+		);
+		var columns       = isNumeric( dashboard.column_count ) ? dashboard.column_count : 1;
+		var widget        = {};
+		var widgets       = [];
+		var dashboardArgs = {};
+		var canEdit       = arguments.allowEditing && _getDashboardService().userCanEditDashboard( arguments.dashboardId );
+
+		for( var record in dashboard ) {
+			dashboardArgs = record;
+			break;
+		}
+
+		for( var c=1; c<=columns; c++ ) {
+			widgets.append( [] );
+		}
+
+		for( var savedWidget in savedWidgets ) {
+			widget = {
+				  id               = savedWidget.widget_id
+				, title            = savedWidget.title
+				, configInstanceId = savedWidget.instance_id
+				, contextData      = isJSON( savedWidget.config ) ? deserializeJSON( savedWidget.config ) : {}
+				, ajax             = false
+				, column           = savedWidget.column <= columns ? savedWidget.column : 1
+				, row              = savedWidget.row
+			};
+			widget.contextData.canEditDashboard = canEdit;
+
+			widgets[ widget.column ].append( renderWidgetContainer(
+				  dashboardId      = arguments.dashboardId
+				, widgetId         = widget.id
+				, contextData      = _namespaceContextData( widget.contextData )
+				, configInstanceId = widget.configInstanceId
+				, title            = widget.title ?: ""
+				, ajax             = widget.ajax
+			) );
+		}
+
+		dashboardArgs.widgets = widgets;
+		dashboardArgs.canEdit = canEdit;
+
+		return dashboardArgs;
+	}
+
 	public string function renderWidgetContainer(
 		  required string  dashboardId
 		, required string  widgetId
@@ -93,12 +145,12 @@ component {
 		,          string  title            = ""
 		,          boolean ajax             = true
 	) {
-		var instanceId       = "dashboard-widget-" & LCase( Hash( arguments.dashboardId & arguments.widgetId & SerializeJson( arguments.contextData ) ) );
-		var menuViewlet      = "admin.admindashboards.widget.#arguments.widgetId#.additionalMenu";
-		var additionalMenu   = "";
-		var content          = "";
-		var isAdminDashboard = _isAdminDashboard( arguments.dashboardId );
-		var canEditDashboard = $helpers.isTrue( arguments.contextData[ "dashboard.widget.data.canEditDashboard" ] ?: "" );
+		var instanceId             = "dashboard-widget-" & LCase( Hash( arguments.dashboardId & arguments.widgetId & SerializeJson( arguments.contextData ) ) );
+		var menuViewlet            = "admin.admindashboards.widget.#arguments.widgetId#.additionalMenu";
+		var additionalMenu         = "";
+		var content                = "";
+		var userGeneratedDashboard = _isUserGeneratedDashboard( arguments.dashboardId );
+		var canEditDashboard       = $helpers.isTrue( arguments.contextData[ "dashboard.widget.data.canEditDashboard" ] ?: "" );
 
 		if ( $getColdbox().viewletExists( menuViewlet ) ) {
 			var args         = StructCopy( arguments );
@@ -117,20 +169,21 @@ component {
 		}
 
 		return $renderViewlet( event="admin.admindashboards.widgetContainer", args={
-			  title            = !isEmpty( arguments.title ) ? arguments.title : $translateResource( uri="admin.admindashboards.widget.#widgetId#:title", defaultValue=widgetId )
-			, icon             = $translateResource( uri="admin.admindashboards.widget.#widgetId#:iconClass"  , defaultValue="" )
-			, description      = $translateResource( uri="admin.admindashboards.widget.#widgetId#:description", defaultValue="" )
-			, widgetId         = arguments.widgetId
-			, columnSize       = arguments.columnSize
-			, contextData      = arguments.contextData
-			, ajax             = arguments.ajax
-			, instanceId       = instanceId
-			, configInstanceId = arguments.configInstanceId
-			, dashboardId      = arguments.dashboardId
-			, hasConfig        = widgetHasConfigForm( arguments.widgetId ) && ( !isAdminDashboard || canEditDashboard )
-			, canDeleteWidget  = isAdminDashboard && canEditDashboard
-			, additionalMenu   = additionalMenu
-			, content          = content
+			  title                  = !isEmpty( arguments.title ) ? arguments.title : $translateResource( uri="admin.admindashboards.widget.#widgetId#:title", defaultValue=widgetId )
+			, icon                   = $translateResource( uri="admin.admindashboards.widget.#widgetId#:iconClass"  , defaultValue="" )
+			, description            = $translateResource( uri="admin.admindashboards.widget.#widgetId#:description", defaultValue="" )
+			, widgetId               = arguments.widgetId
+			, columnSize             = arguments.columnSize
+			, contextData            = arguments.contextData
+			, ajax                   = arguments.ajax
+			, instanceId             = instanceId
+			, configInstanceId       = arguments.configInstanceId
+			, dashboardId            = arguments.dashboardId
+			, userGeneratedDashboard = userGeneratedDashboard
+			, hasConfig              = widgetHasConfigForm( arguments.widgetId ) && ( !userGeneratedDashboard || canEditDashboard )
+			, canDeleteWidget        = userGeneratedDashboard && canEditDashboard
+			, additionalMenu         = additionalMenu
+			, content                = content
 		} );
 	}
 
@@ -144,7 +197,7 @@ component {
 
 	public string function renderWidgetConfigForm( required string dashboardId, required string widgetId, required string instanceId ) {
 		var formName = "admin.admindashboards.widget.#widgetId#";
-		if ( _isAdminDashboard( dashboardId ) ) {
+		if ( _isUserGeneratedDashboard( dashboardId ) ) {
 			formName = _getFormsService().getMergedFormName( formName, "admin.admindashboards.config" );
 		}
 
@@ -166,7 +219,7 @@ component {
 			config[ field ] = arguments.requestData[ field ] ?: "";
 		}
 
-		if ( _isAdminDashboard( dashboardId ) ) {
+		if ( _isUserGeneratedDashboard( dashboardId ) ) {
 			var data = { config=SerializeJson( config ) };
 			if ( structKeyExists( arguments.requestData, "widget_title" ) && len( arguments.requestData.widget_title ) ) {
 				data.title = arguments.requestData.widget_title;
@@ -196,11 +249,11 @@ component {
 	}
 
 	public struct function getWidgetConfiguration( required string dashboardId, required string widgetId, required string instanceId ) {
-		var configRecord     = "";
-		var result           = {};
-		var isAdminDashboard = _isAdminDashboard( dashboardId );
+		var configRecord           = "";
+		var result                 = {};
+		var userGeneratedDashboard = _isUserGeneratedDashboard( dashboardId );
 
-		if ( isAdminDashboard ) {
+		if ( userGeneratedDashboard ) {
 			configRecord = $getPresideObject( "admin_dashboard_widget" ).selectData( filter={
 				  dashboard   = arguments.dashboardId
 				, widget_id   = arguments.widgetId
@@ -230,7 +283,7 @@ component {
 		try {
 			result = DeserializeJson( configRecord.config ?: "" );
 
-			if ( isAdminDashboard ) {
+			if ( userGeneratedDashboard ) {
 				result.widget_title = configRecord.title ?: "";
 			}
 		} catch( any e ) {
@@ -272,18 +325,46 @@ component {
 		return $helpers.isTrue( result ?: "" );
 	}
 
+	public numeric function nextWidgetRow( required string dashboardId, required numeric column ) {
+		var currentMax = $getPresideObject( "admin_dashboard_widget" ).selectData(
+			  filter       = { dashboard=arguments.dashboardId, column=arguments.column }
+			, selectFields = [ "max( row ) as row" ]
+		);
+		return val( currentMax.row ) + 1;
+	}
+
+	public string function getInstanceTitle( required string dashboardId, required string widgetId ) {
+		var baseTitle = $translateResource( uri="admin.admindashboards.widget.#arguments.widgetId#:title", defaultValue=arguments.widgetId );
+		var title     = baseTitle;
+		var dao       = $getPresideObject( "admin_dashboard_widget" );
+
+		var filter    = { dashboard=arguments.dashboardId, title=title };
+		var increment = 0;
+
+		while( dao.dataExists( filter=filter ) ) {
+			title = baseTitle & " (#++increment#)";
+			filter.title = title;
+		}
+
+		return title;
+	}
+
 	public string function addWidget(
-		  required string dashboardId
-		, required string widgetId
-		, required string instanceId
-		, required string title
-		,          struct config = {}
+		  required string  dashboardId
+		, required string  widgetId
+		, required string  instanceId
+		, required string  title
+		, required numeric column
+		, required numeric row
+		,          struct  config = {}
 	) {
 		return $getPresideObject( "admin_dashboard_widget" ).insertData( data={
 			  dashboard   = arguments.dashboardId
 			, widget_id   = arguments.widgetId
 			, instance_id = arguments.instanceId
 			, title       = arguments.title
+			, column      = arguments.column
+			, row         = arguments.row
 			, config      = serializeJson( arguments.config )
 		} );
 	}
@@ -327,7 +408,7 @@ component {
 		return contextData;
 	}
 
-	private boolean function _isAdminDashboard( required string dashboardId ) {
+	private boolean function _isUserGeneratedDashboard( required string dashboardId ) {
 		return $getPresideObject( "admin_dashboard" ).dataExists( id=arguments.dashboardId );
 	}
 
@@ -355,7 +436,7 @@ component {
 		var viewsPath               = "/views/admin/adminDashboards/widget";
 		var handlersPath            = "/handlers/admin/adminDashboards/widget";
 		var ids                     = {};
-		var autoDiscoverDirectories = _getAutoDicoverDirectories();
+		var autoDiscoverDirectories = _getAutoDiscoverDirectories();
 		var siteTemplateMap         = {};
 
 		for( var dir in autoDiscoverDirectories ) {
@@ -469,29 +550,39 @@ component {
 
 
 // GETTERS AND SETTERS
+	private any function _getDashboardService() {
+		return _dashboardService;
+	}
+	private void function _setDashboardService( required any dashboardService ) {
+		_dashboardService = arguments.dashboardService;
+	}
+
 	private any function _getFormsService() {
 		return _formsService;
 	}
 	private void function _setFormsService( required any formsService ) {
 		_formsService = arguments.formsService;
 	}
+
 	private struct function _getWidgets() {
 		return _widgets;
 	}
 	private void function _setWidgets( required struct widgets ) {
 		_widgets = arguments.widgets;
 	}
+
 	private struct function _getConfiguredWidgets() {
 		return _configuredWidgets;
 	}
 	private void function _setConfiguredWidgets( required struct configuredWidgets ) {
 		_configuredWidgets = arguments.configuredWidgets;
 	}
-	private array function _getAutoDicoverDirectories() {
-		return _autoDicoverDirectories;
+
+	private array function _getAutoDiscoverDirectories() {
+		return _autoDiscoverDirectories;
 	}
-	private void function _setAutoDicoverDirectories( required array autoDicoverDirectories ) {
-		_autoDicoverDirectories = arguments.autoDicoverDirectories;
+	private void function _setAutoDiscoverDirectories( required array autoDiscoverDirectories ) {
+		_autoDiscoverDirectories = arguments.autoDiscoverDirectories;
 	}
 
 }

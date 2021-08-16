@@ -22,13 +22,13 @@ component extends="preside.system.base.AdminHandler" {
 			switch( args.key ) {
 				case "read":
 				case "clone":
-					hasPermission = dashboardService.userCanViewDashboard( adminUserId, recordId );
+					hasPermission = dashboardService.userCanViewDashboard( recordId, adminUserId );
 					break;
 				case "edit":
-					hasPermission = dashboardService.userCanEditDashboard( adminUserId, recordId );
+					hasPermission = dashboardService.userCanEditDashboard( recordId, adminUserId );
 					break;
 				case "delete":
-					hasPermission = dashboardService.userCanDeleteDashboard( adminUserId, recordId );
+					hasPermission = dashboardService.userCanDeleteDashboard( recordId, adminUserId );
 					break;
 			}
 		}
@@ -142,18 +142,7 @@ component extends="preside.system.base.AdminHandler" {
 		var record     = prc.record      ?: {};
 		args.actions   = args.actions    ?: [];
 
-		if ( dashboardService.userCanEditDashboard( event.getAdminUserId(), recordId ) ) {
-			var addTitle = translateResource( "preside-objects.admin_dashboard:widget.add.btn" );
-			var addLink  = event.buildAdminLink( linkTo="adminDashboards.widgetDialog", queryString="dashboard=#recordId#" );
-
-			args.actions.prepend( '<a class="pull-right inline" href="#addLink#" data-toggle="bootbox-modal" data-buttons="cancel" data-modal-class="page-type-picker" title="#addTitle#">
-				<button class="btn btn-success btn-sm">
-					<i class="fa fa-fw fa-plus"></i>
-					#addTitle#
-				</button>
-			</a>' );
-		}
-		if ( dashboardService.userCanShareDashboard( event.getAdminUserId(), recordId ) ) {
+		if ( dashboardService.userCanShareDashboard( recordId, event.getAdminUserId() ) ) {
 			args.actions.prepend( {
 				  link      = event.buildAdminLink( objectName=objectName, operation="sharing", recordId=recordId )
 				, btnClass  = "btn-default"
@@ -164,26 +153,6 @@ component extends="preside.system.base.AdminHandler" {
 	}
 
 	private string function renderRecord( event, rc, prc, args={} ) {
-		args.canEditDashboard = dashboardService.userCanEditDashboard( event.getAdminUserId(), prc.recordId );
-		args.widgets          = [];
-		var widget            = {};
-		var savedWidgets      = getPresideObject( "admin_dashboard_widget" ).selectData(
-			  filter  = { dashboard=prc.recordId }
-			, orderBy = "display_order"
-		);
-
-		for( var savedWidget in savedWidgets ) {
-			widget = {
-				  id               = savedWidget.widget_id
-				, title            = savedWidget.title
-				, configInstanceId = savedWidget.instance_id
-				, contextData      = isJSON( savedWidget.config ) ? deserializeJSON( savedWidget.config ) : {}
-				, ajax             = false
-			};
-
-			args.widgets.append( widget );
-		}
-
 		prc.pageTitle    = prc.recordLabel ?: prc.pageTitle;
 		prc.pageSubtitle = len( prc.recordLabel ?: "" ) ? "" : prc.pageSubtitle;
 
@@ -203,7 +172,7 @@ component extends="preside.system.base.AdminHandler" {
 			, recordId   = recordId
 		);
 
-		if ( !dashboardService.userCanShareDashboard( event.getAdminUserId(), recordId ) ) {
+		if ( !dashboardService.userCanShareDashboard( recordId, event.getAdminUserId() ) ) {
 			event.accessDenied();
 		}
 
@@ -232,7 +201,7 @@ component extends="preside.system.base.AdminHandler" {
 	public void function sharingAction( event, rc, prc, args={} ) {
 		var recordId = rc.id ?: "";
 
-		if ( !dashboardService.userCanEditDashboard( event.getAdminUserId(), recordId ) ) {
+		if ( !dashboardService.userCanEditDashboard( recordId, event.getAdminUserId() ) ) {
 			event.accessDenied();
 		}
 

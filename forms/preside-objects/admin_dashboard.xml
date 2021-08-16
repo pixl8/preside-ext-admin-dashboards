@@ -2,8 +2,9 @@
 <form i18nBaseUri="preside-objects.admin_dashboard:">
 	<tab id="main">
 		<fieldset id="main">
-			<field binding="admin_dashboard.name"        sortOrder="10" />
-			<field binding="admin_dashboard.description" sortOrder="20" />
+			<field binding="admin_dashboard.name"         sortOrder="10" />
+			<field binding="admin_dashboard.description"  sortOrder="20" />
+			<field binding="admin_dashboard.column_count" sortOrder="30" minValue="1" maxValue="4" />
 		</fieldset>
 	</tab>
 </form>
