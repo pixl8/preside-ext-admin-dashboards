@@ -89,7 +89,8 @@
 		e.preventDefault();
 
 		var $link = $( this )
-		  , title = "";
+		  , title = ""
+		  , $widgetEl = $link.closest( ".admin-dashboard-widget" );
 
 		if ( !$link.data( "confirmationPrompt" ) ) {
 			title = $link.data( "title" ) || $link.attr( "title" );
@@ -105,18 +106,18 @@
 			, message : $message
 			, buttons : {
 				  cancel  : {
-				  	label: i18n.translateResource( "cms:confirmation.prompt.cancel.button" )
+					  label: i18n.translateResource( "cms:confirmation.prompt.cancel.button" )
 				  }
 				, confirm : {
 					  label: i18n.translateResource( "cms:confirmation.prompt.confirm.button" )
 					, callback: function() {
+						$widgetEl.find( ".widget-dynamic-content" ).presideLoadingSheen( true );
 						$.ajax( $link.attr( "href" ), {
-							  success  : function() { $link.closest( ".admin-dashboard-widget" ).remove(); }
+							  success  : function() { $widgetEl.remove(); }
+							, error    : function() { $widgetEl.find( ".widget-dynamic-content" ).presideLoadingSheen( false ); }
 							, complete : function() { confirmationDialog.modal( "hide" ); }
 						} );
-
-
-					}
+					  }
 				}
 			}
 		} );
