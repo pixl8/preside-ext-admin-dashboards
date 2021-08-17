@@ -1,5 +1,6 @@
 # Changelog
 
+
 ## v2.0.6
 
 * Move build pipeline to Github Actions
