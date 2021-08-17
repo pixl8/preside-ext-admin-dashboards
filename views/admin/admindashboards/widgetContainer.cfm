@@ -18,6 +18,8 @@
 
 <cfscript>
 	editModalTitle = translateResource( uri="admindashboards:configure.widget.dialog.title", data=[ args.title ] );
+	configureTitle = translateResource( uri="admindashboards:configure.widget.title" );
+	deletePrompt   = translateResource( uri="admindashboards:delete.widget.confirmation" );
 
 	event.includeData( { "#args.instanceId#"=args.contextData } );
 </cfscript>
@@ -26,7 +28,14 @@
 	<cfif !args.userGeneratedDashboard>
 		<div class="col-md-#args.columnSize#">
 	</cfif>
-		<div class="widget-box admin-dashboard-widget" data-ajax="#IsTrue( args.ajax )#" data-ajax-callback="#args.ajaxCallback#" data-widget-id="#args.widgetId#" data-instance-id="#args.instanceId#" data-has-config="#args.hasConfig#" data-config-modal-title="#HtmlEditFormat( editModalTitle )#" data-config-instance-id="#args.configInstanceId#">
+		<div class="widget-box admin-dashboard-widget"
+				data-ajax               = "#IsTrue( args.ajax )#"
+				data-ajax-callback      = "#args.ajaxCallback#"
+				data-widget-id          = "#args.widgetId#"
+				data-instance-id        = "#args.instanceId#"
+				data-has-config         = "#args.hasConfig#"
+				data-config-modal-title = "#HtmlEditFormat( editModalTitle )#"
+				data-config-instance-id = "#args.configInstanceId#">
 			<div class="widget-header">
 				<h4 class="widget-title lighter smaller">
 					<cfif args.icon.len()>
@@ -37,10 +46,10 @@
 				<div class="widget-toolbar">
 					#args.additionalMenu#
 					<cfif args.hasConfig>
-						<a class="widget-configuration-link grey" href="##"><i class="fa fa-fw fa-cog"></i></a>
+						<a class="widget-configuration-link grey" href="##" title="#htmlEditFormat( configureTitle )#"><i class="fa fa-fw fa-cog"></i></a>
 					</cfif>
 					<cfif args.canDeleteWidget>
-						<a class="widget-delete-link red" href="#event.buildAdminLink( linkTo="adminDashboards.deleteWidget", queryString="dashboardId=#args.dashboardId#&instanceId=#args.configInstanceId#" )#"><i class="fa fa-fw fa-trash"></i></a>
+						<a class="widget-delete-link red" title="#htmlEditFormat( deletePrompt )#" href="#event.buildAdminLink( linkTo="adminDashboards.deleteWidget", queryString="dashboardId=#args.dashboardId#&instanceId=#args.configInstanceId#" )#"><i class="fa fa-fw fa-trash"></i></a>
 					</cfif>
 				</div>
 			</div>

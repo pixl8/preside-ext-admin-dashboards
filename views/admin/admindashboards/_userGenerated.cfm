@@ -21,7 +21,7 @@
 
 					<cfif canEditDashboard>
 						<div class="dashboard-column-add">
-							<a class="" href="#replace( addLink, "{column}", c )#" data-toggle="bootbox-modal" data-buttons="cancel" data-modal-class="page-type-picker" title="#addTitle#">
+							<a href="#replace( addLink, "{column}", c )#" data-toggle="bootbox-modal" data-target="##add-widget-modal" data-buttons="cancel" data-modal-class="page-type-picker" title="#addTitle#">
 								<button class="btn btn-success btn-sm">
 									<i class="fa fa-fw fa-plus"></i>
 									#addTitle#
