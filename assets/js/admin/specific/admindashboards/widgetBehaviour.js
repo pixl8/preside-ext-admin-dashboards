@@ -85,6 +85,43 @@
 		return false;
 	} );
 
+	$dashBoardContainer.on( "click", ".admin-dashboard-widget .widget-delete-link", function( e ){
+		e.preventDefault();
+
+		var $link = $( this )
+		  , title = "";
+
+		if ( !$link.data( "confirmationPrompt" ) ) {
+			title = $link.data( "title" ) || $link.attr( "title" );
+			title = title.charAt( 0 ).toLowerCase() + title.slice( 1 );
+			$link.data( "confirmationPrompt", i18n.translateResource( "cms:confirmation.prompt", { data:[ title ] } ) );
+		}
+
+		var $message = $( "<div class=\"form-group\"><label>" + $link.data( "confirmationPrompt" ) + "</label></div>" )
+		  , $input   = $( "<input class=\"bootbox-input form-control\" autocomplete=\"off\" type=\"text\" />" );
+
+		var confirmationDialog = presideBootbox.dialog( {
+			  title   : "Confirmation"
+			, message : $message
+			, buttons : {
+				  cancel  : {
+				  	label: i18n.translateResource( "cms:confirmation.prompt.cancel.button" )
+				  }
+				, confirm : {
+					  label: i18n.translateResource( "cms:confirmation.prompt.confirm.button" )
+					, callback: function() {
+						$.ajax( $link.attr( "href" ), {
+							  success  : function() { $link.closest( ".admin-dashboard-widget" ).remove(); }
+							, complete : function() { confirmationDialog.modal( "hide" ); }
+						} );
+
+
+					}
+				}
+			}
+		} );
+	} );
+
 	$widgets.each( function(){ loadContent( $( this ), false ); } );
 
 } )( presideJQuery );
