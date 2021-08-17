@@ -52,6 +52,11 @@
 
 	onWidgetContentFetchSuccess = function( $widgetEl, data ){
 		$widgetEl.find( ".widget-dynamic-content" ).html( data );
+
+		var callback = $widgetEl.data( "ajaxCallback" );
+		if ( callback.length ) {
+			window[ callback ]();
+		}
 	};
 
 	onWidgetContentFetchError = function( $widgetEl ){
