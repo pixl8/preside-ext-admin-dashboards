@@ -114,7 +114,7 @@ component {
 				, title            = savedWidget.title
 				, configInstanceId = savedWidget.instance_id
 				, contextData      = isJSON( savedWidget.config ) ? deserializeJSON( savedWidget.config ) : {}
-				, ajax             = false
+				, ajax             = true
 				, column           = savedWidget.column <= columns ? savedWidget.column : 1
 				, slot             = savedWidget.slot
 			};
@@ -147,18 +147,29 @@ component {
 	) {
 		var instanceId             = "dashboard-widget-" & LCase( Hash( arguments.dashboardId & arguments.widgetId & SerializeJson( arguments.contextData ) ) );
 		var menuViewlet            = "admin.admindashboards.widget.#arguments.widgetId#.additionalMenu";
+		var ajaxCallbackViewlet    = "admin.admindashboards.widget.#arguments.widgetId#.ajaxCallback";
+		var ajaxIncludesViewlet    = "admin.admindashboards.widget.#arguments.widgetId#.ajaxIncludes";
 		var additionalMenu         = "";
+		var ajaxCallback           = "";
 		var content                = "";
 		var userGeneratedDashboard = _isUserGeneratedDashboard( arguments.dashboardId );
 		var canEditDashboard       = $helpers.isTrue( arguments.contextData[ "dashboard.widget.data.canEditDashboard" ] ?: "" );
 
+		var viewletArgs         = StructCopy( arguments );
+		viewletArgs.contextData = _getContextDataFromRequest( arguments.contextData );
+
 		if ( $getColdbox().viewletExists( menuViewlet ) ) {
-			var args         = StructCopy( arguments );
-			args.contextData = _getContextDataFromRequest( arguments.contextData );
-			additionalMenu  &= $renderViewlet( event=menuViewlet, args=args );
+			additionalMenu  &= $renderViewlet( event=menuViewlet, args=viewletArgs );
 		}
 
-		if ( !arguments.ajax ) {
+		if ( arguments.ajax ) {
+			if ( $getColdbox().viewletExists( ajaxCallbackViewlet ) ) {
+				ajaxCallback = $renderViewlet( event=ajaxCallbackViewlet, args=viewletArgs );
+			}
+			if ( $getColdbox().viewletExists( ajaxIncludesViewlet ) ) {
+				$renderViewlet( event=ajaxIncludesViewlet, args=viewletArgs );
+			}
+		} else {
 			content = renderWidgetContent(
 				  dashboardId      = arguments.dashboardId
 				, widgetId         = arguments.widgetId
@@ -176,6 +187,7 @@ component {
 			, columnSize             = arguments.columnSize
 			, contextData            = arguments.contextData
 			, ajax                   = arguments.ajax
+			, ajaxCallback           = ajaxCallback
 			, instanceId             = instanceId
 			, configInstanceId       = arguments.configInstanceId
 			, dashboardId            = arguments.dashboardId
@@ -189,9 +201,11 @@ component {
 
 	public string function renderWidgetContent( required string dashboardId, required string widgetId, required string instanceId, required string configInstanceId, required struct requestData ) {
 		return $renderViewlet( event="admin.admindashboards.widget.#widgetId#.render", args={
-			  dashboardId = arguments.dashboardId
-			, config      = getWidgetConfiguration( arguments.dashboardId, arguments.widgetId, arguments.configInstanceId )
-			, contextData = _getContextDataFromRequest( arguments.requestData )
+			  dashboardId      = arguments.dashboardId
+			, instanceId       = arguments.instanceId
+			, configInstanceId = arguments.configInstanceId
+			, config           = getWidgetConfiguration( arguments.dashboardId, arguments.widgetId, arguments.configInstanceId )
+			, contextData      = _getContextDataFromRequest( arguments.requestData )
 		} );
 	}
 
