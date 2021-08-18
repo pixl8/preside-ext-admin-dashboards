@@ -486,19 +486,17 @@ component {
 		}
 
 		for( var id in ids ) {
-			//if ( _isWidgetEnabled( id ) ) {
-				widgets[ id ] = {
-					  id                 = id
-					, configForm         = _getFormNameByConvention( id )
-					, viewlet            = _getViewletEventByConvention( id )
-					, placeholderViewlet = _getPlaceholderViewletEventByConvention( id )
-					, icon               = _getIconByConvention( id )
-					, title              = _getTitleByConvention( id )
-					, description        = _getDescriptionByConvention( id )
-					, siteTemplates      = _mergeSiteTemplates( siteTemplateMap[id] )
-					, categories         = _getWidgetCategoriesFromForm( id )
-				};
-			//}
+			widgets[ id ] = {
+				  id                 = id
+				, configForm         = _getFormNameByConvention( id )
+				, viewlet            = _getViewletEventByConvention( id )
+				, placeholderViewlet = _getPlaceholderViewletEventByConvention( id )
+				, icon               = _getIconByConvention( id )
+				, title              = _getTitleByConvention( id )
+				, description        = _getDescriptionByConvention( id )
+				, siteTemplates      = _mergeSiteTemplates( siteTemplateMap[id] )
+				, categories         = _getWidgetCategoriesFromForm( id )
+			};
 		}
 
 		_setWidgets( widgets );
