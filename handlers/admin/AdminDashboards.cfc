@@ -120,8 +120,8 @@ component extends="preside.system.base.AdminHandler" {
 	}
 
 	public function deleteWidget( event, rc, prc, args={} ) {
-		dashboardId = args.dashboardId ?: ( rc.dashboardId ?: "" );
-		instanceId  = args.instanceId  ?: ( rc.instanceId  ?: "" );
+		var dashboardId = args.dashboardId ?: ( rc.dashboardId ?: "" );
+		var instanceId  = args.instanceId  ?: ( rc.instanceId  ?: "" );
 
 		widgetService.deleteWidget(
 			  dashboardId = dashboardId
