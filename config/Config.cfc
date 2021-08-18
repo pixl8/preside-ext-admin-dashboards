@@ -18,8 +18,14 @@ component {
 	private void function _setupPermissionsAndRoles( required struct settings ) {
 		settings.adminPermissions.adminDashboards = [ "navigate", "read", "add", "edit", "clone", "delete" ];
 
-		settings.adminRoles.sysadmin.append( "adminDashboards.*" );
-		settings.adminRoles.contentadmin.append( "adminDashboards.*" );
-		settings.adminRoles.contenteditor.append( "adminDashboards.*" );
+		if ( IsArray( settings.adminRoles.sysadmin ?: "" ) ) {
+			ArrayAppend( settings.adminRoles.sysadmin, "adminDashboards.*" );
+		}
+		if ( IsArray( settings.adminRoles.contentadmin ?: "" ) ) {
+			ArrayAppend( settings.adminRoles.contentadmin, "adminDashboards.*" );
+		}
+		if ( IsArray( settings.adminRoles.contenteditor ?: "" ) ) {
+			ArrayAppend( settings.adminRoles.contenteditor, "adminDashboards.*" );
+		}
 	}
 }
