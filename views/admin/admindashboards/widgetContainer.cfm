@@ -17,9 +17,10 @@
 <cfparam name="args.userGeneratedDashboard" default="false" />
 
 <cfscript>
-	editModalTitle = translateResource( uri="admindashboards:configure.widget.dialog.title", data=[ args.title ] );
-	configureTitle = translateResource( uri="admindashboards:configure.widget.title" );
-	deletePrompt   = translateResource( uri="admindashboards:delete.widget.confirmation" );
+	editModalTitle  = translateResource( uri="admindashboards:configure.widget.dialog.title", data=[ args.title ] );
+	configureTitle  = translateResource( uri="admindashboards:configure.widget.title" );
+	fullscreenTitle = translateResource( uri="admindashboards:fullscreen.widget.title" );
+	deletePrompt    = translateResource( uri="admindashboards:delete.widget.confirmation" );
 
 	event.includeData( { "#args.instanceId#"=args.contextData } );
 </cfscript>
@@ -45,6 +46,7 @@
 				</h4>
 				<div class="widget-toolbar">
 					#args.additionalMenu#
+					<a class="widget-fullscreen-link orange" href="##" title="#htmlEditFormat( fullscreenTitle )#"><i class="fa fa-fw fa-expand"></i></a>
 					<cfif args.hasConfig>
 						<a class="widget-configuration-link grey" href="##" title="#htmlEditFormat( configureTitle )#"><i class="fa fa-fw fa-cog"></i></a>
 					</cfif>
@@ -56,7 +58,7 @@
 
 			<div class="widget-body">
 				<div class="widget-main padding-20">
-					<cfif args.description.len()>
+					<cfif args.description.len() && !args.userGeneratedDashboard>
 						<p><em class="grey">#args.description#</em></p>
 						<hr>
 					</cfif>

@@ -8,19 +8,17 @@
 
 <cfoutput>
 
-	<ul class="list-unstyled page-type-list">
+	<ul class="list-unstyled admin-dashboard-widget-picker">
 		<cfloop query="widgets">
 			<cfset widgetLink = baseLink.replace( "{widgetid}", widgets.id ) />
-			<cfset widgetIcon = findNoCase(" ", widgets.icon) gt 0 ? widgets.icon : "fa #widgets.icon#">
+			<cfset widgetIcon = findNoCase(" ", widgets.icon) gt 0 ? widgets.icon : "#widgets.icon#">
 
-			<li class="page-type">
-				<h3 class="page-type-title">
-					<a href="#widgetLink#">
-						<i class="#widgetIcon# fa fa-lg"></i>
-						#widgets.title#
-					</a>
-				</h3>
-				<p>#widgets.description#</p>
+			<li>
+				<a href="#widgetLink#">
+					<i class="fa fa-lg #widgetIcon#"></i>
+					<h4>#widgets.title#</h4>
+					<p>#widgets.description#</p>
+				</a>
 			</li>
 		</cfloop>
 	</ul>
