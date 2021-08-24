@@ -85,6 +85,12 @@
 		return false;
 	} );
 
+	$dashBoardContainer.on( "click", ".admin-dashboard-widget .widget-fullscreen-link", function(){
+		$( this ).closest( ".widget-box" ).toggleClass( "fullscreen" );
+
+		return false;
+	} );
+
 	$dashBoardContainer.on( "click", ".admin-dashboard-widget .widget-delete-link", function( e ){
 		e.preventDefault();
 
