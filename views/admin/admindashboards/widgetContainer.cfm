@@ -58,7 +58,7 @@
 
 			<div class="widget-body">
 				<div class="widget-main padding-20">
-					<cfif args.description.len()>
+					<cfif args.description.len() && !args.userGeneratedDashboard>
 						<p><em class="grey">#args.description#</em></p>
 						<hr>
 					</cfif>
