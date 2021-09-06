@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form i18nBaseUri="admin.admindashboards.widget.dashboardDataFilter:">
+	<tab id="default">
+		<fieldset id="default" sortorder="10">
+			<field name="applies_to"  sortorder="10" control="filterWidgetObjectPicker" required="true" />
+			<field name="filter"      sortorder="20" control="filterWidgetFilterPicker" quickadd="true" quickedit="true" filterBy="applies_to,applies_to" filterByField="filterObject,filter_object" />
+			<field name="grid_fields" sortorder="30" control="filterWidgetObjectFieldPicker" filterBy="applies_to" filterByField="object" sortable="true" />
+		</fieldset>
+	</tab>
+</form>
