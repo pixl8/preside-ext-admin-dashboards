@@ -1,6 +1,7 @@
 component extends="preside.system.base.AdminHandler" {
 
-	property name="datamanagerService" inject="datamanagerService";
+	property name="datamanagerService"   inject="datamanagerService";
+	property name="presideObjectService" inject="presideObjectService";
 
 	private string function render( event, rc, prc, args={} ) {
 		var objectName  = args.config.applies_to ?: "";
@@ -10,7 +11,12 @@ component extends="preside.system.base.AdminHandler" {
 			return "";
 		}
 
-		var gridFields = listToArray( args.config.grid_fields ?: "" );
+		var gridFields     = listToArray( args.config.grid_fields ?: "" );
+		var sortableFields = presideObjectService.getObjectAttribute(
+			  objectName    = objectName
+			, attributeName = "datamanagerSortableFields"
+			, defaultValue  = ""
+		);
 
 		if ( !len( gridFields ) ) {
 			gridFields = datamanagerService.defaultGridFields( objectName );
@@ -27,6 +33,7 @@ component extends="preside.system.base.AdminHandler" {
 			, allowFilter       = false
 			, datasourceUrl     = event.buildAdminLink( linkTo="ajaxProxy", queryString="action=admindashboards.widget.DashboardDataFilter.getFilterResultsForAjaxDatatables&objectName=#objectName#&gridFields=#arrayToList( gridFields )#&sSavedFilterExpressions=#savedFilter#" )
 			, gridFields        = gridFields
+			, sortableFields    = listToArray( sortableFields )
 			, filterContextData = { widgetInstanceId=args.instanceId ?: "" }
 		} );
 	}
