@@ -21,12 +21,13 @@ component extends="preside.system.base.AdminHandler" {
 		});
 
 		return renderView( view="/admin/datamanager/_objectDataTable", args={
-			  objectName      = objectName
-			, useMultiActions = false
-			, allowSearch     = false
-			, allowFilter     = false
-			, datasourceUrl   = event.buildAdminLink( linkTo="ajaxProxy", queryString="action=admindashboards.widget.DashboardDataFilter.getFilterResultsForAjaxDatatables&objectName=#objectName#&gridFields=#arrayToList( gridFields )#&sSavedFilterExpressions=#savedFilter#" )
-			, gridFields      = gridFields
+			  objectName        = objectName
+			, useMultiActions   = false
+			, allowSearch       = false
+			, allowFilter       = false
+			, datasourceUrl     = event.buildAdminLink( linkTo="ajaxProxy", queryString="action=admindashboards.widget.DashboardDataFilter.getFilterResultsForAjaxDatatables&objectName=#objectName#&gridFields=#arrayToList( gridFields )#&sSavedFilterExpressions=#savedFilter#" )
+			, gridFields        = gridFields
+			, filterContextData = { widgetInstanceId=args.instanceId ?: "" }
 		} );
 	}
 
