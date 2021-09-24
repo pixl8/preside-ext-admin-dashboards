@@ -6,6 +6,7 @@ component {
 
 		_setupEnums( settings );
 		_setupPermissionsAndRoles( settings );
+		_setupInterceptors( conf );
 
 		settings.adminConfigurationMenuItems.append( "adminDashboards" );
 	}
@@ -27,5 +28,11 @@ component {
 		if ( IsArray( settings.adminRoles.contenteditor ?: "" ) ) {
 			ArrayAppend( settings.adminRoles.contenteditor, "adminDashboards.*" );
 		}
+	}
+
+// PRIVATE HELPERS
+	private void function _setupInterceptors( conf ) {
+		conf.interceptorSettings.customInterceptionPoints = conf.interceptorSettings.customInterceptionPoints ?: [];
+		conf.interceptorSettings.customInterceptionPoints.append( "onRenderAdminWidgetContainer" );
 	}
 }

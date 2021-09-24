@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.0.7
+
+* Add interception point for rendering dashboard widgets
 
 ## v2.0.6
 
