@@ -98,7 +98,7 @@ component {
 			);
 		}
 
-		return $renderViewlet( event="admin.admindashboards.widgetContainer", args={
+		var args = {
 			  title            = $translateResource( uri="admin.admindashboards.widget.#widgetId#:title"      , defaultValue=widgetId )
 			, icon             = $translateResource( uri="admin.admindashboards.widget.#widgetId#:iconClass"  , defaultValue="" )
 			, description      = $translateResource( uri="admin.admindashboards.widget.#widgetId#:description", defaultValue="" )
@@ -111,7 +111,11 @@ component {
 			, hasConfig        = widgetHasConfigForm( arguments.widgetId )
 			, additionalMenu   = additionalMenu
 			, content          = content
-		} );
+		};
+
+		$announceInterception( "onRenderAdminWidgetContainer", args );
+
+		return $renderViewlet( event="admin.admindashboards.widgetContainer", args=args );
 	}
 
 	public string function renderWidgetContent( required string dashboardId, required string widgetId, required string instanceId, required string configInstanceId, required struct requestData ) {
