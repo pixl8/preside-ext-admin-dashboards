@@ -1,5 +1,14 @@
 # Changelog
 
+## v3.0.0
+
+Experimental release giving two new features
+
+* User configurable and sharable dashboards
+* New widget to share a user configurable datatable in a dashboard
+
+Further notes and documentation on these super cool features to come in a stable point release.
+
 ## v2.0.7
 
 * Add interception point for rendering dashboard widgets
