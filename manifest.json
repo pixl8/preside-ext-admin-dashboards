@@ -3,4 +3,7 @@
 	, "title"     : "Admin Dashboards"
 	, "author"    : "Pixl8 Group"
 	, "version"   : "$VERSION_NUMBER"
+	, "dependsOn" : [
+		  "preside-ext-chart-js"
+	]
 }

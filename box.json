@@ -17,5 +17,13 @@
         ".gitignore",
         ".twgit_features_subject",
         "jmimemagic.log"
-    ]
+    ],
+	"preside":{
+		"dependencies":{
+			"preside-ext-chart-js":{
+				"installVersion":"^0.2.2",
+				"minVersion":"0.2.2"
+			}
+		}
+	}
 }
