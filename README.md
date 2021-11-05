@@ -6,7 +6,9 @@ This is an extension for PresideCMS that provides APIs and a methodolgy for crea
 
 Install with:
 
-```box install preside-ext-admin-dashboards```
+```
+box install preside-ext-admin-dashboards
+```
 
 ## User stories
 
@@ -15,6 +17,13 @@ The following user stories describe the functionality of this extension:
 * As an admin user, I want to be able to view a dashboard with multiple widgets so that I can get an overview of a particular data scenario(s)
 * As an admin administrator, I want to be able to limit access to particular dashboard widgets so that I can protect sensitive data and functionality
 * As an admin user, I want to be able to configure widgets and have my configuration persisted so that I can customize my view of a dashboard
+
+### 3.0.0 Experimental
+
+Version 3.0.0 release introduces some new undocumented features that will be fully released in a point release soon. The stories are:
+
+* As an admin user, I want to be able to create and share my own dashboards in order to create user and business specific dashboard views
+* As an admin user, I want to be able to insert a datatable widget into dashboards, configuring the source object, fields shown and optional filters on the data
 
 ## Rendering a dashboard
 
