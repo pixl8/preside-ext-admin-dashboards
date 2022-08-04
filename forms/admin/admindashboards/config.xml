@@ -2,7 +2,7 @@
 <form>
 	<tab id="default">
 		<fieldset id="widget_config" sortorder="1">
-			<field name="widget_title" control="textinput" required="true" label="admindashboards:configform.widget_title.label" />
+			<field name="widget_title" control="textinput" required="true" maxlength="50" label="admindashboards:configform.widget_title.label" />
 		</fieldset>
 	</tab>
 </form>
