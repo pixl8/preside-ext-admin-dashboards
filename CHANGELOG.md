@@ -1,5 +1,9 @@
 # Changelog
 
+## v3.0.1
+
+* Limit dynamic widget titles to 50 chars
+
 ## v3.0.0
 
 Experimental release giving two new features
