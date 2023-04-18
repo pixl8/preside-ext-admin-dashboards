@@ -41,20 +41,23 @@ component extends="preside.system.base.AdminHandler" {
 	}
 
 	private void function preFetchRecordsForGridListing( event, rc, prc, args={} ) {
-		var adminUserId     = event.getAdminUserId();
-		var adminUserGroups = _getAdminUserGroups( adminUserId );
+		var adminUserId = event.getAdminUserId();
 
-		args.extraFilters = args.extraFilters ?: [];
-		args.extraFilters.append( {
-			  filter       = "view_access = 'public'
-					or admin_dashboard.owner = :adminUserId
-					or ( view_access = 'specific' and ( view_users.id = :adminUserId or view_groups.id in ( :adminUserGroups ) ) )
-					or ( edit_access = 'specific' and ( edit_users.id = :adminUserId or edit_groups.id in ( :adminUserGroups ) ) )"
-			, filterParams = {
-				  adminUserId     = { type="varchar", value=adminUserId }
-				, adminUserGroups = { type="varchar", value=adminUserGroups, list=true }
-			  }
-		} );
+		if ( !dashboardService.hasSysAdminRole( adminUserId ) ) {
+			var adminUserGroups = _getAdminUserGroups( adminUserId );
+
+			args.extraFilters = args.extraFilters ?: [];
+			args.extraFilters.append( {
+				  filter       = "view_access = 'public'
+						or admin_dashboard.owner = :adminUserId
+						or ( view_access = 'specific' and ( view_users.id = :adminUserId or view_groups.id in ( :adminUserGroups ) ) )
+						or ( edit_access = 'specific' and ( edit_users.id = :adminUserId or edit_groups.id in ( :adminUserGroups ) ) )"
+				, filterParams = {
+					  adminUserId     = { type="varchar", value=adminUserId }
+					, adminUserGroups = { type="varchar", value=adminUserGroups, list=true }
+				  }
+			} );
+		}
 	}
 
 	private void function postFetchRecordsForGridListing( event, rc, prc, args={} ) {
@@ -68,14 +71,16 @@ component extends="preside.system.base.AdminHandler" {
 		var canDelete       = [];
 		var canViewThis     = false;
 		var canEditThis     = false;
+		var isSysAdmin      = dashboardService.hasSysAdminRole( adminUserId );
+
 
 		for( var r in records ){
 			canEditThis = r.owner_id == adminUserId || ( r.edit_access == "specific" && ( listFind( r.edit_users_list, adminUserId ) || _listFindOneOf( r.edit_groups_list, adminUserGroups ) ) );
 			canViewThis = canEditThis || r.view_access == "public" || ( r.view_access == "specific" && ( listFind( r.view_users_list, adminUserId ) || _listFindOneOf( r.view_groups_list, adminUserGroups ) ) )
-			canEdit.append( canEditThis );
-			canView.append( canViewThis );
-			canShare.append( r.owner_id == adminUserId );
-			canDelete.append( r.owner_id == adminUserId );
+			canEdit.append(   isSysAdmin || canEditThis );
+			canView.append(   isSysAdmin || canViewThis );
+			canShare.append(  isSysAdmin || r.owner_id == adminUserId );
+			canDelete.append( isSysAdmin || r.owner_id == adminUserId );
 		}
 
 		QueryAddColumn( records, "canView", canView );
