@@ -14,7 +14,7 @@ component {
 
 // PUBLIC API METHODS
 	public boolean function userCanViewDashboard( required string dashboardId, string adminUserId=$getAdminLoggedInUserId() ) {
-		if ( hasSysAdminRole( arguments.adminUserId ) ) {
+		if ( hasFullAccess( arguments.adminUserId ) ) {
 			return true;
 		}
 
@@ -36,7 +36,7 @@ component {
 	}
 
 	public boolean function userCanEditDashboard( required string dashboardId, string adminUserId=$getAdminLoggedInUserId() ) {
-		if ( hasSysAdminRole( arguments.adminUserId ) ) {
+		if ( hasFullAccess( arguments.adminUserId ) ) {
 			return true;
 		}
 
@@ -51,7 +51,7 @@ component {
 	}
 
 	public boolean function userCanShareDashboard( required string dashboardId, string adminUserId=$getAdminLoggedInUserId() ) {
-		if ( hasSysAdminRole( arguments.adminUserId ) ) {
+		if ( hasFullAccess( arguments.adminUserId ) ) {
 			return true;
 		}
 
@@ -61,7 +61,7 @@ component {
 	}
 
 	public boolean function userCanDeleteDashboard( required string dashboardId, string adminUserId=$getAdminLoggedInUserId() ) {
-		if ( hasSysAdminRole( arguments.adminUserId ) ) {
+		if ( hasFullAccess( arguments.adminUserId ) ) {
 			return true;
 		}
 
@@ -70,7 +70,7 @@ component {
 		);
 	}
 
-	public boolean function hasSysAdminRole( required string adminUserId ) {
+	public boolean function hasFullAccess( required string adminUserId ) {
 		var adminUserGroups = _getAdminUserGroups( arguments.adminUserId );
 
 		for ( var userGroup in adminUserGroups ) {

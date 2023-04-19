@@ -43,7 +43,7 @@ component extends="preside.system.base.AdminHandler" {
 	private void function preFetchRecordsForGridListing( event, rc, prc, args={} ) {
 		var adminUserId = event.getAdminUserId();
 
-		if ( !dashboardService.hasSysAdminRole( adminUserId ) ) {
+		if ( !dashboardService.hasFullAccess( adminUserId ) ) {
 			var adminUserGroups = _getAdminUserGroups( adminUserId );
 
 			args.extraFilters = args.extraFilters ?: [];
@@ -71,16 +71,16 @@ component extends="preside.system.base.AdminHandler" {
 		var canDelete       = [];
 		var canViewThis     = false;
 		var canEditThis     = false;
-		var isSysAdmin      = dashboardService.hasSysAdminRole( adminUserId );
+		var hasFullAccess   = dashboardService.hasFullAccess( adminUserId );
 
 
 		for( var r in records ){
 			canEditThis = r.owner_id == adminUserId || ( r.edit_access == "specific" && ( listFind( r.edit_users_list, adminUserId ) || _listFindOneOf( r.edit_groups_list, adminUserGroups ) ) );
 			canViewThis = canEditThis || r.view_access == "public" || ( r.view_access == "specific" && ( listFind( r.view_users_list, adminUserId ) || _listFindOneOf( r.view_groups_list, adminUserGroups ) ) )
-			canEdit.append(   isSysAdmin || canEditThis );
-			canView.append(   isSysAdmin || canViewThis );
-			canShare.append(  isSysAdmin || r.owner_id == adminUserId );
-			canDelete.append( isSysAdmin || r.owner_id == adminUserId );
+			canEdit.append(   hasFullAccess || canEditThis );
+			canView.append(   hasFullAccess || canViewThis );
+			canShare.append(  hasFullAccess || r.owner_id == adminUserId );
+			canDelete.append( hasFullAccess || r.owner_id == adminUserId );
 		}
 
 		QueryAddColumn( records, "canView", canView );
