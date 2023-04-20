@@ -3,6 +3,7 @@
  * @singleton      true
  */
 component {
+	property name="permissionService" inject="PermissionService";
 
 // CONSTRUCTOR
 	/**
@@ -14,6 +15,10 @@ component {
 
 // PUBLIC API METHODS
 	public boolean function userCanViewDashboard( required string dashboardId, string adminUserId=$getAdminLoggedInUserId() ) {
+		if ( hasFullAccess( arguments.adminUserId ) ) {
+			return true;
+		}
+
 		var adminUserGroups = _getAdminUserGroups( arguments.adminUserId );
 
 		return $getPresideObject( "admin_dashboard" ).dataExists(
@@ -32,6 +37,10 @@ component {
 	}
 
 	public boolean function userCanEditDashboard( required string dashboardId, string adminUserId=$getAdminLoggedInUserId() ) {
+		if ( hasFullAccess( arguments.adminUserId ) ) {
+			return true;
+		}
+
 		return $getPresideObject( "admin_dashboard" ).dataExists(
 			  filter       = { "admin_dashboard.id"=arguments.dashboardId }
 			, extraFilters = [ {
@@ -43,15 +52,27 @@ component {
 	}
 
 	public boolean function userCanShareDashboard( required string dashboardId, string adminUserId=$getAdminLoggedInUserId() ) {
+		if ( hasFullAccess( arguments.adminUserId ) ) {
+			return true;
+		}
+
 		return $getPresideObject( "admin_dashboard" ).dataExists(
 			filter = { id=arguments.dashboardId, owner=arguments.adminUserId }
 		);
 	}
 
 	public boolean function userCanDeleteDashboard( required string dashboardId, string adminUserId=$getAdminLoggedInUserId() ) {
+		if ( hasFullAccess( arguments.adminUserId ) ) {
+			return true;
+		}
+
 		return $getPresideObject( "admin_dashboard" ).dataExists(
 			filter = { id=arguments.dashboardId, owner=arguments.adminUserId }
 		);
+	}
+
+	public boolean function hasFullAccess( required string adminUserId ) {
+		return permissionService.userHasAssignedRoles( userId=arguments.adminUserId, roles=[ "sysadmin" ] );
 	}
 
 // PRIVATE HELPERS
@@ -61,7 +82,6 @@ component {
 			, selectFields = [ "id" ]
 		).valueList( "id" );
 	}
-
 
 // GETTERS AND SETTERS
 
