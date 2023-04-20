@@ -3,6 +3,7 @@
  * @singleton      true
  */
 component {
+	property name="permissionService" inject="PermissionService";
 
 // CONSTRUCTOR
 	/**
@@ -18,7 +19,7 @@ component {
 			return true;
 		}
 
-		var adminUserGroups = _getAdminUserGroups( arguments.adminUserId ).valueList( "id" );
+		var adminUserGroups = _getAdminUserGroups( arguments.adminUserId );
 
 		return $getPresideObject( "admin_dashboard" ).dataExists(
 			  filter       = { "admin_dashboard.id"=arguments.dashboardId }
@@ -71,23 +72,17 @@ component {
 	}
 
 	public boolean function hasFullAccess( required string adminUserId ) {
-		var adminUserGroups = _getAdminUserGroups( arguments.adminUserId );
-
-		for ( var userGroup in adminUserGroups ) {
-			if ( ListFind( userGroup.roles, "sysadmin" ) ) {
-				return true;
-			}
-		}
-		return false;
+		return permissionService.userHasAssignedRoles( userId=arguments.adminUserId, roles=[ "sysadmin" ] );
 	}
 
 // PRIVATE HELPERS
-	private query function _getAdminUserGroups( required string adminUserId ) {
+	private string function _getAdminUserGroups( required string adminUserId ) {
 		return $getPresideObject( "security_group" ).selectData(
 			  filter       = { "users.id"=arguments.adminUserId }
-			, selectFields = [ "id", "roles" ]
-		);
+			, selectFields = [ "id" ]
+		).valueList( "id" );
 	}
+
 // GETTERS AND SETTERS
 
 }
