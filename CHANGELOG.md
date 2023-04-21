@@ -1,5 +1,9 @@
 # Changelog
 
+## v3.0.2
+
+* Fix issue where super users could not delete dashboards owned by other users
+
 ## v3.0.1
 
 * Limit dynamic widget titles to 50 chars
