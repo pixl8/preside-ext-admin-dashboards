@@ -1,7 +1,8 @@
 component extends="preside.system.base.AdminHandler" {
 
-	property name="widgetService" inject="adminDashboardWidgetService";
-	property name="siteService"   inject="siteService";
+	property name="widgetService"  inject="adminDashboardWidgetService";
+	property name="siteService"    inject="siteService";
+	property name="featureService" inject="featureService";
 
 	public void function renderWidgetContent( event, rc, prc ) {
 		var widgetId         = rc.widgetId         ?: "";
@@ -163,6 +164,11 @@ component extends="preside.system.base.AdminHandler" {
 
 			if ( widget.siteTemplates == "*" || ListFindNoCase( widget.siteTemplates, activeSiteTemplate ) ) {
 				if ( ! widgetService.isUserDashboardWidget( widget.id ) ) {
+					continue;
+				}
+
+				var widgetFeature = featureService.getFeatureForWidget( widget.id );
+				if ( len( trim( widgetFeature ) ) && !featureService.isFeatureEnabled( feature=widgetFeature, siteTemplate=activeSiteTemplate ) ) {
 					continue;
 				}
 
