@@ -1,8 +1,7 @@
 component extends="preside.system.base.AdminHandler" {
 
-	property name="widgetService"  inject="adminDashboardWidgetService";
-	property name="siteService"    inject="siteService";
-	property name="featureService" inject="featureService";
+	property name="widgetService" inject="adminDashboardWidgetService";
+	property name="siteService"   inject="siteService";
 
 	public void function renderWidgetContent( event, rc, prc ) {
 		var widgetId         = rc.widgetId         ?: "";
@@ -167,8 +166,7 @@ component extends="preside.system.base.AdminHandler" {
 					continue;
 				}
 
-				var widgetFeature = featureService.getFeatureForWidget( widget.id );
-				if ( len( trim( widgetFeature ) ) && !featureService.isFeatureEnabled( feature=widgetFeature, siteTemplate=activeSiteTemplate ) ) {
+				if ( !widgetService.isEnabled( widget.id ) ) {
 					continue;
 				}
 
