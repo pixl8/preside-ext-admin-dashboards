@@ -343,6 +343,22 @@ component {
 		return $helpers.isTrue( result ?: "" );
 	}
 
+	public boolean function isEnabled( required string widgetId ) {
+		var coldbox        = $getColdbox();
+		var isEnabledEvent = "admin.admindashboards.widget.#widgetId#.isEnabled";
+		var result         = true;
+
+		if ( coldbox.handlerExists( isEnabledEvent ) ) {
+			result = coldbox.runEvent(
+				  event         = isEnabledEvent
+				, private       = true
+				, prePostExempt = true
+			);
+		}
+
+		return $helpers.isTrue( result ?: "" );
+	}
+
 	public numeric function nextWidgetSlot( required string dashboardId, required numeric column ) {
 		var currentMax = $getPresideObject( "admin_dashboard_widget" ).selectData(
 			  filter       = { dashboard=arguments.dashboardId, column=arguments.column }
