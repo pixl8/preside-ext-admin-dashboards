@@ -1,5 +1,9 @@
 # Changelog
 
+## v3.0.3
+
+* Fix inability to exclude dashboard widget by some criteria (i.e. when feature disabled)
+
 ## v3.0.2
 
 * Fix issue where super users could not delete dashboards owned by other users
