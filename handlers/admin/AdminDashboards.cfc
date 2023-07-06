@@ -162,7 +162,7 @@ component extends="preside.system.base.AdminHandler" {
 			var widget = Duplicate( unsortedOrTranslated[ id ] );
 
 			if ( widget.siteTemplates == "*" || ListFindNoCase( widget.siteTemplates, activeSiteTemplate ) ) {
-				if ( ! widgetService.isUserDashboardWidget( widget.id ) ) {
+				if ( !widgetService.isEnabled( widget.id ) || !widgetService.isUserDashboardWidget( widget.id ) ) {
 					continue;
 				}
 
