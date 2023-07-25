@@ -5,10 +5,12 @@
 </cfscript>
 
 <cfoutput>
-	<li>
-		<a href="#event.buildAdminLink( objectName=objectName )#">
-			<i class="fa fa-fw #iconClass#"></i>
-			#linkTitle#
-		</a>
-	</li>
+	<cfif hasCmsPermission( "adminDashboards.navigate" )>
+		<li>
+			<a href="#event.buildAdminLink( objectName=objectName )#">
+				<i class="fa fa-fw #iconClass#"></i>
+				#linkTitle#
+			</a>
+		</li>
+	</cfif>
 </cfoutput>

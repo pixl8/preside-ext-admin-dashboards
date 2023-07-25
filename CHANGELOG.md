@@ -1,5 +1,9 @@
 # Changelog
 
+## v3.0.4
+
+* Fix minor admin permission checking issues
+
 ## v3.0.3
 
 * Fix inability to exclude dashboard widget by some criteria (i.e. when feature disabled)
