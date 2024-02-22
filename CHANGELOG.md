@@ -1,5 +1,9 @@
 # Changelog
 
+## v3.0.5
+
+* Update build version generator
+
 ## v3.0.4
 
 * Fix minor admin permission checking issues
