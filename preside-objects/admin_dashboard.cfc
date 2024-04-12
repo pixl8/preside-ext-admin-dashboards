@@ -6,6 +6,7 @@
  * @dataManagerDefaultSortOrder  name
  * @dataManagerHiddenGridFields  owner_id,view_groups_list,view_users_list,edit_groups_list,edit_users_list
  * @dataManagerAllowedOperations navigate,read,add,edit,clone,delete
+ * @dataManagerSearchFields      name,description,owner
  */
 
 component  {
