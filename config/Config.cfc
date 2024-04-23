@@ -17,17 +17,11 @@ component {
 	}
 
 	private void function _setupPermissionsAndRoles( required struct settings ) {
-		settings.adminPermissions.adminDashboards = [ "navigate", "read", "add", "edit", "clone", "delete" ];
+		settings.adminPermissions.adminDashboards = [ "navigate", "read", "add", "edit", "clone", "delete", "fullaccess" ];
 
-		if ( IsArray( settings.adminRoles.sysadmin ?: "" ) ) {
-			ArrayAppend( settings.adminRoles.sysadmin, "adminDashboards.*" );
-		}
-		if ( IsArray( settings.adminRoles.contentadmin ?: "" ) ) {
-			ArrayAppend( settings.adminRoles.contentadmin, "adminDashboards.*" );
-		}
-		if ( IsArray( settings.adminRoles.contenteditor ?: "" ) ) {
-			ArrayAppend( settings.adminRoles.contenteditor, "adminDashboards.*" );
-		}
+		settings.adminRoles.dashBoardSuperAdmin = [ "adminDashboards.*" ];
+		settings.adminRoles.dashBoardAdmin      = [ "adminDashboards.*", "!adminDashboards.fullaccess" ];
+		settings.adminRoles.dashBoardUser       = [ "adminDashboards.navigate", "adminDashboards.read" ];
 	}
 
 // PRIVATE HELPERS

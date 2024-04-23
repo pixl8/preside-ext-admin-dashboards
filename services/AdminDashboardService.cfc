@@ -72,7 +72,7 @@ component {
 	}
 
 	public boolean function hasFullAccess( required string adminUserId ) {
-		return permissionService.userHasAssignedRoles( userId=arguments.adminUserId, roles=[ "sysadmin" ] );
+		return permissionService.hasPermission( permissionKey="adminDashboards.fullaccess", userId=arguments.adminUserId );
 	}
 
 // PRIVATE HELPERS
