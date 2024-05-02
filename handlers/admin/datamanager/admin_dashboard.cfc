@@ -69,24 +69,27 @@ component extends="preside.system.base.AdminHandler" {
 		var canEdit         = [];
 		var canShare        = [];
 		var canDelete       = [];
+		var canClone        = [];
 		var canViewThis     = false;
 		var canEditThis     = false;
 		var hasFullAccess   = dashboardService.hasFullAccess( adminUserId );
 
 
 		for( var r in records ){
-			canEditThis = r.owner_id == adminUserId || ( r.edit_access == "specific" && ( listFind( r.edit_users_list, adminUserId ) || _listFindOneOf( r.edit_groups_list, adminUserGroups ) ) );
+			canEditThis = prc.canEdit && ( r.owner_id == adminUserId || ( r.edit_access == "specific" && ( listFind( r.edit_users_list, adminUserId ) || _listFindOneOf( r.edit_groups_list, adminUserGroups ) ) ) );
 			canViewThis = canEditThis || r.view_access == "public" || ( r.view_access == "specific" && ( listFind( r.view_users_list, adminUserId ) || _listFindOneOf( r.view_groups_list, adminUserGroups ) ) )
-			canEdit.append(   hasFullAccess || canEditThis );
-			canView.append(   hasFullAccess || canViewThis );
-			canShare.append(  hasFullAccess || r.owner_id == adminUserId );
-			canDelete.append( hasFullAccess || r.owner_id == adminUserId );
+			ArrayAppend( canEdit  , hasFullAccess || canEditThis );
+			ArrayAppend( canView  , hasFullAccess || canViewThis );
+			ArrayAppend( canShare , hasFullAccess || r.owner_id == adminUserId );
+			ArrayAppend( canDelete, hasFullAccess || ( prc.canDelete && r.owner_id == adminUserId ) );
+			ArrayAppend( canClone , hasFullAccess || ( prc.canClone && canViewThis ) );
 		}
 
 		QueryAddColumn( records, "canView", canView );
 		QueryAddColumn( records, "canEdit", canEdit );
 		QueryAddColumn( records, "canShare", canShare );
 		QueryAddColumn( records, "canDelete", canDelete );
+		QueryAddColumn( records, "canClone", canClone );
 	}
 
 	private array function getRecordActionsForGridListing( event, rc, prc, args={} ) {
@@ -96,7 +99,7 @@ component extends="preside.system.base.AdminHandler" {
 
 		var actions = [];
 
-		if ( isTrue( record.canView ) ) {
+		if ( record.canView ) {
 			actions.append( {
 				  link       = event.buildAdminLink( objectName=objectName, recordid=recordId )
 				, icon       = "fa-eye"
@@ -106,7 +109,7 @@ component extends="preside.system.base.AdminHandler" {
 		} else {
 			actions.append( '<a class="disabled"><i class="fa fa-fw fa-eye light-grey"></i></a>' );
 		}
-		if ( isTrue( record.canEdit ) ) {
+		if ( record.canEdit ) {
 			actions.append( {
 				  link       = event.buildAdminLink( objectName=objectName, recordid=recordId, operation="editRecord" )
 				, icon       = "fa-pencil"
@@ -116,7 +119,7 @@ component extends="preside.system.base.AdminHandler" {
 		} else {
 			actions.append( '<a class="disabled"><i class="fa fa-fw fa-pencil light-grey"></i></a>' );
 		}
-		if ( isTrue( record.canView ) ) {
+		if ( record.canClone ) {
 			actions.append( {
 				  link       = event.buildAdminLink( objectName=objectName, recordid=recordId, operation="cloneRecord" )
 				, icon       = "fa-clone"
@@ -126,7 +129,7 @@ component extends="preside.system.base.AdminHandler" {
 		} else {
 			actions.append( '<a class="disabled"><i class="fa fa-fw fa-clone light-grey"></i></a>' );
 		}
-		if ( isTrue( record.canDelete ) ) {
+		if ( record.canDelete ) {
 			actions.append( {
 				  link       = event.buildAdminLink( objectName=objectName, recordid=recordId, operation="deleteRecordAction" )
 				, icon       = "fa-trash-o"
