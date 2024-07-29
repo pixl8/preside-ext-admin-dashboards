@@ -25,9 +25,9 @@ component  {
 	property name="edit_groups" adminRenderer="ObjectRelatedRecordsList" relationship="many-to-many" relatedTo="security_group" relatedVia="admin_dashboard_edit_group" cloneable=false;
 	property name="edit_users"  adminRenderer="ObjectRelatedRecordsList" relationship="many-to-many" relatedTo="security_user"  relatedVia="admin_dashboard_edit_user"  cloneable=false;
 
-	property name="owner_id"         adminRenderer="none" type="string" formula="${prefix}owner.id";
-	property name="view_groups_list" adminRenderer="none" type="string" formula="group_concat( distinct ${prefix}view_groups.id )";
-	property name="view_users_list"  adminRenderer="none" type="string" formula="group_concat( distinct ${prefix}view_users.id )";
-	property name="edit_groups_list" adminRenderer="none" type="string" formula="group_concat( distinct ${prefix}edit_groups.id )";
-	property name="edit_users_list"  adminRenderer="none" type="string" formula="group_concat( distinct ${prefix}edit_users.id )";
+	property name="owner_id"         adminRenderer="none" type="string" formula="${prefix}owner.id"                                excludeDataExport=true;
+	property name="view_groups_list" adminRenderer="none" type="string" formula="group_concat( distinct ${prefix}view_groups.id )" excludeDataExport=true;
+	property name="view_users_list"  adminRenderer="none" type="string" formula="group_concat( distinct ${prefix}view_users.id )"  excludeDataExport=true;
+	property name="edit_groups_list" adminRenderer="none" type="string" formula="group_concat( distinct ${prefix}edit_groups.id )" excludeDataExport=true;
+	property name="edit_users_list"  adminRenderer="none" type="string" formula="group_concat( distinct ${prefix}edit_users.id )"  excludeDataExport=true;
 }

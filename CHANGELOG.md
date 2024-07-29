@@ -1,5 +1,10 @@
 # Changelog
 
+## v3.0.6
+
+* [DASH-26](https://projects.pixl8.london/browse/DASH-26) - (p1) There is no Granular permissions for Admin Dashboards
+* [DASH-27](https://projects.pixl8.london/browse/DASH-27) - (p1) Infinite load on keyword search on admin dashboard list
+
 ## v3.0.5
 
 * Update build version generator
