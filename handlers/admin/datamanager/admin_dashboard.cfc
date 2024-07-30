@@ -96,11 +96,13 @@ component extends="preside.system.base.AdminHandler" {
 		QueryAddColumn( records, "canDelete", canDelete );
 		QueryAddColumn( records, "canClone" , canClone  );
 
-		QueryDeleteColumn( records, "owner_id"         );
-		QueryDeleteColumn( records, "view_groups_list" );
-		QueryDeleteColumn( records, "view_users_list"  );
-		QueryDeleteColumn( records, "edit_groups_list" );
-		QueryDeleteColumn( records, "edit_users_list"  );
+		if ( StructIsEmpty( rc ) ) {
+			QueryDeleteColumn( records, "owner_id" );
+			QueryDeleteColumn( records, "view_groups_list" );
+			QueryDeleteColumn( records, "view_users_list"  );
+			QueryDeleteColumn( records, "edit_groups_list" );
+			QueryDeleteColumn( records, "edit_users_list"  );
+		}
 	}
 
 	private array function getRecordActionsForGridListing( event, rc, prc, args={} ) {
