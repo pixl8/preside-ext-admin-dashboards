@@ -46,6 +46,7 @@ component extends="preside.system.base.AdminHandler" {
 		if ( !dashboardService.hasFullAccess( adminUserId ) ) {
 			var adminUserGroups = _getAdminUserGroups( adminUserId );
 
+			args.selectFields = args.selectFields ?: [];
 			args.extraFilters = args.extraFilters ?: [];
 			args.extraFilters.append( {
 				  filter       = "view_access = 'public'
