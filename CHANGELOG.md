@@ -1,5 +1,9 @@
 # Changelog
 
+## v3.0.9
+
+* [PR-15](https://github.com/pixl8/preside-ext-admin-dashboards/pull/15) - Dashboard listing 500 error for admin without `Admin dashboard super admin` role
+
 ## v3.0.8
 
 * [PR-14](https://github.com/pixl8/preside-ext-admin-dashboards/pull/14/) Fix issue with dashboard exporting irrelevent data and incorrect permission status
