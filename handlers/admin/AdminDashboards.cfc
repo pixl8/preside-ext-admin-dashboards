@@ -1,7 +1,7 @@
 component extends="preside.system.base.AdminHandler" {
 
 	property name="widgetService" inject="adminDashboardWidgetService";
-	property name="siteService"   inject="siteService";
+	property name="siteService"   inject="delayedInjector:siteService";
 
 	public void function renderWidgetContent( event, rc, prc ) {
 		var widgetId         = rc.widgetId         ?: "";
@@ -154,7 +154,7 @@ component extends="preside.system.base.AdminHandler" {
 		// todo, cache this operation (per locale)
 		var unsortedOrTranslated         = widgetService.getWidgets();
 		var tempArray                    = [];
-		var activeSiteTemplate           = siteService.getActiveSiteTemplate();
+		var activeSiteTemplate           = isFeatureEnabled( "sites" ) ? siteService.getActiveSiteTemplate() : "";
 		var isUserDashboardWidgetHandler = "";
 		var isUserDashboardWidget        = false;
 
