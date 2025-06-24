@@ -219,10 +219,12 @@ component {
 			formName = _getFormsService().getMergedFormName( formName, "admin.admindashboards.config" );
 		}
 
-		return _getFormsService().renderForm(
-			  formName  = formName
-			, savedData = getWidgetConfiguration( arguments.dashboardId, arguments.widgetId, arguments.instanceId )
-		);
+		var savedConfigData = getWidgetConfiguration( arguments.dashboardId, arguments.widgetId, arguments.instanceId );
+		var renderFormArgs  = { formName=formName, savedData=savedConfigData };
+
+		$announceInterception( "onRenderWidgetConfigForm", renderFormArgs );
+
+		return _getFormsService().renderForm( argumentCollection=renderFormArgs );
 	}
 
 	public boolean function widgetHasConfigForm( required string widgetId ) {

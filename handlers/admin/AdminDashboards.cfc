@@ -42,6 +42,10 @@ component extends="preside.system.base.AdminHandler" {
 
 		event.include( "/js/admin/specific/admindashboards/configmodal/" );
 
+		if ( getController().viewletExists( "admin.admindashboards.widget.#widgetId#.titleGenerator" ) ) {
+			event.includeData( { titleGeneratorEndpoint=event.buildAdminLink( linkTo="admindashboards.widget.#widgetId#.titleGenerator" ) } );
+		}
+
 		event.setLayout( "adminModalDialog" );
 	}
 
@@ -57,12 +61,16 @@ component extends="preside.system.base.AdminHandler" {
 			event.notFound();
 		}
 
-		widgetService.saveWidgetConfiguration(
-			  dashboardId = dashboardId
-			, widgetId    = widgetId
-			, instanceId  = instanceId
-			, requestData = event.getCollectionWithoutSystemVars()
-		);
+		try {
+			widgetService.saveWidgetConfiguration(
+				  dashboardId = dashboardId
+				, widgetId    = widgetId
+				, instanceId  = instanceId
+				, requestData = event.getCollectionWithoutSystemVars()
+			);
+		} catch (any e) {
+			logError(e);
+		}
 
 		event.renderData( data={ success=true }, type="json" );
 	}
