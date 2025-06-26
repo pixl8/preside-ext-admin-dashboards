@@ -1,7 +1,8 @@
 component extends="preside.system.base.AdminHandler" {
 
-	property name="widgetService" inject="adminDashboardWidgetService";
-	property name="siteService"   inject="delayedInjector:siteService";
+	property name="widgetService"   inject="adminDashboardWidgetService";
+	property name="siteService"     inject="delayedInjector:siteService";
+	property name="dashboardLayout" inject="coldbox:setting:adminDashboards.layout";
 
 	public void function renderWidgetContent( event, rc, prc ) {
 		var widgetId         = rc.widgetId         ?: "";
@@ -79,7 +80,16 @@ component extends="preside.system.base.AdminHandler" {
 	private string function renderUserGeneratedDashboard( event, rc, prc, args={} ) {
 		var dashboardId  = args.dashboardId ?: "";
 		var allowEditing = isTrue( args.allowEditing ?: "" );
-		var dashboard    = widgetService.renderUserGeneratedDashboard( dashboardId=dashboardId, allowEditing=allowEditing );
+		var dashboard    = {};
+		var view         = "/admin/admindashboards/_userGenerated";
+
+		if( dashboardLayout == "grid" ) {
+			view      = "/admin/admindashboards/layoutGrid/_userGenerated";
+			dashboard = widgetService.renderUserGeneratedGridDashboard( dashboardId=dashboardId, allowEditing=allowEditing );
+		} else {
+			view      = "/admin/admindashboards/_userGenerated";
+			dashboard = widgetService.renderUserGeneratedDashboard( dashboardId=dashboardId, allowEditing=allowEditing );
+		}
 
 		event.include( "/js/admin/specific/admindashboards/" )
 		     .include( "/css/admin/specific/admindashboards/" );
@@ -88,7 +98,7 @@ component extends="preside.system.base.AdminHandler" {
 			event.include( "/js/admin/specific/admindashboards/editing/" );
 		}
 
-		return renderView( view="/admin/admindashboards/_userGenerated", args=dashboard );
+		return renderView( view=view, args=dashboard );
 	}
 
 	public void function widgetDialog( event, rc, prc ) {

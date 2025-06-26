@@ -1,6 +1,7 @@
 module.exports = function( grunt ) {
 
 	grunt.loadNpmTasks( 'grunt-contrib-clean' );
+	grunt.loadNpmTasks( 'grunt-contrib-copy' );
 	grunt.loadNpmTasks( 'grunt-contrib-cssmin' );
 	grunt.loadNpmTasks( 'grunt-contrib-less' );
 	grunt.loadNpmTasks( 'grunt-contrib-rename' );
@@ -8,9 +9,19 @@ module.exports = function( grunt ) {
 	grunt.loadNpmTasks( 'grunt-contrib-watch' );
 	grunt.loadNpmTasks( 'grunt-rev' );
 
-	grunt.registerTask( 'default', [ 'uglify', 'less', 'cssmin', 'clean', 'rev', 'rename' ] );
+	grunt.registerTask( 'default', [ 'copy:gridstack', 'uglify', 'less', 'cssmin', 'clean', 'rev', 'rename' ] );
 
 	grunt.initConfig( {
+
+		copy: {
+			gridstack: {
+				files: [
+					  { expand: true, cwd:'node_modules/gridstack/dist/', src: [ 'gridstack-all.js' ], dest: 'js/admin/specific/admindashboards/gridlayout/'  }
+					, { expand: true, cwd:'node_modules/gridstack/dist/', src: [ 'gridstack.css' ]   , dest: 'css/admin/specific/admindashboards/gridlayout/' }
+				]
+			}
+		},
+
 		uglify: {
 			options:{
 				  sourceMap     : true
@@ -52,7 +63,7 @@ module.exports = function( grunt ) {
 					rename  : function( dest, src ){
 						var pathSplit = src.split( '/' );
 
-						pathSplit[ pathSplit.length-1 ] = "$" + pathSplit[ pathSplit.length-1 ];
+						pathSplit[ pathSplit.length-1 ] = pathSplit[ pathSplit.length-1 ];
 
 						return dest + pathSplit.join( "/" );
 					}

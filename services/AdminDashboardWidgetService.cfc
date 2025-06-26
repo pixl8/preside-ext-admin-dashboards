@@ -87,7 +87,11 @@ component {
 		return rendered;
 	}
 
-	public struct function renderUserGeneratedDashboard( required string dashboardId, boolean allowEditing=true, struct contextData={}	) {
+	public struct function renderUserGeneratedDashboard(
+		  required string  dashboardId
+		,          boolean allowEditing = true
+		,          struct  contextData  = {}
+	) {
 		var dashboard     = $getPresideObject( "admin_dashboard" ).selectData( id=arguments.dashboardId );
 		var savedWidgets  = $getPresideObject( "admin_dashboard_widget" ).selectData(
 			  filter  = { dashboard=arguments.dashboardId }
@@ -136,6 +140,58 @@ component {
 		return dashboardArgs;
 	}
 
+	public struct function renderUserGeneratedGridDashboard(
+		  required string  dashboardId
+		,          boolean allowEditing = true
+		,          struct  contextData  = {}
+	) {
+		var dashboard     = $getPresideObject( "admin_dashboard" ).selectData( id=arguments.dashboardId );
+		var savedWidgets  = $getPresideObject( "admin_dashboard_widget" ).selectData(
+			  filter  = { dashboard=arguments.dashboardId }
+			, orderBy = "slot"
+			// , orderBy = "column,slot"
+		);
+		// var columns       = isNumeric( dashboard.column_count ) ? dashboard.column_count : 1;
+		var widget        = {};
+		var widgets       = [];
+		var dashboardArgs = {};
+		var canEdit       = arguments.allowEditing && _getDashboardService().userCanEditDashboard( arguments.dashboardId );
+
+		for( var record in dashboard ) {
+			dashboardArgs = record;
+			break;
+		}
+
+		for( var savedWidget in savedWidgets ) {
+			widget = {
+				  id               = savedWidget.widget_id
+				, title            = savedWidget.title
+				, configInstanceId = savedWidget.instance_id
+				, contextData      = isJSON( savedWidget.config ) ? deserializeJSON( savedWidget.config ) : {}
+				, ajax             = true
+				// , column           = savedWidget.column <= columns ? savedWidget.column : 1
+				, slot             = savedWidget.slot
+			};
+			widget.contextData.canEditDashboard = canEdit;
+
+			widgets.append( renderWidgetContainer(
+				  dashboardId      = arguments.dashboardId
+				, widgetId         = widget.id
+				, contextData      = _namespaceContextData( widget.contextData )
+				, configInstanceId = widget.configInstanceId
+				, title            = widget.title ?: ""
+				, ajax             = widget.ajax
+				, layout           = "grid"
+				}
+			) );
+		}
+
+		dashboardArgs.widgets = widgets;
+		dashboardArgs.canEdit = canEdit;
+
+		return dashboardArgs;
+	}
+
 	public string function renderWidgetContainer(
 		  required string  dashboardId
 		, required string  widgetId
@@ -144,6 +200,7 @@ component {
 		,          string  configInstanceId = ""
 		,          string  title            = ""
 		,          boolean ajax             = true
+		,          string  layout           = "default"
 	) {
 		var instanceId             = "dashboard-widget-" & LCase( Hash( arguments.dashboardId & arguments.widgetId & SerializeJson( arguments.contextData ) ) );
 		var menuViewlet            = "admin.admindashboards.widget.#arguments.widgetId#.additionalMenu";
@@ -196,9 +253,14 @@ component {
 			, canDeleteWidget        = userGeneratedDashboard && canEditDashboard
 			, additionalMenu         = additionalMenu
 			, content                = content
+			, layout                 = arguments.layout
 		};
 
 		$announceInterception( "onRenderAdminWidgetContainer", args );
+
+		if( arguments.layout == "grid" ) {
+			return $renderViewlet( event="admin.admindashboards.layoutGrid.widgetContainer", args=args );
+		}
 
 		return $renderViewlet( event="admin.admindashboards.widgetContainer", args=args );
 	}
