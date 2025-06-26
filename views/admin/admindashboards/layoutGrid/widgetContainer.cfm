@@ -45,7 +45,7 @@
 				</h4>
 				<div class="widget-toolbar">
 					#args.additionalMenu#
-					<a class="widget-draggable-handle" href="##" title="#htmlEditFormat( moveTitle )#"><i class="fa fa-fw fa-arrows"></i></a>
+					<a class="widget-draggable-handle" title="#htmlEditFormat( moveTitle )#"><i class="fa fa-fw fa-arrows"></i></a>
 					<cfif args.hasConfig>
 						<a class="widget-configuration-link" href="##" title="#htmlEditFormat( configureTitle )#"><i class="fa fa-fw fa-pencil"></i></a>
 					</cfif>

@@ -182,7 +182,6 @@ component {
 				, title            = widget.title ?: ""
 				, ajax             = widget.ajax
 				, layout           = "grid"
-				}
 			) );
 		}
 
