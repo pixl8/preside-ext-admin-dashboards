@@ -157,6 +157,23 @@ component extends="preside.system.base.AdminHandler" {
 		return "OK";
 	}
 
+	public string function updateGridWidgetOrderAndSize( event, rc, prc, args={} ) {
+		var dashboardId = rc.dashboardId ?: "";
+		var widgets     = rc.widgets     ?: "";
+		var dao         = getPresideObject( "admin_dashboard_widget" );
+
+		widgets = deserializeJSON( widgets );
+
+		widgets.each( function( widget, i ) {
+			dao.updateData(
+				  filter = { dashboard=dashboardId, instance_id=widget.id }
+				, data   = { grid_config=serializeJSON( widget.gridConfig ) }
+			);
+		} );
+
+		return "OK";
+	}
+
 
 // private helpers
 

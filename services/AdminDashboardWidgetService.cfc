@@ -148,10 +148,9 @@ component {
 		var dashboard     = $getPresideObject( "admin_dashboard" ).selectData( id=arguments.dashboardId );
 		var savedWidgets  = $getPresideObject( "admin_dashboard_widget" ).selectData(
 			  filter  = { dashboard=arguments.dashboardId }
-			, orderBy = "slot"
-			// , orderBy = "column,slot"
+			, orderBy = "datemodified desc"
 		);
-		// var columns       = isNumeric( dashboard.column_count ) ? dashboard.column_count : 1;
+
 		var widget        = {};
 		var widgets       = [];
 		var dashboardArgs = {};
@@ -169,20 +168,21 @@ component {
 				, configInstanceId = savedWidget.instance_id
 				, contextData      = isJSON( savedWidget.config ) ? deserializeJSON( savedWidget.config ) : {}
 				, ajax             = true
-				// , column           = savedWidget.column <= columns ? savedWidget.column : 1
-				, slot             = savedWidget.slot
 			};
 			widget.contextData.canEditDashboard = canEdit;
 
-			widgets.append( renderWidgetContainer(
-				  dashboardId      = arguments.dashboardId
-				, widgetId         = widget.id
-				, contextData      = _namespaceContextData( widget.contextData )
-				, configInstanceId = widget.configInstanceId
-				, title            = widget.title ?: ""
-				, ajax             = widget.ajax
-				, layout           = "grid"
-			) );
+			widgets.append( {
+				  gridConfig = deserializeJSON( savedWidget.grid_config )
+				, html       = renderWidgetContainer(
+					  dashboardId      = arguments.dashboardId
+					, widgetId         = widget.id
+					, contextData      = _namespaceContextData( widget.contextData )
+					, configInstanceId = widget.configInstanceId
+					, title            = widget.title ?: ""
+					, ajax             = widget.ajax
+					, layout           = "grid"
+				)
+			} );
 		}
 
 		dashboardArgs.widgets = widgets;

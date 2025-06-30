@@ -9,5 +9,6 @@ component {
 	property name="title"         type="string"  dbtype="varchar" maxlength=50           required=true;
 	property name="column"        type="numeric" dbtype="int";
 	property name="slot"          type="numeric" dbtype="int";
+	property name="grid_config"   type="string"  dbtype="text";
 	property name="config"        type="string"  dbtype="text";
 }

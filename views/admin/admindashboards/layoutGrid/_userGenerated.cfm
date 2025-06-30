@@ -14,9 +14,15 @@
 	<div class="admin-dashboard-container" data-dashboard-id="#dashboardId#">
 		<div class="grid-stack">
 			<cfloop array="#widgets#" item="widget" index="i" >
-				<div class="grid-stack-item" <cfif i == 2 >gs-w="2" gs-h="2"</cfif> <cfif i == 4 >gs-h="2"</cfif> <cfif i == 6 >gs-h="2" gs-w="2" gs-x="2" gs-y="3"</cfif>>
+				<cfset gridConfig = widget.gridConfig ?: {} >
+				<div class="grid-stack-item"
+					<cfif !isEmptyString( gridConfig.x ?: "" ) >gs-x="#gridConfig.x#"</cfif>
+					<cfif !isEmptyString( gridConfig.y ?: "" ) >gs-y="#gridConfig.y#"</cfif>
+					<cfif !isEmptyString( gridConfig.w ?: "" ) >gs-w="#gridConfig.w#"</cfif>
+					<cfif !isEmptyString( gridConfig.h ?: "" ) >gs-h="#gridConfig.h#"</cfif>
+				>
 					<div class="grid-stack-item-content">
-						#widget#
+						#widget.html#
 					</div>
 				</div>
 			</cfloop>
