@@ -16,10 +16,9 @@
 			<cfloop array="#widgets#" item="widget" index="i" >
 				<cfset gridConfig = widget.gridConfig ?: {} >
 				<div class="grid-stack-item"
-					<cfif !isEmptyString( gridConfig.x ?: "" ) >gs-x="#gridConfig.x#"</cfif>
-					<cfif !isEmptyString( gridConfig.y ?: "" ) >gs-y="#gridConfig.y#"</cfif>
-					<cfif !isEmptyString( gridConfig.w ?: "" ) >gs-w="#gridConfig.w#"</cfif>
-					<cfif !isEmptyString( gridConfig.h ?: "" ) >gs-h="#gridConfig.h#"</cfif>
+					<cfloop collection="#gridConfig#" item="val" key="attr" >
+						gs-#attr#="#val#"
+					</cfloop>
 				>
 					<div class="grid-stack-item-content">
 						#widget.html#

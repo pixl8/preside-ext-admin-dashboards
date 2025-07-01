@@ -2,7 +2,7 @@
 
 	var grid = GridStack.init( {
 		  column      : 4
-		, cellHeight  : 160
+		, cellHeight  : 170
 		, margin      : 16
 		, float       : true
 		, handleClass : "widget-draggable-handle"
@@ -29,6 +29,11 @@
 			  data     : { dashboardId:dashboardId, widgets: JSON.stringify( widgets ) }
 			, method   : "POST"
 		} );
+	} );
+
+	$( ".js-grid-auto-layout" ).click( function( e ) {
+		e.preventDefault();
+		grid.compact();
 	} );
 
 } )( presideJQuery );

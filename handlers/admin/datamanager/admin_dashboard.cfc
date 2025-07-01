@@ -172,6 +172,13 @@ component extends="preside.system.base.AdminHandler" {
 				, title     = translateResource( "preside-objects.admin_dashboard:sharing.btn" )
 			} );
 		}
+
+		args.actions.prepend( {
+			  link      = "##"
+			, btnClass  = "btn-info js-grid-auto-layout"
+			, iconClass = "fa-th"
+			, title     = translateResource( "preside-objects.admin_dashboard:autolayout.btn" )
+		} );
 	}
 
 	private string function renderRecord( event, rc, prc, args={} ) {

@@ -151,10 +151,11 @@ component {
 			, orderBy = "datemodified desc"
 		);
 
-		var widget        = {};
-		var widgets       = [];
-		var dashboardArgs = {};
-		var canEdit       = arguments.allowEditing && _getDashboardService().userCanEditDashboard( arguments.dashboardId );
+		var widget            = {};
+		var widgets           = [];
+		var dashboardArgs     = {};
+		var defaultGridConfig = _getGridWidgetsDefaultConfig();
+		var canEdit           = arguments.allowEditing && _getDashboardService().userCanEditDashboard( arguments.dashboardId );
 
 		for( var record in dashboard ) {
 			dashboardArgs = record;
@@ -162,6 +163,9 @@ component {
 		}
 
 		for( var savedWidget in savedWidgets ) {
+			var gridConfig = deserializeJSON( savedWidget.grid_config );
+			StructAppend( gridConfig, defaultGridConfig[ savedWidget.widget_id ] ?: {}, false );
+
 			widget = {
 				  id               = savedWidget.widget_id
 				, title            = savedWidget.title
@@ -172,7 +176,7 @@ component {
 			widget.contextData.canEditDashboard = canEdit;
 
 			widgets.append( {
-				  gridConfig = deserializeJSON( savedWidget.grid_config )
+				  gridConfig = gridConfig
 				, html       = renderWidgetContainer(
 					  dashboardId      = arguments.dashboardId
 					, widgetId         = widget.id
@@ -640,6 +644,30 @@ component {
 		return merged;
 	}
 
+	private struct function _getGridWidgetsDefaultConfig() {
+		return {
+			"CrmMembershipCounts" = {
+				  "min-w" : "2"
+				, "min-h" : "3"
+			}
+			, "DatavizBarChart" = {
+				  "min-w" : "2"
+				, "min-h" : "3"
+			}
+			, "DatavizTimeSeriesChart" = {
+				  "min-w" : "2"
+				, "min-h" : "3"
+			}
+			, "DatavizPieChart" = {
+				  "min-w" : "2"
+				, "min-h" : "3"
+			}
+			, "dashboardDataFilter" = {
+				  "min-w" : "2"
+				, "min-h" : "2"
+			}
+		}
+	}
 
 
 // GETTERS AND SETTERS
