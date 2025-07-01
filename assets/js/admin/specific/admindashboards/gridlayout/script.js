@@ -2,7 +2,7 @@
 
 	var grid = GridStack.init( {
 		  column      : 4
-		, cellHeight  : 170
+		, cellHeight  : 210
 		, margin      : 16
 		, float       : true
 		, handleClass : "widget-draggable-handle"
