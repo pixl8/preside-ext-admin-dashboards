@@ -3,3 +3,5 @@
 /css/**/*.min.css
 /js/**/*.min.js
 /js/**/*.min.map
+/css/admin/specific/admindashboards/gridlayout/gridstack.css
+/js/admin/specific/admindashboards/gridlayout/gridstack-all.js
