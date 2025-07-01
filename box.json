@@ -19,6 +19,7 @@
         "jmimemagic.log"
     ],
 	"preside":{
+        "minVersion":"10.24.0",
 		"dependencies":{
 			"preside-ext-chart-js":{
 				"installVersion":"^0.2.2",
