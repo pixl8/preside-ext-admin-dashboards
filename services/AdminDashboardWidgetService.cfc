@@ -163,14 +163,14 @@ component {
 		}
 
 		for( var savedWidget in savedWidgets ) {
-			var gridConfig = deserializeJSON( savedWidget.grid_config );
+			var gridConfig = IsJSON( savedWidget.grid_config ) ? DeserializeJSON( savedWidget.grid_config ) : {};
 			StructAppend( gridConfig, defaultGridConfig[ savedWidget.widget_id ] ?: {}, false );
 
 			widget = {
 				  id               = savedWidget.widget_id
 				, title            = savedWidget.title
 				, configInstanceId = savedWidget.instance_id
-				, contextData      = isJSON( savedWidget.config ) ? deserializeJSON( savedWidget.config ) : {}
+				, contextData      = IsJSON( savedWidget.config ) ? DeserializeJSON( savedWidget.config ) : {}
 				, ajax             = true
 			};
 			widget.contextData.canEditDashboard = canEdit;
@@ -648,19 +648,19 @@ component {
 		return {
 			"CrmMembershipCounts" = {
 				  "min-w" : "2"
-				, "min-h" : "3"
+				, "min-h" : "2"
 			}
 			, "DatavizBarChart" = {
 				  "min-w" : "2"
-				, "min-h" : "3"
+				, "min-h" : "2"
 			}
 			, "DatavizTimeSeriesChart" = {
 				  "min-w" : "2"
-				, "min-h" : "3"
+				, "min-h" : "2"
 			}
 			, "DatavizPieChart" = {
 				  "min-w" : "2"
-				, "min-h" : "3"
+				, "min-h" : "2"
 			}
 			, "dashboardDataFilter" = {
 				  "min-w" : "2"

@@ -122,7 +122,7 @@
 							  success  : function() {
 								const $gridStackItem = $widgetEl.closest( ".grid-stack-item" );
 								if( $gridStackItem.length ) {
-									$gridStackItem.remove();
+									GridStack.init().removeWidget( $gridStackItem.get(0) );
 								} else {
 									$widgetEl.remove();
 								}
