@@ -1,9 +1,13 @@
-component extends="preside.system.base.AdminHandler" {
+component extends="preside.system.base.EnhancedDataManagerBase" {
 
 	property name="dashboardService"     inject="adminDashboardService";
 	property name="widgetService"        inject="adminDashboardWidgetService";
 	property name="datamanagerService"   inject="datamanagerService";
 	property name="presideObjectService" inject="presideObjectService";
+
+	variables.sidebarNavigation = true;
+	variables.infoCol3          = [];
+	variables.tabs              = [ "default" ];
 
 	private boolean function checkPermission( event, rc, prc, args={} ) {
 		var adminUserId      = event.getAdminUserId();
@@ -174,7 +178,39 @@ component extends="preside.system.base.AdminHandler" {
 		}
 	}
 
-	private string function renderRecord( event, rc, prc, args={} ) {
+	private string function renderSidebarHeader( event, rc, prc, args={} ) {
+		var dashboards = dashboardService.getUserDashboards( extraFilters=[ {
+			  filter       = "id != :id"
+			, filterParams = { id=args.recordId ?: "" }
+		} ] );
+
+		if ( dashboards.recordcount ) {
+			prc.adminSidebarItems = prc.adminSidebarItems ?: [];
+
+			var myDashboards = [];
+			for ( var dashboard in dashboards ) {
+				ArrayAppend( myDashboards, {
+					  display = true
+					, title   = dashboard.name
+					, link    = event.buildAdminLink( objectName="admin_dashboard", recordId=dashboard.id )
+				} );
+			}
+
+			if ( ArrayLen( myDashboards ) ) {
+				ArrayAppend( prc.adminSidebarItems, {
+					  display      = true
+					, open         = true
+					, title        = translateResource( uri="preside-objects.admin_dashboard:viewtab.mydashboards.title" )
+					, link         = ""
+					, submenuItems = myDashboards
+				} );
+			}
+		}
+
+		return renderView( view="/admin/datamanager/admin_dashboard/_sidebarHeader", args=args );
+	}
+
+	private string function _defaultTab( event, rc, prc, args={} ) {
 		prc.pageTitle    = prc.recordLabel ?: prc.pageTitle;
 		prc.pageSubtitle = len( prc.recordLabel ?: "" ) ? "" : prc.pageSubtitle;
 
