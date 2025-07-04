@@ -2,9 +2,10 @@
 <form i18nBaseUri="preside-objects.admin_dashboard:">
 	<tab id="main">
 		<fieldset id="main">
-			<field binding="admin_dashboard.name"         sortOrder="10" />
-			<field binding="admin_dashboard.description"  sortOrder="20" />
-			<field binding="admin_dashboard.column_count" sortOrder="30" minValue="1" maxValue="4" />
+			<field binding="admin_dashboard.name"             sortOrder="10" />
+			<field binding="admin_dashboard.description"      sortOrder="20" />
+			<field binding="admin_dashboard.dashboard_layout" sortOrder="30" control="enumRadioList" enum="adminDashboardLayout" toggleFields="column:column_count" feature="adminDashboardsGridLayout" required="true" />
+			<field binding="admin_dashboard.column_count"     sortOrder="40" minValue="1" maxValue="4" />
 		</fieldset>
 	</tab>
 </form>

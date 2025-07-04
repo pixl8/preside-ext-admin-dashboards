@@ -173,12 +173,14 @@ component extends="preside.system.base.AdminHandler" {
 			} );
 		}
 
-		args.actions.prepend( {
-			  link      = "##"
-			, btnClass  = "btn-info js-grid-auto-layout"
-			, iconClass = "fa-th"
-			, title     = translateResource( "preside-objects.admin_dashboard:autolayout.btn" )
-		} );
+		if( isFeatureEnabled( "adminDashboardsGridLayout" ) && dashboardService.isDashboardUsingGridLayout( recordId ) ) {
+			args.actions.prepend( {
+				  link      = "##"
+				, btnClass  = "btn-info js-grid-auto-layout"
+				, iconClass = "fa-th"
+				, title     = translateResource( "preside-objects.admin_dashboard:autolayout.btn" )
+			} );
+		}
 	}
 
 	private string function renderRecord( event, rc, prc, args={} ) {

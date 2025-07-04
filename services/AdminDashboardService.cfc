@@ -75,6 +75,12 @@ component {
 		return permissionService.hasPermission( permissionKey="adminDashboards.fullaccess", userId=arguments.adminUserId );
 	}
 
+	public boolean function isDashboardUsingGridLayout( required string dashboardId ) {
+		return $getPresideObject( "admin_dashboard" ).dataExists(
+			filter = { id=arguments.dashboardId, dashboard_layout="grid" }
+		);
+	}
+
 // PRIVATE HELPERS
 	private string function _getAdminUserGroups( required string adminUserId ) {
 		return $getPresideObject( "security_group" ).selectData(

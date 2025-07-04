@@ -10,9 +10,10 @@
  */
 
 component  {
-	property name="name"         type="string"  dbtype="varchar" maxlength="50" required=true uniqueIndexes="dashboardName";
-	property name="description"  type="string"  dbtype="varchar" maxlength="300";
-	property name="column_count" type="numeric" dbtype="int"     default=2;
+	property name="name"             type="string"  dbtype="varchar" maxlength="50" required=true uniqueIndexes="dashboardName";
+	property name="description"      type="string"  dbtype="varchar" maxlength="300";
+	property name="column_count"     type="numeric" dbtype="int"     default=2;
+	property name="dashboard_layout" type="string"  dbtype="varchar" maxlength=10 enum="adminDashboardLayout" default="column";
 
 	property name="owner"        relationship="many-to-one" relatedTo="security_user" required=true generate="insert" generator="adminDashboard.owner" cloneable=false;
 	property name="widgets"      relationship="one-to-many" relatedto="admin_dashboard_widget" relationshipKey="dashboard" cloneable=true;

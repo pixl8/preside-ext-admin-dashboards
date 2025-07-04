@@ -7,7 +7,7 @@ component {
 		_setupEnums( settings );
 		_setupPermissionsAndRoles( settings );
 		_setupInterceptors( conf );
-		_setupExtensionSettings( settings );
+		_setupFeatures( settings );
 
 		settings.adminConfigurationMenuItems.append( "adminDashboards" );
 	}
@@ -15,6 +15,7 @@ component {
 	private void function _setupEnums( settings ) {
 		settings.enum.adminDashboardViewAccess = [ "private", "public", "specific" ];
 		settings.enum.adminDashboardEditAccess = [ "private", "specific" ];
+		settings.enum.adminDashboardLayout     = [ "column" , "grid" ];
 	}
 
 	private void function _setupPermissionsAndRoles( required struct settings ) {
@@ -25,10 +26,8 @@ component {
 		settings.adminRoles.dashBoardUser       = [ "adminDashboards.navigate", "adminDashboards.read" ];
 	}
 
-	private void function _setupExtensionSettings( settings ) {
-		settings.adminDashboards = settings.adminDashboards ?: {};
-
-		settings.adminDashboards.layout = "default"; // "default", "grid"
+	private void function _setupFeatures( settings ) {
+		settings.features.adminDashboardsGridLayout = { enabled=false };
 	}
 
 // PRIVATE HELPERS
