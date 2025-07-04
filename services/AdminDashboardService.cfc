@@ -14,6 +14,16 @@ component {
 	}
 
 // PUBLIC API METHODS
+	public query function getUserDashboards(
+		  string adminUserId  = $getAdminLoggedInUserId()
+		, array  extraFilters = []
+	) {
+		return $getPresideObject( "admin_dashboard" ).selectData(
+			  filter       = { owner=arguments.adminUserId }
+			, extraFilters = arguments.extraFilters
+		);
+	}
+
 	public boolean function userCanViewDashboard( required string dashboardId, string adminUserId=$getAdminLoggedInUserId() ) {
 		if ( hasFullAccess( arguments.adminUserId ) ) {
 			return true;
