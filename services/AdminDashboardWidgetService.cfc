@@ -663,7 +663,7 @@ component {
 				, "min-h" : "2"
 			}
 			, "dashboardDataFilter" = {
-				  "min-w" : "2"
+				  "min-w" : "3"
 				, "min-h" : "2"
 			}
 		}
