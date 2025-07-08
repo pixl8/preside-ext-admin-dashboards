@@ -24,6 +24,25 @@ component {
 		);
 	}
 
+	public query function getUserAccessibleDashboards(
+		  string adminUserId  = $getAdminLoggedInUserId()
+		, array  extraFilters = []
+	) {
+		var adminUserGroups = _getAdminUserGroups( adminUserId=arguments.adminUserId );
+
+		return $getPresideObject( "admin_dashboard" ).selectData(
+			  filter = "view_access = 'public'
+						OR admin_dashboard.owner = :adminUserId
+						OR ( view_access = 'specific' AND ( view_users.id = :adminUserId OR view_groups.id in ( :adminUserGroups ) ) )
+						OR ( edit_access = 'specific' AND ( edit_users.id = :adminUserId OR edit_groups.id in ( :adminUserGroups ) ) )"
+			, filterParams = {
+				  adminUserId     = { type="varchar", value=arguments.adminUserId }
+				, adminUserGroups = { type="varchar", value=adminUserGroups, list=true }
+			}
+			, extraFilters = arguments.extraFilters
+		);
+	}
+
 	public boolean function userCanViewDashboard( required string dashboardId, string adminUserId=$getAdminLoggedInUserId() ) {
 		if ( hasFullAccess( arguments.adminUserId ) ) {
 			return true;
