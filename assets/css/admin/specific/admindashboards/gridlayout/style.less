@@ -11,10 +11,31 @@
 				gap             : 12px;
 			}
 
+			h1 {
+				color : var( --color-neutral-100, #21262B );
+
+				small {
+					color       : var( --color-neutral-80, #494F55 );
+					font-size   : var( --font-size-body-sm, 12px );
+					font-style  : normal;
+					font-weight : 400;
+					line-height : normal;
+					margin-top  : 5px;
+					margin-left : 0;
+				}
+			}
+
 			&-button-group {
 				display     : flex;
 				align-items : center;
 				gap         : 12px;
+
+				.btn-group {
+
+					.dropdown-toggle {
+						border-radius : var( --button-border-radius, 4px );
+					}
+				}
 			}
 		}
 	}
@@ -130,7 +151,7 @@
 						color       : var( --color-neutral-100, #21262B );
 						font-size   : 2.3em !important; // 30px
 						font-style  : normal;
-						font-weight : 600;
+						font-weight : var( --font-weight-bold, 600 );
 						line-height : normal;
 						text-align  : left;
 					}
@@ -191,6 +212,10 @@
 	}
 
 	.grid-stack-add a {
+		border-radius   : 10px;
+		border          : 1px dashed var( --color-neutral-20, #D2D3D5 );
+		color           : var( --color-neutral-100, #21262B );
+		font-weight     : var( --font-weight-bold, 600 );
 		margin-top      : 32px;
 		display         : flex;
 		padding         : 60px 0px;
@@ -198,8 +223,6 @@
 		justify-content : center;
 		align-items     : center;
 		gap             : 20px;
-		border-radius   : 10px;
-		border          : 1px dashed var( --color-neutral-20, #D2D3D5 );
 
 		.fa {
 			font-size : 2.5em;

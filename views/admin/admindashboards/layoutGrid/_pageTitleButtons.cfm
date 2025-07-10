@@ -12,7 +12,7 @@
 
 	<cfif ArrayLen( dropdownActions ) >
 		<div class="btn-group pull-right">
-			<button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+			<button type="button" class="btn btn-primary-invert btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 				<i class="fa fa-fw fa-ellipsis-v"></i>
 			</button>
 			<ul class="dropdown-menu">

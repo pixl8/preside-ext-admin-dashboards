@@ -248,7 +248,7 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 
 				actions.append( {
 					  link      = "##"
-					, btnClass  = "btn-secondary"
+					, btnClass  = "btn-default-invert"
 					, iconClass = "fa-star"
 					, title     = ""
 				} );
