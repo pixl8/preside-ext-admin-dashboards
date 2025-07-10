@@ -23,6 +23,11 @@
 	deletePrompt   = translateResource( uri="admindashboards:delete.widget.confirmation" );
 
 	event.includeData( { "#args.instanceId#"=args.contextData } );
+
+	action = ListLast( rc.event ?: "", "." );
+
+	isViewRecord          = ( action == "viewrecord" );
+	isEditDashboardLayout = ( action == "editdashboardlayout" );
 </cfscript>
 
 <cfoutput>
@@ -44,13 +49,15 @@
 					<span>#args.title#</span>
 				</h4>
 				<div class="widget-toolbar">
-					#args.additionalMenu#
-					<a class="widget-draggable-handle" title="#htmlEditFormat( moveTitle )#"><i class="fa fa-fw fa-arrows"></i></a>
-					<cfif args.hasConfig>
-						<a class="widget-configuration-link" href="##" title="#htmlEditFormat( configureTitle )#"><i class="fa fa-fw fa-pencil"></i></a>
-					</cfif>
-					<cfif args.canDeleteWidget>
-						<a class="widget-delete-link" title="#htmlEditFormat( deletePrompt )#" href="#event.buildAdminLink( linkTo="adminDashboards.deleteWidget", queryString="dashboardId=#args.dashboardId#&instanceId=#args.configInstanceId#" )#"><i class="fa fa-fw fa-trash"></i></a>
+					<cfif isEditDashboardLayout >
+						#args.additionalMenu#
+						<a class="widget-draggable-handle" title="#htmlEditFormat( moveTitle )#"><i class="fa fa-fw fa-arrows"></i></a>
+						<cfif args.hasConfig>
+							<a class="widget-configuration-link" href="##" title="#htmlEditFormat( configureTitle )#"><i class="fa fa-fw fa-pencil"></i></a>
+						</cfif>
+						<cfif args.canDeleteWidget>
+							<a class="widget-delete-link" title="#htmlEditFormat( deletePrompt )#" href="#event.buildAdminLink( linkTo="adminDashboards.deleteWidget", queryString="dashboardId=#args.dashboardId#&instanceId=#args.configInstanceId#" )#"><i class="fa fa-fw fa-trash"></i></a>
+						</cfif>
 					</cfif>
 				</div>
 			</div>

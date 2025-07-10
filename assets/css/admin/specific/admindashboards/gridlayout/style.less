@@ -1,22 +1,51 @@
 .presidecms {
 
+	.page-content {
+
+		.page-header {
+
+			&.with-buttons {
+				display         : flex;
+				justify-content : space-between;
+				align-items     : center;
+				gap             : 12px;
+			}
+
+			&-button-group {
+				display     : flex;
+				align-items : center;
+				gap         : 12px;
+			}
+		}
+	}
+
 	.grid-stack {
 		margin : -16px;
+
+		&.action-editdashboardlayout {
+
+			.grid-stack-item {
+
+				&-content {
+					border-color : var( --color-info-100, #429AE5 );
+				}
+
+				&.ui-resizable-autohide {
+
+					.grid-stack-item-content {
+						border-color : var( --color-neutral-20, #D2D3D5 );
+					}
+				}
+			}
+		}
 	}
 
 	.grid-stack-item {
 
 		&-content {
 			border-radius : 10px;
-			border        : 1px solid var( --color-info-100, #429AE5 );
+			border        : 1px solid var( --color-neutral-20, #D2D3D5 );
 			background    : #FFF;
-		}
-
-		&.ui-resizable-autohide {
-
-			.grid-stack-item-content {
-				border-color : var( --color-neutral-20, #D2D3D5 );
-			}
 		}
 
 		> .ui-resizable-handle {
@@ -119,6 +148,7 @@
 								background     : var( --color-primary-100, #3C1642 );
 								border-bottom  : 0;
 								color          : white;
+								font-weight    : var( --font-weight-bold, 600 );
 								padding-top    : 12px;
 								padding-right  : 12px;
 								padding-bottom : 12px;

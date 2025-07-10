@@ -2,7 +2,7 @@ component extends="preside.system.base.AdminHandler" {
 
 	property name="widgetService"    inject="adminDashboardWidgetService";
 	property name="dashboardService" inject="adminDashboardService";
-	property name="siteService"      inject="delayedInjector:siteService";
+	property name="siteService"      inject="siteService";
 
 	public void function renderWidgetContent( event, rc, prc ) {
 		var widgetId         = rc.widgetId         ?: "";
@@ -124,6 +124,10 @@ component extends="preside.system.base.AdminHandler" {
 			, title       = title
 			, config      = {}
 		);
+
+		if( dashboardService.isDashboardUsingGridLayout( dashboardId ) ) {
+			setNextEvent( url=event.buildAdminLink( objectName="admin_dashboard", operation="editdashboardlayout", recordId=dashboardId ) );
+		}
 
 		setNextEvent( url=event.buildAdminLink( objectName="admin_dashboard", recordId=dashboardId ) );
 	}
