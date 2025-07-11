@@ -44,6 +44,27 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 		return hasPermission;
 	}
 
+	public void function preRenderListing( event, rc, prc, args={} ) {
+		prc.adminSidebarItems = prc.adminSidebarItems ?: [];
+
+		ArrayAppend( prc.adminSidebarItems, {
+			  active = event.getCurrentEvent() == "admin.datamanager.object"
+			, title  = translateResource( uri="preside-objects.admin_dashboard:sidenav.all.label" )
+			, link   = event.buildAdminLink( objectName="admin_dashboard" )
+			, icon   = "fa-tachometer"
+		} );
+
+		var createdByMeDashboards = _getCreatedByMeSidenav( argumentCollection=arguments );
+		if ( !StructIsEmpty( createdByMeDashboards ) ) {
+			ArrayAppend( prc.adminSidebarItems, createdByMeDashboards );
+		}
+
+		var accessibleDashboards = _getAccessibleDashboardsSidenav( argumentCollection=arguments );
+		if ( !StructIsEmpty( accessibleDashboards ) ) {
+			ArrayAppend( prc.adminSidebarItems, accessibleDashboards );
+		}
+	}
+
 	private void function preFetchRecordsForGridListing( event, rc, prc, args={} ) {
 		var adminUserId = event.getAdminUserId();
 
@@ -179,32 +200,20 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 	}
 
 	private string function renderSidebarHeader( event, rc, prc, args={} ) {
-		var dashboards = dashboardService.getUserDashboards( extraFilters=[ {
-			  filter       = "id != :id"
-			, filterParams = { id=args.recordId ?: "" }
-		} ] );
+		prc.adminSidebarItems      = prc.adminSidebarItems ?: [];
+		args.dashboardExtraFilters = [ {
+			  filter       = "admin_dashboard.id != :admin_dashboard.id"
+			, filterParams = { "admin_dashboard.id"=args.recordId ?: "" }
+		} ];
 
-		if ( dashboards.recordcount ) {
-			prc.adminSidebarItems = prc.adminSidebarItems ?: [];
+		var createdByMeDashboards = _getCreatedByMeSidenav( argumentCollection=arguments );
+		if ( !StructIsEmpty( createdByMeDashboards ) ) {
+			ArrayAppend( prc.adminSidebarItems, createdByMeDashboards );
+		}
 
-			var myDashboards = [];
-			for ( var dashboard in dashboards ) {
-				ArrayAppend( myDashboards, {
-					  display = true
-					, title   = dashboard.name
-					, link    = event.buildAdminLink( objectName="admin_dashboard", recordId=dashboard.id )
-				} );
-			}
-
-			if ( ArrayLen( myDashboards ) ) {
-				ArrayAppend( prc.adminSidebarItems, {
-					  display      = true
-					, open         = true
-					, title        = translateResource( uri="preside-objects.admin_dashboard:viewtab.mydashboards.title" )
-					, link         = ""
-					, submenuItems = myDashboards
-				} );
-			}
+		var accessibleDashboards = _getAccessibleDashboardsSidenav( argumentCollection=arguments );
+		if ( !StructIsEmpty( accessibleDashboards ) ) {
+			ArrayAppend( prc.adminSidebarItems, accessibleDashboards );
 		}
 
 		return renderView( view="/admin/datamanager/admin_dashboard/_sidebarHeader", args=args );
@@ -305,4 +314,65 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 		).valueList( "id" );
 	}
 
+	private struct function _getCreatedByMeSidenav( event, rc, prc, args={} ) {
+		var dashboards   = dashboardService.getUserDashboards( extraFilters=args.dashboardExtraFilters ?: [] );
+		var myDashboards = [];
+
+		for ( var dashboard in dashboards ) {
+			ArrayAppend( myDashboards, {
+				  display = true
+				, title   = dashboard.name
+				, link    = event.buildAdminLink( objectName="admin_dashboard", recordId=dashboard.id )
+			} );
+		}
+
+		if ( ArrayLen( myDashboards ) ) {
+			prc.adminDashboardSidebarExcludeIds = ValueArray( dashboards, "id" );
+
+			return {
+				  display      = true
+				, open         = true
+				, title        = translateResource( uri="preside-objects.admin_dashboard:sidenav.mydashboards.title" )
+				, icon         = translateResource( uri="preside-objects.admin_dashboard:sidenav.mydashboards.iconClass" )
+				, link         = ""
+				, submenuItems = myDashboards
+			};
+		}
+		return {};
+	}
+
+	private struct function _getAccessibleDashboardsSidenav( event, rc, prc, args={} ) {
+		var excludedIds  = prc.adminDashboardSidebarExcludeIds ?: [];
+		var extraFilters = args.dashboardExtraFilters          ?: [];
+
+		if ( ArrayLen( excludedIds ) ) {
+			ArrayAppend( extraFilters, {
+				  filter       = "admin_dashboard.id NOT IN (:excludedDashboardIds)"
+				, filterParams = { excludedDashboardIds={ type="cf_sql_varchar", value=ArrayToList( excludedIds ), list=true } }
+			} );
+		}
+
+		var availableDashboards  = dashboardService.getUserAccessibleDashboards( extraFilters=extraFilters );
+		var accessibleDashboards = [];
+
+		for ( var dashboard in availableDashboards ) {
+			ArrayAppend( accessibleDashboards, {
+				  display = true
+				, title   = dashboard.name
+				, link    = event.buildAdminLink( objectName="admin_dashboard", recordId=dashboard.id )
+			} );
+		}
+
+		if ( ArrayLen( accessibleDashboards ) ) {
+			return {
+				  display      = true
+				, open         = false
+				, title        = translateResource( uri="preside-objects.admin_dashboard:sidenav.accessibledashboards.title" )
+				, icon         = translateResource( uri="preside-objects.admin_dashboard:sidenav.accessibledashboards.iconClass" )
+				, link         = ""
+				, submenuItems = accessibleDashboards
+			};
+		}
+		return {};
+	}
 }
