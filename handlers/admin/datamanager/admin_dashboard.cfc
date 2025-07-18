@@ -248,9 +248,16 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 
 				actions.append( {
 					  link      = "##"
-					, btnClass  = "btn-default-invert"
-					, iconClass = "fa-star"
-					, title     = ""
+					, btnClass  = "btn-favourite is-active" // .is-active to make the star filled
+					, iconClass = ""
+					, title     = renderView( view="/admin/admindashboards/layoutGrid/icon-star" )
+				} );
+
+				actions.append( {
+					  link      = event.buildAdminLink( objectName=objectName, operation="editdashboardlayout", recordId=recordId )
+					, btnClass  = "btn-primary"
+					, iconClass = ""
+					, title     = translateResource( "preside-objects.admin_dashboard:gridlayout.editlayout.btn" )
 				} );
 
 				dropdownActions = customizationService.runCustomization(
@@ -284,23 +291,9 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 						menuAction.title = translateResource( uri="preside-objects.admin_dashboard:gridlayout.delete.btn" )
 					}
 				}
-
-				dropdownActions.prepend( {
-					  link      = event.buildAdminLink( objectName=objectName, operation="editdashboardlayout", recordId=recordId )
-					, btnClass  = ""
-					, iconClass = ""
-					, title     = translateResource( "preside-objects.admin_dashboard:gridlayout.editlayout.btn" )
-				} );
 			}
 
 			if( action == "editdashboardlayout" ) {
-
-				actions.append( {
-					  link      = "##"
-					, btnClass  = "js-grid-auto-layout btn-default"
-					, iconClass = "fa-th"
-					, title     = translateResource( "preside-objects.admin_dashboard:gridlayout.autolayout.btn" )
-				} );
 
 				actions.append( {
 					  link      = event.buildAdminLink( objectName=objectName, operation="viewRecord", recordId=recordId )
@@ -314,6 +307,13 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 					, btnClass  = "js-save-layout btn-primary"
 					, iconClass = ""
 					, title     = translateResource( "preside-objects.admin_dashboard:gridlayout.save.btn" )
+				} );
+
+				actions.append( {
+					  link      = "##"
+					, btnClass  = "js-grid-auto-layout btn-default-invert"
+					, iconClass = ""
+					, title     = renderView( view="/admin/admindashboards/layoutGrid/icon-grid-sm" )
 				} );
 			}
 		}
