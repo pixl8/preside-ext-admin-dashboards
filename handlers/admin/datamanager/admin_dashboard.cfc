@@ -313,6 +313,7 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 					  link      = "##"
 					, btnClass  = "js-grid-auto-layout btn-default-invert"
 					, iconClass = ""
+					, prompt    = translateResource( "preside-objects.admin_dashboard:gridlayout.autolayout.btn" )
 					, title     = renderView( view="/admin/admindashboards/layoutGrid/icon-grid-sm" )
 				} );
 			}
