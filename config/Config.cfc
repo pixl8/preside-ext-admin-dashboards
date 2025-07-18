@@ -7,7 +7,6 @@ component {
 		_setupEnums( settings );
 		_setupPermissionsAndRoles( settings );
 		_setupInterceptors( conf );
-		_setupFeatures( settings );
 
 		settings.adminConfigurationMenuItems.append( "adminDashboards" );
 	}
@@ -24,10 +23,6 @@ component {
 		settings.adminRoles.dashBoardSuperAdmin = [ "adminDashboards.*" ];
 		settings.adminRoles.dashBoardAdmin      = [ "adminDashboards.*", "!adminDashboards.fullaccess" ];
 		settings.adminRoles.dashBoardUser       = [ "adminDashboards.navigate", "adminDashboards.read" ];
-	}
-
-	private void function _setupFeatures( settings ) {
-		settings.features.adminDashboardsGridLayout = { enabled=false };
 	}
 
 // PRIVATE HELPERS

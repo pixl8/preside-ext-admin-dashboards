@@ -211,24 +211,18 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 	}
 
 	private string function _defaultTab( event, rc, prc, args={} ) {
-		var dashboardLayout = args.record.dashboard_layout ?: "";
+		prc.pageTitle         = prc.recordLabel ?: prc.pageTitle;
+		prc.displayPageHeader = false;
+		prc.pageIcon          = "";
+		prc.pageSubTitle      = translateResource(
+			  uri  = "admindashboards:subtitle.title"
+			, data = [
+				  DateFormat( prc.record.datecreated, "dd mmm yyyy" )
+				, renderLabel( "security_user", prc.record.owner_id )
+			]
+		);
 
-		prc.pageTitle    = prc.recordLabel ?: prc.pageTitle;
-		prc.pageSubtitle = len( prc.recordLabel ?: "" ) ? "" : prc.pageSubtitle;
-
-		if( dashboardLayout == "grid" ) {
-			prc.displayPageHeader = false;
-			prc.pageIcon          = "";
-			prc.pageSubTitle      = translateResource(
-				  uri  = "admindashboards:subtitle.title"
-				, data = [
-					  DateFormat( prc.record.datecreated, "dd mmm yyyy" )
-					, renderLabel( "security_user", prc.record.owner_id )
-				]
-			);
-
-			prc.pageHeaderButtons = _renderPageHeaderButtons( argumentCollection=arguments );
-		}
+		prc.pageHeaderButtons = _renderPageHeaderButtons( argumentCollection=arguments );
 
 		return renderView( view="/admin/adminDashboards/recordView", args=args );
 	}
@@ -313,7 +307,6 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 					  link      = "##"
 					, btnClass  = "js-grid-auto-layout btn-default-invert"
 					, iconClass = ""
-					, prompt    = translateResource( "preside-objects.admin_dashboard:gridlayout.autolayout.btn" )
 					, title     = renderView( view="/admin/admindashboards/layoutGrid/icon-grid-sm" )
 				} );
 			}
@@ -323,20 +316,7 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 	}
 
 	private string function topRightButtons( event, rc, prc, args={} ) {
-		var record          = args.record     ?: {};
-		var dashboardLayout = record.dashboard_layout ?: "";
-		var rendered        = "";
-
-		if( dashboardLayout != "grid" ) {
-			rendered = runEvent(
-				  event          = "admin.datamanager.topRightButtons"
-				, private        = true
-				, prePostExempt  = true
-				, eventArguments = { args=arguments.args }
-			);
-		}
-
-		return rendered;
+		return "";
 	}
 
 	private void function preCloneRecordAction( event, rc, prc, args={} ) {

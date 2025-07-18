@@ -80,15 +80,7 @@ component extends="preside.system.base.AdminHandler" {
 	private string function renderUserGeneratedDashboard( event, rc, prc, args={} ) {
 		var dashboardId  = args.dashboardId ?: "";
 		var allowEditing = isTrue( args.allowEditing ?: "" );
-		var dashboard    = {};
-		var view         = "/admin/admindashboards/_userGenerated";
-
-		if( dashboardService.isDashboardUsingGridLayout( dashboardId ) ) {
-			view      = "/admin/admindashboards/layoutGrid/_userGenerated";
-			dashboard = widgetService.renderUserGeneratedGridDashboard( dashboardId=dashboardId, allowEditing=allowEditing );
-		} else {
-			dashboard = widgetService.renderUserGeneratedDashboard( dashboardId=dashboardId, allowEditing=allowEditing );
-		}
+		var dashboard    = widgetService.renderUserGeneratedGridDashboard( dashboardId=dashboardId, allowEditing=allowEditing );
 
 		event.include( "/js/admin/specific/admindashboards/" )
 		     .include( "/css/admin/specific/admindashboards/" );
@@ -97,7 +89,7 @@ component extends="preside.system.base.AdminHandler" {
 			event.include( "/js/admin/specific/admindashboards/editing/" );
 		}
 
-		return renderView( view=view, args=dashboard );
+		return renderView( view="/admin/admindashboards/layoutGrid/_userGenerated", args=dashboard );
 	}
 
 	public void function widgetDialog( event, rc, prc ) {
@@ -125,11 +117,7 @@ component extends="preside.system.base.AdminHandler" {
 			, config      = {}
 		);
 
-		if( dashboardService.isDashboardUsingGridLayout( dashboardId ) ) {
-			setNextEvent( url=event.buildAdminLink( objectName="admin_dashboard", operation="editdashboardlayout", recordId=dashboardId ) );
-		}
-
-		setNextEvent( url=event.buildAdminLink( objectName="admin_dashboard", recordId=dashboardId ) );
+		setNextEvent( url=event.buildAdminLink( objectName="admin_dashboard", operation="editdashboardlayout", recordId=dashboardId ) );
 	}
 
 	public function deleteWidget( event, rc, prc, args={} ) {
