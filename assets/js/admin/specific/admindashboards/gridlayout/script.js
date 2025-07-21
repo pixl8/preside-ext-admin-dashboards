@@ -16,6 +16,30 @@
 		grid.compact();
 	} );
 
+	grid.on( "change", function( event, items ) {
+
+		const dashboardId = $( event.target ).closest( ".admin-dashboard-container" ).data( "dashboardId" ),
+			  widgets     = [];
+
+		items.forEach( function( item ) {
+
+			widgets.push( {
+				  id         = $( item.el ).find( ".admin-dashboard-widget" ).data( "config-instance-id" )
+				, gridConfig = {
+					  x = item.x
+					, y = item.y
+					, w = item.w
+					, h = item.h
+				}
+			} );
+		});
+
+		$.ajax( buildAdminLink( "admindashboards", "updateGridWidgetOrderAndSize" ), {
+			  data     : { isTemporary: true, dashboardId:dashboardId, widgets: JSON.stringify( widgets ) }
+			, method   : "POST"
+		} );
+	} );
+
 	$( ".js-save-layout" ).click( function( e ) {
 		e.preventDefault();
 

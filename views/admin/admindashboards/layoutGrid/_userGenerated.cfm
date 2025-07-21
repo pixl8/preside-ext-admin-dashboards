@@ -41,7 +41,11 @@
 
 		<div class="grid-stack action-#action#" >
 			<cfloop array="#widgets#" item="widget" index="i" >
-				<cfset gridConfig = widget.gridConfig ?: {} >
+				<cfif isEditDashboardLayout >
+					<cfset gridConfig = widget.editTempGridConfig ?: {} >
+				<cfelse>
+					<cfset gridConfig = widget.gridConfig ?: {} >
+				</cfif>
 				<div class="grid-stack-item"
 					<cfloop collection="#gridConfig#" item="val" key="attr" >
 						gs-#attr#="#val#"

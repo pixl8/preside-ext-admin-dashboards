@@ -80,7 +80,8 @@ component extends="preside.system.base.AdminHandler" {
 	private string function renderUserGeneratedDashboard( event, rc, prc, args={} ) {
 		var dashboardId  = args.dashboardId ?: "";
 		var allowEditing = isTrue( args.allowEditing ?: "" );
-		var dashboard    = widgetService.renderUserGeneratedGridDashboard( dashboardId=dashboardId, allowEditing=allowEditing );
+		var action       = ListLast( rc.event ?: "", "." );
+		var dashboard    = widgetService.renderUserGeneratedGridDashboard( dashboardId=dashboardId, allowEditing=allowEditing, showTempWidgets=( action == "editdashboardlayout" ) );
 
 		event.include( "/js/admin/specific/admindashboards/" )
 		     .include( "/css/admin/specific/admindashboards/" );
@@ -132,6 +133,22 @@ component extends="preside.system.base.AdminHandler" {
 		setNextEvent( url=event.buildAdminLink( objectName="admin_dashboard", recordId=dashboardId ) );
 	}
 
+	public function saveEditDashboardLayout( event, rc, prc, args={} ) {
+		var dashboardId = args.dashboardId ?: ( rc.dashboardId ?: "" );
+
+		widgetService.saveEditDashboardWidgets( dashboardId=dashboardId );
+
+		setNextEvent( url=event.buildAdminLink( objectName="admin_dashboard", recordId=dashboardId ) );
+	}
+
+	public function cancelEditDashboardLayout( event, rc, prc, args={} ) {
+		var dashboardId = args.dashboardId ?: ( rc.dashboardId ?: "" );
+
+		widgetService.cancelEditDashboardWidgets( dashboardId=dashboardId );
+
+		setNextEvent( url=event.buildAdminLink( objectName="admin_dashboard", recordId=dashboardId ) );
+	}
+
 	public string function updateWidgetOrder( event, rc, prc, args={} ) {
 		var dashboardId = rc.dashboardId ?: "";
 		var column      = rc.column      ?: 1;
@@ -151,14 +168,16 @@ component extends="preside.system.base.AdminHandler" {
 	public string function updateGridWidgetOrderAndSize( event, rc, prc, args={} ) {
 		var dashboardId = rc.dashboardId ?: "";
 		var widgets     = rc.widgets     ?: "";
+		var isTemporary = rc.isTemporary ?: false;
 		var dao         = getPresideObject( "admin_dashboard_widget" );
+		var dataField   = isTrue( isTemporary ) ? "dashboard_edit_temp_grid_config" : "grid_config";
 
 		widgets = deserializeJSON( widgets );
 
 		widgets.each( function( widget, i ) {
 			dao.updateData(
 				  filter = { dashboard=dashboardId, instance_id=widget.id }
-				, data   = { grid_config=serializeJSON( widget.gridConfig ) }
+				, data   = { "#dataField#" = serializeJSON( widget.gridConfig ) }
 			);
 		} );
 

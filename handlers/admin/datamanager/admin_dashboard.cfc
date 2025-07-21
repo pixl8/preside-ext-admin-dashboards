@@ -290,14 +290,14 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 			if( action == "editdashboardlayout" ) {
 
 				actions.append( {
-					  link      = event.buildAdminLink( objectName=objectName, operation="viewRecord", recordId=recordId )
+					  link      = event.buildAdminLink( linkto="AdminDashboards.cancelEditDashboardLayout", querystring="dashboardId=#recordId#" )
 					, btnClass  = "btn-link"
 					, iconClass = ""
 					, title     = translateResource( "preside-objects.admin_dashboard:gridlayout.cancel.btn" )
 				} );
 
 				actions.append( {
-					  link      = event.buildAdminLink( objectName=objectName, operation="viewRecord", recordId=recordId )
+					  link      = event.buildAdminLink( linkto="AdminDashboards.saveEditDashboardLayout", querystring="dashboardId=#recordId#" )
 					, btnClass  = "js-save-layout btn-primary"
 					, iconClass = ""
 					, title     = translateResource( "preside-objects.admin_dashboard:gridlayout.save.btn" )

@@ -11,4 +11,8 @@ component {
 	property name="slot"          type="numeric" dbtype="int";
 	property name="grid_config"   type="string"  dbtype="text";
 	property name="config"        type="string"  dbtype="text";
+
+	property name="dashboard_edit_temp_grid_config" type="string"  dbtype="text";
+	property name="dashboard_edit_temp_add"         type="boolean" dbtype="boolean" default=false;
+	property name="dashboard_edit_temp_delete"      type="boolean" dbtype="boolean" default=false;
 }

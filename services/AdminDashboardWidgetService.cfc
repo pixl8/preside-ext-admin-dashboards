@@ -142,20 +142,35 @@ component {
 
 	public struct function renderUserGeneratedGridDashboard(
 		  required string  dashboardId
-		,          boolean allowEditing = true
-		,          struct  contextData  = {}
+		,          boolean allowEditing    = true
+		,          struct  contextData     = {}
+		,          boolean showTempWidgets = false
 	) {
-		var dashboard     = $getPresideObject( "admin_dashboard" ).selectData( id=arguments.dashboardId );
-		var savedWidgets  = $getPresideObject( "admin_dashboard_widget" ).selectData(
-			  filter  = { dashboard=arguments.dashboardId }
-			, orderBy = "datemodified desc"
-		);
+		var dashboard           = $getPresideObject( "admin_dashboard" ).selectData( id=arguments.dashboardId );
+		var widget              = {};
+		var widgets             = [];
+		var dashboardArgs       = {};
+		var defaultGridConfig   = _getGridWidgetsDefaultConfig();
+		var canEdit             = arguments.allowEditing && _getDashboardService().userCanEditDashboard( arguments.dashboardId );
+		var widgetsExtraFilters = [];
 
-		var widget            = {};
-		var widgets           = [];
-		var dashboardArgs     = {};
-		var defaultGridConfig = _getGridWidgetsDefaultConfig();
-		var canEdit           = arguments.allowEditing && _getDashboardService().userCanEditDashboard( arguments.dashboardId );
+		if( arguments.showTempWidgets ) {
+			widgetsExtraFilters = [ {
+				filter = "dashboard_edit_temp_delete IS NOT true"
+			} ];
+		} else {
+			widgetsExtraFilters = [ {
+				filter = "dashboard_edit_temp_add IS NOT true"
+			} ];
+		}
+
+		var savedWidgets = $getPresideObject( "admin_dashboard_widget" ).selectData(
+			  filter  = {
+			  	  dashboard = arguments.dashboardId
+			}
+			, extraFilters = widgetsExtraFilters
+			, orderBy      = "datemodified desc"
+		);
 
 		for( var record in dashboard ) {
 			dashboardArgs = record;
@@ -165,6 +180,10 @@ component {
 		for( var savedWidget in savedWidgets ) {
 			var gridConfig = IsJSON( savedWidget.grid_config ) ? DeserializeJSON( savedWidget.grid_config ) : {};
 			StructAppend( gridConfig, defaultGridConfig[ savedWidget.widget_id ] ?: {}, false );
+
+			var editTempGridConfig = IsJSON( savedWidget.dashboard_edit_temp_grid_config ) ? DeserializeJSON( savedWidget.dashboard_edit_temp_grid_config ) : {};
+			StructAppend( editTempGridConfig, gridConfig, false );
+			StructAppend( editTempGridConfig, defaultGridConfig[ savedWidget.widget_id ] ?: {}, false );
 
 			widget = {
 				  id               = savedWidget.widget_id
@@ -176,8 +195,9 @@ component {
 			widget.contextData.canEditDashboard = canEdit;
 
 			widgets.append( {
-				  gridConfig = gridConfig
-				, html       = renderWidgetContainer(
+				  gridConfig         = gridConfig
+				, editTempGridConfig = editTempGridConfig
+				, html               = renderWidgetContainer(
 					  dashboardId      = arguments.dashboardId
 					, widgetId         = widget.id
 					, contextData      = _namespaceContextData( widget.contextData )
@@ -458,23 +478,77 @@ component {
 		,          struct  config = {}
 	) {
 		return $getPresideObject( "admin_dashboard_widget" ).insertData( data={
-			  dashboard   = arguments.dashboardId
-			, widget_id   = arguments.widgetId
-			, instance_id = arguments.instanceId
-			, title       = arguments.title
-			, column      = arguments.column
-			, slot        = arguments.slot
-			, config      = serializeJson( arguments.config )
+			  dashboard               = arguments.dashboardId
+			, widget_id               = arguments.widgetId
+			, instance_id             = arguments.instanceId
+			, title                   = arguments.title
+			, column                  = arguments.column
+			, slot                    = arguments.slot
+			, config                  = serializeJson( arguments.config )
+			, dashboard_edit_temp_add = true
 		} );
 	}
 
-	public void function deleteWidget(
+	public numeric function deleteWidget(
 		  required string dashboardId
 		, required string instanceId
 	) {
+		return $getPresideObject( "admin_dashboard_widget" ).updateData(
+			  data   = { dashboard_edit_temp_delete = true }
+			, filter = {
+				  dashboard   = arguments.dashboardId
+				, instance_id = arguments.instanceId
+			}
+		);
+	}
+
+	public void function saveEditDashboardWidgets(
+		  required string dashboardId
+	) {
+
+		$getPresideObject( "admin_dashboard_widget" ).updateData(
+			  data   = { dashboard_edit_temp_add = false }
+			, filter = {
+				  dashboard               = arguments.dashboardId
+				, dashboard_edit_temp_add = true
+			}
+		);
+
+		$getPresideObject( "admin_dashboard_widget" ).updateData(
+			  data   = { dashboard_edit_temp_grid_config = "" }
+			, filter = {
+				  dashboard = arguments.dashboardId
+			}
+		);
+
 		$getPresideObject( "admin_dashboard_widget" ).deleteData( filter={
-			  dashboard    = arguments.dashboardId
-			, instance_id  = arguments.instanceId
+			  dashboard                  = arguments.dashboardId
+			, dashboard_edit_temp_delete = true
+		} );
+	}
+
+	public void function cancelEditDashboardWidgets(
+		  required string dashboardId
+	) {
+
+		$getPresideObject( "admin_dashboard_widget" ).updateData(
+			  data   = { dashboard_edit_temp_delete = false }
+			, filter = {
+				  dashboard                  = arguments.dashboardId
+				, dashboard_edit_temp_delete = true
+			}
+		);
+
+		$getPresideObject( "admin_dashboard_widget" ).updateData(
+			  data   = { dashboard_edit_temp_grid_config = "" }
+			, filter = {
+				  dashboard = arguments.dashboardId
+			}
+		);
+
+		$getPresideObject( "admin_dashboard_widget" ).deleteData( filter={
+			  dashboard               = arguments.dashboardId
+			, dashboard_edit_temp_add = true
 		} );
 	}
 
