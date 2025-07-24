@@ -2,7 +2,7 @@ component extends="preside.system.base.AdminHandler" {
 
 	property name="widgetService"    inject="adminDashboardWidgetService";
 	property name="dashboardService" inject="adminDashboardService";
-	property name="siteService"      inject="siteService";
+	property name="siteService"      inject="delayedInjector:siteService";
 
 	public void function renderWidgetContent( event, rc, prc ) {
 		var widgetId         = rc.widgetId         ?: "";
