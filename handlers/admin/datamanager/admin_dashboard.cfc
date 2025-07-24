@@ -220,10 +220,112 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 	}
 
 	private string function _defaultTab( event, rc, prc, args={} ) {
-		prc.pageTitle    = prc.recordLabel ?: prc.pageTitle;
-		prc.pageSubtitle = len( prc.recordLabel ?: "" ) ? "" : prc.pageSubtitle;
+		prc.pageTitle         = prc.recordLabel ?: prc.pageTitle;
+		prc.displayPageHeader = false;
+		prc.pageIcon          = "";
+		prc.pageSubTitle      = translateResource(
+			  uri  = "admindashboards:subtitle.title"
+			, data = [
+				  DateFormat( prc.record.datecreated, "dd mmm yyyy" )
+				, renderLabel( "security_user", prc.record.owner_id )
+			]
+		);
+
+		prc.pageHeaderButtons = _renderPageHeaderButtons( argumentCollection=arguments );
 
 		return renderView( view="/admin/adminDashboards/recordView", args=args );
+	}
+
+	private string function _renderPageHeaderButtons( event, rc, prc, args={} ) {
+		var objectName         = args.objectName ?: "";
+		var recordId           = args.recordId   ?: "";
+		var action             = ListLast( rc.event ?: "", "." );
+		var actionsWithButtons = [ "viewrecord", "editdashboardlayout" ];
+		var dropdownActions    = []
+		var actions            = []
+		var rendered           = "";
+
+		if ( actionsWithButtons.findNoCase( action ) ) {
+
+			if( action == "viewrecord" ) {
+
+				actions.append( {
+					  link      = "##"
+					, btnClass  = "btn-favourite is-active" // .is-active to make the star filled
+					, iconClass = ""
+					, title     = renderView( view="/admin/admindashboards/layoutGrid/icon-star" )
+				} );
+
+				actions.append( {
+					  link      = event.buildAdminLink( objectName=objectName, operation="editdashboardlayout", recordId=recordId )
+					, btnClass  = "btn-primary"
+					, iconClass = ""
+					, title     = translateResource( "preside-objects.admin_dashboard:gridlayout.editlayout.btn" )
+				} );
+
+				dropdownActions = customizationService.runCustomization(
+					  objectName     = objectName
+					, action         = "getTopRightButtonsFor#action#"
+					, defaultHandler = "admin.datamanager.getTopRightButtonsFor#action#"
+					, args           = args
+				);
+
+				customizationService.runCustomization(
+					  objectName     = objectName
+					, action         = "extraTopRightButtons"
+					, args           = { objectName=objectName, action=action, actions=actions }
+				);
+
+				// Re-label buttons
+				for( var menuAction in dropdownActions ) {
+
+					// Edit Button
+					if( menuAction.title == translateResource( uri="cms:datamanager.editRecord.btn" ) ) {
+						menuAction.title = translateResource( uri="preside-objects.admin_dashboard:gridlayout.edit.btn" )
+					}
+
+					// Clone Button
+					if( menuAction.title == translateResource( uri="cms:datamanager.cloneRecord.btn" ) ) {
+						menuAction.title = translateResource( uri="preside-objects.admin_dashboard:gridlayout.clone.btn" )
+					}
+
+					// Delete Button
+					if( menuAction.title == translateResource( uri="cms:datamanager.deleteRecord.btn" ) ) {
+						menuAction.title = translateResource( uri="preside-objects.admin_dashboard:gridlayout.delete.btn" )
+					}
+				}
+			}
+
+			if( action == "editdashboardlayout" ) {
+
+				actions.append( {
+					  link      = event.buildAdminLink( linkto="AdminDashboards.cancelEditDashboardLayout", querystring="dashboardId=#recordId#" )
+					, btnClass  = "btn-link"
+					, iconClass = ""
+					, title     = translateResource( "preside-objects.admin_dashboard:gridlayout.cancel.btn" )
+				} );
+
+				actions.append( {
+					  link      = event.buildAdminLink( linkto="AdminDashboards.saveEditDashboardLayout", querystring="dashboardId=#recordId#" )
+					, btnClass  = "js-save-layout btn-primary"
+					, iconClass = ""
+					, title     = translateResource( "preside-objects.admin_dashboard:gridlayout.save.btn" )
+				} );
+
+				actions.append( {
+					  link      = "##"
+					, btnClass  = "js-grid-auto-layout btn-default-invert"
+					, iconClass = ""
+					, title     = renderView( view="/admin/admindashboards/layoutGrid/icon-grid-sm" )
+				} );
+			}
+		}
+
+		return renderView( view="/admin/admindashboards/layoutGrid/_pageTitleButtons", args={ actions=actions, dropdownActions=dropdownActions } );
+	}
+
+	private string function topRightButtons( event, rc, prc, args={} ) {
+		return "";
 	}
 
 	private void function preCloneRecordAction( event, rc, prc, args={} ) {
@@ -296,6 +398,51 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 		);
 	}
 
+	public void function editDashboardLayout( event, rc, prc ) {
+		var objectName = "admin_dashboard"
+		var recordId   = rc.id ?: "";
+
+		event.initializeDatamanagerPage( objectName=objectName, recordId=recordId, includeAllFormulaFields=true );
+
+		if ( !isQuery( prc.record ) || !prc.record.recordcount ) {
+			messageBox.error( translateResource( uri="cms:datamanager.recordNotFound.error", data=[ prc.objectTitle ?: objectName  ] ) );
+			setNextEvent( url=event.buildAdminLink( objectName=objectName ) );
+		}
+
+		var record             = QueryRowToStruct( prc.record );
+		    record.datecreated = _getNonVersionDateCreated( objectName, recordId );
+
+		var defaultTabMethod = variables.sidebarNavigation ? "_tabWithSidebar" : "_tabs";
+		prc.tabs  = customizationService.runCustomization(
+			  objectName     = objectName
+			, action         = "renderTabs"
+			, defaultHandler = "admin.datamanager.#objectName#.#defaultTabMethod#"
+			, args           = {
+				  objectName = objectName
+				, recordId   = prc.recordId
+				, record     = record
+			  }
+		);
+
+		prc.topRightButtons = customizationService.runCustomization(
+			  objectName     = objectName
+			, action         = "topRightButtons"
+			, defaultHandler = "admin.datamanager.topRightButtons"
+			, args           = { objectName=objectName, action="viewRecord", record=record, recordId=prc.recordId }
+		);
+
+		event.setView( "/admin/datamanager/_viewRecord" );
+	}
+
+	private string function buildEditDashboardLayoutLink( event, rc, prc, args={} ) {
+		var qs = "id=#( args.recordId ?: "" )#";
+
+		if ( Len( Trim( args.queryString ?: "" ) ) ) {
+			qs &= "&#args.queryString#";
+		}
+
+		return event.buildAdminLink( linkto="datamanager.admin_dashboard.editdashboardlayout", querystring=qs );
+	}
 
 // PRIVATE HELPER METHODS
 	private boolean function _listFindOneOf( required string list1, required string list2 ) {

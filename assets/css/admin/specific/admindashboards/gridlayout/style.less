@@ -1,0 +1,231 @@
+.presidecms {
+
+	.page-content {
+
+		.page-header {
+
+			&.with-buttons {
+				display         : flex;
+				justify-content : space-between;
+				align-items     : center;
+				gap             : 12px;
+			}
+
+			h1 {
+				color : var( --color-neutral-100, #21262B );
+
+				small {
+					color       : var( --color-neutral-80, #494F55 );
+					font-size   : var( --font-size-body-sm, 12px );
+					font-style  : normal;
+					font-weight : 400;
+					line-height : normal;
+					margin-top  : 5px;
+					margin-left : 0;
+				}
+			}
+
+			&-button-group {
+				display     : flex;
+				align-items : center;
+				gap         : 12px;
+
+				.btn-group {
+
+					.dropdown-toggle {
+						border-radius : var( --button-border-radius, 4px );
+					}
+				}
+			}
+		}
+	}
+
+	.grid-stack {
+		margin : -16px;
+
+		&.action-editdashboardlayout {
+
+			.grid-stack-item {
+
+				&-content {
+					border-color : var( --color-info-100, #429AE5 );
+				}
+
+				&.ui-resizable-autohide {
+
+					.grid-stack-item-content {
+						border-color : var( --color-neutral-20, #D2D3D5 );
+					}
+				}
+			}
+		}
+	}
+
+	.grid-stack-item {
+
+		&-content {
+			border-radius : 10px;
+			border        : 1px solid var( --color-neutral-20, #D2D3D5 );
+			background    : #FFF;
+		}
+
+		> .ui-resizable-handle {
+			background-image : none;
+			background-color : var( --color-info-100, #429AE5 );
+			border-radius    : 100px;
+			width            : 14px;
+			height           : 14px;
+			transform        : translateX(6px) translateY(6px);
+		}
+
+		.admin-dashboard-widget {
+			border         : 0;
+			height         : 100%;
+			margin         : 0;
+			display        : flex;
+			flex-direction : column;
+			gap            : 0;
+
+			.widget {
+
+				&-header {
+					min-height      : auto;
+					padding         : 20px;
+					border          : 0;
+					background      : none;
+					display         : flex;
+					align-items     : center;
+					justify-content : space-between;
+					gap             : 10px;
+
+					&:before,
+					&:after {
+						display : none;
+					}
+
+					> .widget-title {
+						font-weight : var( --font-weight-bold, 600 );
+						line-height : initial;
+					}
+
+
+				}
+
+				&-toolbar {
+					position    : relative;
+					padding     : 0;
+					border      : 0;
+					line-height : initial;
+					flex-shrink : 0;
+
+					&:before {
+						display : none;
+					}
+
+					.widget-draggable-handle {
+						cursor : move;
+					}
+				}
+
+				&-body,
+				&-dynamic-content {
+					height : 100%;
+				}
+
+				&-main {
+					height  : 100%;
+					padding : 0 20px 20px 20px;
+
+					// Widgets with chartjs
+					.chart-canvas-container {
+						padding : 0 30px;
+						height  : 100%;
+					}
+
+					.chart-canvas {
+						max-height : 95%;
+					}
+
+					// Metric: single value widget
+					.dataviz-single-metric {
+						color       : var( --color-neutral-100, #21262B );
+						font-size   : 2.3em !important; // 30px
+						font-style  : normal;
+						font-weight : var( --font-weight-bold, 600 );
+						line-height : normal;
+						text-align  : left;
+					}
+
+					// Data tables (filter results widget)
+					.dataTables_wrapper {
+						margin-top : 0;
+					}
+
+					.datatable-container {
+
+						thead {
+
+							th {
+								background     : var( --color-primary-100, #3C1642 );
+								border-bottom  : 0;
+								color          : white;
+								font-weight    : var( --font-weight-bold, 600 );
+								padding-top    : 12px;
+								padding-right  : 12px;
+								padding-bottom : 12px;
+								padding-left   : 12px;
+								vertical-align : middle;
+
+								&:first-child {
+									border-radius: 8px 0px 0px 8px !important;
+								}
+
+								&:last-child {
+									border-radius: 0px 8px 8px 0px !important;
+								}
+							}
+						}
+
+						tbody {
+
+							tr {
+
+								&:first-child {
+
+									td {
+										border-top : 0;
+									}
+								}
+
+								td {
+									padding-top    : 16px;
+									padding-right  : 12px;
+									padding-bottom : 16px;
+									padding-left   : 12px;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	.grid-stack-add a {
+		border-radius   : 10px;
+		border          : 1px dashed var( --color-neutral-20, #D2D3D5 );
+		color           : var( --color-info-100, #429AE5 );
+		font-weight     : var( --font-weight-bold, 600 );
+		margin-bottom   : 32px;
+		display         : flex;
+		padding         : 30px 0px;
+		flex-direction  : row;
+		justify-content : center;
+		align-items     : center;
+		gap             : 5px;
+
+		.fa {
+			font-size : 1.5em;
+		}
+	}
+}
