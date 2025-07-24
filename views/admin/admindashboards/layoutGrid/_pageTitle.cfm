@@ -6,22 +6,22 @@
 	param name="args.customImg"         type="string" default="";
 
 	icon         = ReFind( "^fa\-", args.icon ) ? args.icon : "fa-#args.icon#";
-	haveButtons  = Len( Trim( args.pageHeaderButtons ) );
+	hasButtons   = Len( Trim( args.pageHeaderButtons ) );
 	hasIcon      = Len( Trim( args.icon ) );
 	hasCustomImg = Len( Trim( args.customImg ) );
 
 	if( hasCustomImg ) {
-		customImg   = event.buildLink( assetId=args.customImg, derivative="customHeaderImg75px" );
-		hasIcon = false;
+		customImg = event.buildLink( assetId=args.customImg, derivative="customHeaderImg75px" );
+		hasIcon   = false;
 	}
 </cfscript>
 
 <cfoutput>
-	<div class="page-header<cfif haveButtons> with-buttons</cfif><cfif hasIcon> with-icon</cfif><cfif hasCustomImg> with-image</cfif>">
+	<div class="page-header<cfif hasButtons> with-buttons</cfif><cfif hasIcon> with-icon</cfif><cfif hasCustomImg> with-image</cfif>">
 		<h1>
-			<cfif hasIcon >
+			<cfif hasIcon>
 				<i class="fa fa-fw #icon#"></i>
-			<cfelseif hasCustomImg >
+			<cfelseif hasCustomImg>
 				<span class="user-image"><img src="#customImg#" alt=""></span>
 			</cfif>
 
@@ -36,7 +36,7 @@
 				</span>
 			</cfif>
 		</h1>
-		<cfif haveButtons >
+		<cfif hasButtons>
 			<div class="page-header-button-group">
 				#args.pageHeaderButtons#
 			</div>

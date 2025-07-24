@@ -2,7 +2,7 @@
 
 	const action = cfrequest.dashboard_action || "";
 
-	var grid = GridStack.init( {
+	const grid = GridStack.init( {
 		  column        : 4
 		, cellHeight    : 210
 		, margin        : 16
@@ -19,7 +19,7 @@
 	grid.on( "change", function( event, items ) {
 
 		const dashboardId = $( event.target ).closest( ".admin-dashboard-container" ).data( "dashboardId" ),
-			  widgets     = [];
+		      widgets     = [];
 
 		items.forEach( function( item ) {
 
@@ -35,18 +35,18 @@
 		});
 
 		$.ajax( buildAdminLink( "admindashboards", "updateGridWidgetOrderAndSize" ), {
-			  data     : { isTemporary: true, dashboardId:dashboardId, widgets: JSON.stringify( widgets ) }
-			, method   : "POST"
+			  data   : { isTemporary: true, dashboardId: dashboardId, widgets: JSON.stringify( widgets ) }
+			, method : "POST"
 		} );
 	} );
 
 	$( ".js-save-layout" ).click( function( e ) {
 		e.preventDefault();
 
-		const dashboardId = grid.el.parentElement.dataset["dashboardId"]
-			  gridItems   = grid.getGridItems(),
-			  thisAnchor  = this,
-			  widgets     = [];
+		const dashboardId = grid.el.parentElement.dataset[ "dashboardId" ]
+		      gridItems   = grid.getGridItems(),
+		      thisAnchor  = this,
+		      widgets     = [];
 
 		gridItems.forEach( function( item ) {
 			widgets.push( {
@@ -61,8 +61,8 @@
 		});
 
 		$.ajax( buildAdminLink( "admindashboards", "updateGridWidgetOrderAndSize" ), {
-			  data     : { dashboardId:dashboardId, widgets: JSON.stringify( widgets ) }
-			, method   : "POST"
+			  data   : { dashboardId: dashboardId, widgets: JSON.stringify( widgets ) }
+			, method : "POST"
 		} ).always( function( data ) {
 			window.location = thisAnchor.href;
 		} );

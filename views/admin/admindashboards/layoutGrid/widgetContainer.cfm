@@ -41,15 +41,10 @@
 				data-config-instance-id = "#args.configInstanceId#">
 			<div class="widget-header">
 				<h4 class="widget-title">
-					<!---
-						<cfif args.icon.len()>
-							<i class="fa fa-fw #args.icon#"></i>
-						</cfif>
-					--->
 					<span>#args.title#</span>
 				</h4>
 				<div class="widget-toolbar">
-					<cfif isEditDashboardLayout >
+					<cfif isEditDashboardLayout>
 						#args.additionalMenu#
 						<a class="widget-draggable-handle" title="#htmlEditFormat( moveTitle )#"><i class="fa fa-fw fa-arrows"></i></a>
 						<cfif args.hasConfig>

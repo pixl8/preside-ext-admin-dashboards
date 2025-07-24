@@ -400,8 +400,8 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 			setNextEvent( url=event.buildAdminLink( objectName=objectName ) );
 		}
 
-		var record   = QueryRowToStruct( prc.record );
-		record.datecreated = _getNonVersionDateCreated( objectName, recordId );
+		var record             = QueryRowToStruct( prc.record );
+		    record.datecreated = _getNonVersionDateCreated( objectName, recordId );
 
 		var defaultTabMethod = variables.sidebarNavigation ? "_tabWithSidebar" : "_tabs";
 		prc.tabs  = customizationService.runCustomization(

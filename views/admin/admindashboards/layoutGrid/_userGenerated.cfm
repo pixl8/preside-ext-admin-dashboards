@@ -30,7 +30,7 @@
 
 	<div class="admin-dashboard-container" data-dashboard-id="#dashboardId#">
 
-		<cfif canEditDashboard AND isEditDashboardLayout >
+		<cfif canEditDashboard && isEditDashboardLayout>
 			<div class="grid-stack-add">
 				<a href="#addLink#" data-toggle="bootbox-modal" data-target="##add-widget-modal" data-buttons="cancel" data-modal-class="page-type-picker" title="#addTitle#">
 					<i class="fa fa-fw fa-plus"></i>
@@ -40,14 +40,14 @@
 		</cfif>
 
 		<div class="grid-stack action-#action#" >
-			<cfloop array="#widgets#" item="widget" index="i" >
+			<cfloop array="#widgets#" item="widget" index="i">
 				<cfif isEditDashboardLayout >
 					<cfset gridConfig = widget.editTempGridConfig ?: {} >
 				<cfelse>
 					<cfset gridConfig = widget.gridConfig ?: {} >
 				</cfif>
 				<div class="grid-stack-item"
-					<cfloop collection="#gridConfig#" item="val" key="attr" >
+					<cfloop collection="#gridConfig#" item="val" key="attr">
 						gs-#attr#="#val#"
 					</cfloop>
 				>
