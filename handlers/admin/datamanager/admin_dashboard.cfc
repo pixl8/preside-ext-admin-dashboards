@@ -325,7 +325,18 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 	}
 
 	private string function topRightButtons( event, rc, prc, args={} ) {
-		return "";
+		var rendered = "";
+
+		if( args.action != "viewRecord" ) {
+			rendered = runEvent(
+				  event          = "admin.datamanager.topRightButtons"
+				, private        = true
+				, prePostExempt  = true
+				, eventArguments = { args=arguments.args }
+			);
+		}
+
+		return rendered;
 	}
 
 	private void function preCloneRecordAction( event, rc, prc, args={} ) {
