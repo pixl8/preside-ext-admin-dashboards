@@ -178,7 +178,28 @@ component extends="preside.system.base.AdminHandler" {
 		prc.pageTitle    = prc.recordLabel ?: prc.pageTitle;
 		prc.pageSubtitle = len( prc.recordLabel ?: "" ) ? "" : prc.pageSubtitle;
 
+		args.dashboardAlert = _renderDashboardAlert( argumentCollection=arguments );
+
 		return renderView( view="/admin/adminDashboards/recordView", args=args );
+	}
+
+	private string function _renderDashboardAlert( event, rc, prc, args={} ) {
+		var interceptArgs = {
+			  objectName   = args.objectName ?: ""
+			, recordId     = args.recordId   ?: ""
+			, record       = prc.record      ?: {}
+			, action       = ListLast( rc.event ?: "", "." )
+
+			// Default dashboard alert values
+			, alertType    = "alert-warning"
+			, headingIcon  = "fa-warning"
+			, heading      = translateResource( "admindashboards:actions-list.heading" )
+			, alertContent = "" // Populate in the interceptor
+		};
+
+		announceInterception( "preRenderDashboardAlert", interceptArgs );
+
+		return renderView( view="/admin/adminDashboards/_dashboardAlert", args=interceptArgs );
 	}
 
 	private void function preCloneRecordAction( event, rc, prc, args={} ) {
