@@ -45,6 +45,33 @@ component extends="preside.system.base.AdminHandler" {
 		event.setLayout( "adminModalDialog" );
 	}
 
+	public void function exportModal( event, rc, prc ) {
+		var widgetId    = rc.widgetId         ?: "";
+		var dashboardId = rc.dashboardId      ?: "";
+		var instanceId  = rc.configInstanceId ?: "";
+
+		if ( !widgetService.userCanViewWidget( widgetId ) ) {
+			event.adminAccessDenied();
+		}
+		if ( !widgetService.widgetHasConfigForm( widgetId ) ) {
+			event.notFound();
+		}
+
+		prc.config = widgetService.getWidgetConfiguration(
+			  dashboardId = dashboardId
+			, widgetId    = widgetId
+			, instanceId  = instanceId
+		);
+
+		prc.config.widgetId = prc.config.widgetId ?: widgetId;
+
+		if ( StructIsEmpty( prc.config ) ) {
+			event.notFound();
+		}
+
+		event.setLayout( "adminModalDialog" );
+	}
+
 	public void function saveWidgetConfig( event, rc, prc ) {
 		var widgetId    = rc.widgetId ?: "";
 		var dashboardId = rc.dashboardId ?: "";
@@ -91,11 +118,33 @@ component extends="preside.system.base.AdminHandler" {
 		return renderView( view="/admin/admindashboards/_userGenerated", args=dashboard );
 	}
 
+	public void function importDialog( event, rc, prc ) {
+		event.setLayout( "adminModalDialog" );
+		event.include( "/js/admin/specific/admindashboards/importDialog/" );
+		event.setView( view="admin/admindashboards/importDialog" );
+	}
+
 	public void function widgetDialog( event, rc, prc ) {
 		event.setLayout( "adminModalDialog" );
 		prc.widgets = _getSortedAndTranslatedAdminWidgets();
+		prc.grouped = {};
 
-		event.setView( view="admin/admindashboards/browserDialog", nolayout=true );
+		for ( var widget in prc.widgets ) {
+			var groupId = Len( widget.group ?: "" ) ? widget.group : "uncategorised";
+
+			prc.grouped[ groupId ] = prc.grouped[ groupId ] ?: [];
+			ArrayAppend( prc.grouped[ groupId ], widget );
+		}
+
+		prc.groups = StructKeyArray( prc.grouped );
+		ArrayDelete( prc.groups, "uncategorised" );
+		ArraySort(   prc.groups, "textnocase" );
+
+		if ( ArrayLen( prc.groups ) ) {
+			event.include( "/js/admin/specific/admindashboards/widgetDialog/" );
+		}
+
+		event.setView( view="admin/admindashboards/browserDialog" );
 	}
 
 	public function addWidget( event, rc, prc, args={} ) {
@@ -105,15 +154,23 @@ component extends="preside.system.base.AdminHandler" {
 		var instanceId  = createUUID();
 		var nextSlot    = widgetService.nextWidgetSlot( dashboardId, column );
 		var title       = widgetService.getInstanceTitle( dashboardId, widgetId );
+		var config      = {};
+		var configKeys  = ArrayFilter( StructKeyArray( arguments.rc ), function(_key) {
+			return ListFirst( _key, "-" ) == "config";
+		} );
+
+		for ( var configKey in configKeys ) {
+			config[ ListLast( configKey, "-" ) ] = arguments.rc[ configKey ];
+		}
 
 		widgetService.addWidget(
 			  dashboardId = dashboardId
 			, widgetId    = widgetId
 			, instanceId  = instanceId
 			, column      = column
-			, slot         = nextSlot
+			, slot        = nextSlot
 			, title       = title
-			, config      = {}
+			, config      = config
 		);
 
 		setNextEvent( url=event.buildAdminLink( objectName="admin_dashboard", recordId=dashboardId ) );
@@ -169,15 +226,22 @@ component extends="preside.system.base.AdminHandler" {
 				widget.title       = translateResource( uri=widget.title      , defaultValue=widget.title );
 				widget.description = translateResource( uri=widget.description, defaultValue="" );
 				widget.icon        = translateResource( uri=widget.icon       , defaultValue="fa-magic" );
+				widget.group       = translateResource( uri="admin.admindashboards.widget.#id#:group", defaultValue="" );
+				widget.isTemplate  = false;
 
-				tempArray.append( widget );
+				ArrayAppend( tempArray, widget );
+
+				var widgetTemplates = widgetService.getDashboardWidgetTemplates( widgetId=widget.id, widgetConfig=widget );
+				if ( ArrayLen( widgetTemplates ) ) {
+					ArrayAppend( tempArray, widgetTemplates, true );
+				}
 			}
 		}
 
-		tempArray.sort( function( widget1, widget2 ){
+		ArraySort( tempArray, function( widget1, widget2 ){
 			return widget1.title == widget2.title ? 0 : ( widget1.title > widget2.title ? 1 : -1 );
 		} );
 
-		return arrayOfStructsToQuery( "id,title,description,icon", tempArray );
+		return arrayOfStructsToQuery( "id,title,group,description,icon,isTemplate,config", tempArray );
 	}
 }

@@ -26,7 +26,12 @@ component {
 
 // PRIVATE HELPERS
 	private void function _setupInterceptors( conf ) {
+		conf.interceptors = conf.interceptors ?: [];
+		ArrayAppend( conf.interceptors, { class="app.extensions.preside-ext-admin-dashboards.interceptors.adminDashboardsInterceptors", properties={} } );
+
 		conf.interceptorSettings.customInterceptionPoints = conf.interceptorSettings.customInterceptionPoints ?: [];
-		conf.interceptorSettings.customInterceptionPoints.append( "onRenderAdminWidgetContainer" );
+		ArrayAppend( conf.interceptorSettings.customInterceptionPoints, "onRenderAdminWidgetContainer" );
+		ArrayAppend( conf.interceptorSettings.customInterceptionPoints, "onSyncAdminDashboardWidgetTemplates" );
+		ArrayAppend( conf.interceptorSettings.customInterceptionPoints, "onGetAdminDashboardWidgetTemplates" );
 	}
 }

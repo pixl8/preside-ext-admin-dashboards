@@ -32,6 +32,11 @@ component {
 
 		return widgets;
 	}
+	public struct function getWidget( required string widgetId ) {
+		var widgets = Duplicate( _getWidgets() );
+
+		return widgets[ arguments.widgetId ] ?: {};
+	}
 
 	public string function renderDashboard(
 		  required string  dashboardId
@@ -341,6 +346,123 @@ component {
 		}
 
 		return $helpers.isTrue( result ?: "" );
+	}
+
+	public void function syncDashboardWidgetTemplates() {
+		var coldbox     = $getColdbox();
+		var templateDao = $getPresideObject( "admin_dashboard_widget_template" );
+		var allWidgets  = getWidgets();
+
+		for ( var widgetId in allWidgets ) {
+			if ( isUserDashboardWidget( widgetId=widgetId ) ) {
+				var widgetTemplateEvent = "admin.admindashboards.widget.#widgetId#.getDashboardWidgetTemplates";
+				var widgetConfig        = allWidgets[ widgetId ];
+				var widgetTemplates     = [];
+
+				if ( coldbox.handlerExists( widgetTemplateEvent ) ) {
+					widgetConfig.title       = $translateResource( uri=widgetConfig.title                             , defaultValue=widgetConfig.title );
+					widgetConfig.description = $translateResource( uri=widgetConfig.description                       , defaultValue="" );
+					widgetConfig.icon        = $translateResource( uri=widgetConfig.icon                              , defaultValue="fa-magic" );
+					widgetConfig.group       = $translateResource( uri="admin.admindashboards.widget.#widgetId#:group", defaultValue="" );
+
+					widgetTemplates = coldbox.runEvent(
+						  event          = widgetTemplateEvent
+						, private        = true
+						, prePostExempt  = true
+						, eventArguments = { args=widgetConfig }
+					);
+				}
+
+				widgetTemplates = IsArray( widgetTemplates ) ? widgetTemplates : [];
+				if ( ArrayLen( widgetTemplates ) ) {
+					$announceInterception( "onSyncAdminDashboardWidgetTemplates", {
+						  widgetId        = widgetId
+						, widgetConfig    = widgetConfig
+						, widgetTemplates = widgetTemplates
+					} );
+
+					var allTemplatesHash = [];
+					for ( var template in widgetTemplates ) {
+						template.config = SerializeJSON( template.config );
+
+						var templateConfigHash = Hash( template.config );
+						var templateQuery      = templateDao.selectData(
+							  filter       = { widget_id=widgetId, config_hash=templateConfigHash }
+							, selectFields = [ "id" ]
+						);
+
+						ArrayAppend( allTemplatesHash, templateConfigHash );
+
+						if ( Len( Trim( templateQuery.id ?: "" ) ) ) {
+							templateDao.updateData( id=templateQuery.id, data={
+								  widget_id   = widgetId
+								, title       = template.title
+								, description = template.description
+								, group       = template.group
+								, config      = template.config
+							} );
+						} else {
+							templateDao.insertData( data={
+								  widget_id   = widgetId
+								, title       = template.title
+								, description = template.description
+								, group       = template.group
+								, config_hash = templateConfigHash
+								, config      = template.config
+							} );
+						}
+					}
+
+					templateDao.deleteData(
+						  filter       = "widget_id = :widget_id AND config_hash NOT IN (:outdated)"
+						, filterParams = {
+							  widget_id = widgetId
+							, outdated  = { type="cf_sql_varchar", value=ArrayToList( allTemplatesHash ), list=true }
+						}
+					);
+				}
+			}
+		}
+	}
+
+	public array function getDashboardWidgetTemplates(
+		  required string widgetId
+		,          struct widgetConfig = getWidget( widgetId=arguments.widgetId )
+	) {
+		var widgetTemplates = [];
+		var templatesQuery  = $getPresideObject( "admin_dashboard_widget_template" ).selectData(
+			  filter       = { widget_id=arguments.widgetId }
+			, selectFields = [
+				  "title"
+				, "description"
+				, "group"
+				, "config"
+			]
+		);
+
+		for ( var template in templatesQuery ) {
+			if ( Len( template.config ?: "" ) && IsJSON( template.config ) ) {
+				var templateConfig = Duplicate( arguments.widgetConfig );
+
+				StructAppend( templateConfig, {
+					  title       = template.title
+					, description = template.description
+					, group       = template.group
+					, config      = DeserializeJSON( template.config )
+					, isTemplate  = true
+				} );
+
+				ArrayAppend( widgetTemplates, templateConfig );
+			}
+		}
+
+		$announceInterception( "onGetAdminDashboardWidgetTemplates", {
+			  widgetId        = arguments.widgetId
+			, widgetConfig    = arguments.widgetConfig
+			, widgetTemplates = widgetTemplates
+		} );
+
+		return widgetTemplates;
 	}
 
 	public boolean function isEnabled( required string widgetId ) {
