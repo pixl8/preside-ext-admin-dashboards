@@ -191,10 +191,11 @@ component extends="preside.system.base.AdminHandler" {
 			, action       = ListLast( rc.event ?: "", "." )
 
 			// Default dashboard alert values
-			, alertType    = "alert-warning"
-			, headingIcon  = "fa-warning"
-			, heading      = translateResource( "admindashboards:actions-list.heading" )
-			, alertContent = "" // Populate in the interceptor
+			, alertType         = "alert-warning"
+			, headingIcon       = "fa-warning"
+			, heading           = translateResource( "admindashboards:actions-list.heading" )
+			, alertContent      = "" // Populate in the interceptor
+			, isCollapsibleOpen = true
 		};
 
 		announceInterception( "preRenderDashboardAlert", interceptArgs );
