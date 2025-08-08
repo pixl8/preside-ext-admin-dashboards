@@ -233,7 +233,29 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 
 		prc.pageHeaderButtons = _renderPageHeaderButtons( argumentCollection=arguments );
 
+		args.dashboardAlert = _renderDashboardAlert( argumentCollection=arguments );
+
 		return renderView( view="/admin/adminDashboards/recordView", args=args );
+	}
+
+	private string function _renderDashboardAlert( event, rc, prc, args={} ) {
+		var interceptArgs = {
+			  objectName   = args.objectName ?: ""
+			, recordId     = args.recordId   ?: ""
+			, record       = prc.record      ?: {}
+			, action       = ListLast( rc.event ?: "", "." )
+
+			// Default dashboard alert values
+			, alertType         = "alert-warning"
+			, headingIcon       = "fa-warning"
+			, heading           = translateResource( "admindashboards:actions-list.heading" )
+			, alertContent      = "" // Populate in the interceptor
+			, isCollapsibleOpen = true
+		};
+
+		announceInterception( "preRenderDashboardAlert", interceptArgs );
+
+		return renderView( view="/admin/adminDashboards/_dashboardAlert", args=interceptArgs );
 	}
 
 	private string function _renderPageHeaderButtons( event, rc, prc, args={} ) {

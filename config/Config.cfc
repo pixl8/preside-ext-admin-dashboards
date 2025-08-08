@@ -29,5 +29,6 @@ component {
 		conf.interceptorSettings.customInterceptionPoints = conf.interceptorSettings.customInterceptionPoints ?: [];
 		conf.interceptorSettings.customInterceptionPoints.append( "onRenderAdminWidgetContainer" );
 		conf.interceptorSettings.customInterceptionPoints.append( "onRenderWidgetConfigForm" );
+		conf.interceptorSettings.customInterceptionPoints.append( "preRenderDashboardAlert" );
 	}
 }
