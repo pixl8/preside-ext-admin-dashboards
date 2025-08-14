@@ -24,12 +24,12 @@
 		items.forEach( function( item ) {
 
 			widgets.push( {
-				  id         = $( item.el ).find( ".admin-dashboard-widget" ).data( "config-instance-id" )
-				, gridConfig = {
-					  x = item.x
-					, y = item.y
-					, w = item.w
-					, h = item.h
+				  id         : $( item.el ).find( ".admin-dashboard-widget" ).data( "config-instance-id" )
+				, gridConfig : {
+					  x : item.x
+					, y : item.y
+					, w : item.w
+					, h : item.h
 				}
 			} );
 		});
@@ -50,12 +50,12 @@
 
 		gridItems.forEach( function( item ) {
 			widgets.push( {
-				  id         = $( item ).find( ".admin-dashboard-widget" ).data( "config-instance-id" )
-				, gridConfig = {
-					  x = item.gridstackNode.x
-					, y = item.gridstackNode.y
-					, w = item.gridstackNode.w
-					, h = item.gridstackNode.h
+				  id         : $( item ).find( ".admin-dashboard-widget" ).data( "config-instance-id" )
+				, gridConfig : {
+					  x : item.gridstackNode.x
+					, y : item.gridstackNode.y
+					, w : item.gridstackNode.w
+					, h : item.gridstackNode.h
 				}
 			} );
 		});

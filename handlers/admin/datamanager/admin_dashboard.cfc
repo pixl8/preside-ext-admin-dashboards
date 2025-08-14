@@ -271,12 +271,15 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 
 			if( action == "viewrecord" ) {
 
+				/*
+				// Temporarily remove favorite button.
 				actions.append( {
 					  link      = "##"
 					, btnClass  = "btn-favourite is-active" // .is-active to make the star filled
 					, iconClass = ""
 					, title     = renderView( view="/admin/admindashboards/layoutGrid/icon-star" )
 				} );
+				*/
 
 				actions.append( {
 					  link      = event.buildAdminLink( objectName=objectName, operation="editdashboardlayout", recordId=recordId )
