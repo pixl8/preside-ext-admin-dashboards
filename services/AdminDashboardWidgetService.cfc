@@ -298,12 +298,17 @@ component {
 		} );
 	}
 
-	public string function renderWidgetConfigForm( required string dashboardId, required string widgetId, required string instanceId ) {
+	public string function getWidgetConfigFormName( required string dashboardId, required string widgetId, required string instanceId ) {
 		var formName = "admin.admindashboards.widget.#widgetId#";
 		if ( _isUserGeneratedDashboard( dashboardId ) ) {
 			formName = _getFormsService().getMergedFormName( formName, "admin.admindashboards.config" );
 		}
 
+		return formName;
+	}
+
+	public string function renderWidgetConfigForm( required string dashboardId, required string widgetId, required string instanceId ) {
+		var formName        = getWidgetConfigFormName( argumentCollection=arguments );
 		var savedConfigData = getWidgetConfiguration( arguments.dashboardId, arguments.widgetId, arguments.instanceId );
 		var renderFormArgs  = { formName=formName, savedData=savedConfigData };
 

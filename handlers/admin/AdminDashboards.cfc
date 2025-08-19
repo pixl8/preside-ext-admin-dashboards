@@ -62,18 +62,43 @@ component extends="preside.system.base.AdminHandler" {
 			event.notFound();
 		}
 
+		var formData = event.getCollectionWithoutSystemVars();
+		var formName = widgetService.getWidgetConfigFormName(
+			  dashboardId = dashboardId
+			, widgetId    = widgetId
+			, instanceId  = instanceId
+		);
+
+		var validationResult = validateForm( formName=formName, formData=formData );
+		var interceptData    = {
+			  widgetId         = widgetId
+			, dashboardId      = dashboardId
+			, instanceId       = instanceId
+			, formData         = formData
+			, validationResult = validationResult
+		};
+
+		event.announceInterception( "onValidateWidgetConfigForm", interceptData );
+
+		var validated     = interceptData.validationResult.validated();
+		var errorMessages = validated ? {} : interceptData.validationResult.getMessages();
+		var success       = true && validated;
+
 		try {
-			widgetService.saveWidgetConfiguration(
-				  dashboardId = dashboardId
-				, widgetId    = widgetId
-				, instanceId  = instanceId
-				, requestData = event.getCollectionWithoutSystemVars()
-			);
+			if ( validated ) {
+				widgetService.saveWidgetConfiguration(
+					  dashboardId = dashboardId
+					, widgetId    = widgetId
+					, instanceId  = instanceId
+					, requestData = interceptData.formData
+				);
+			}
 		} catch (any e) {
 			logError(e);
+			success = false;
 		}
 
-		event.renderData( data={ success=true }, type="json" );
+		event.renderData( data={ success=success, errorMessages=errorMessages }, type="json" );
 	}
 
 	private string function renderDashboard( event, rc, prc, args={} ) {
