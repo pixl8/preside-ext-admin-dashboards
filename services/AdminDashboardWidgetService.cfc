@@ -299,18 +299,24 @@ component {
 	}
 
 	public string function getWidgetConfigFormName( required string dashboardId, required string widgetId, required string instanceId ) {
-		var formName = "admin.admindashboards.widget.#widgetId#";
-		if ( _isUserGeneratedDashboard( dashboardId ) ) {
+		var formName        = "admin.admindashboards.widget.#widgetId#";
+		var isUserDashboard = _isUserGeneratedDashboard( dashboardId );
+
+		if ( isUserDashboard ) {
 			formName = _getFormsService().getMergedFormName( formName, "admin.admindashboards.config" );
 		}
 
-		return formName;
+		var formArgs = { formName=formName, widget=arguments, isUserDashboard=isUserDashboard };
+
+		$announceInterception( "onGetWidgetConfigFormName", formArgs );
+
+		return formArgs.formName;
 	}
 
 	public string function renderWidgetConfigForm( required string dashboardId, required string widgetId, required string instanceId ) {
 		var formName        = getWidgetConfigFormName( argumentCollection=arguments );
 		var savedConfigData = getWidgetConfiguration( arguments.dashboardId, arguments.widgetId, arguments.instanceId );
-		var renderFormArgs  = { formName=formName, savedData=savedConfigData };
+		var renderFormArgs  = { formName=formName, savedData=savedConfigData, widget=arguments };
 
 		$announceInterception( "onRenderWidgetConfigForm", renderFormArgs );
 
@@ -321,8 +327,14 @@ component {
 		return _getFormsService().formExists( "admin.admindashboards.widget.#widgetId#" );
 	}
 
-	public void function saveWidgetConfiguration( required string dashboardId, required string widgetId, required string instanceId, required struct requestData ) {
-		var fields = _getFormsService().listFields( formName="admin.admindashboards.widget.#widgetId#" );
+	public void function saveWidgetConfiguration(
+		  required string dashboardId
+		, required string widgetId
+		, required string instanceId
+		, required struct requestData
+		, required string formName
+	) {
+		var fields = _getFormsService().listFields( formName=arguments.formName );
 		var config = {};
 
 		for( var field in fields ) {
@@ -330,6 +342,7 @@ component {
 		}
 
 		if ( _isUserGeneratedDashboard( dashboardId ) ) {
+			StructDelete( arguments.requestData, "widget_title" );
 			var data = { config=SerializeJson( config ) };
 			if ( structKeyExists( arguments.requestData, "widget_title" ) && len( arguments.requestData.widget_title ) ) {
 				data.title = arguments.requestData.widget_title;

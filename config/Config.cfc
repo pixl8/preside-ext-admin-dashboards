@@ -27,9 +27,10 @@ component {
 // PRIVATE HELPERS
 	private void function _setupInterceptors( conf ) {
 		conf.interceptorSettings.customInterceptionPoints = conf.interceptorSettings.customInterceptionPoints ?: [];
-		conf.interceptorSettings.customInterceptionPoints.append( "onRenderAdminWidgetContainer" );
-		conf.interceptorSettings.customInterceptionPoints.append( "onRenderWidgetConfigForm" );
-		conf.interceptorSettings.customInterceptionPoints.append( "preRenderDashboardAlert" );
-		conf.interceptorSettings.customInterceptionPoints.append( "onValidateWidgetConfigForm" );
+		ArrayAppend( conf.interceptorSettings.customInterceptionPoints, "onRenderAdminWidgetContainer" );
+		ArrayAppend( conf.interceptorSettings.customInterceptionPoints, "onGetWidgetConfigFormName" );
+		ArrayAppend( conf.interceptorSettings.customInterceptionPoints, "onRenderWidgetConfigForm" );
+		ArrayAppend( conf.interceptorSettings.customInterceptionPoints, "preRenderDashboardAlert" );
+		ArrayAppend( conf.interceptorSettings.customInterceptionPoints, "onValidateWidgetConfigForm" );
 	}
 }
