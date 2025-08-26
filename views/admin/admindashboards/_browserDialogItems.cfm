@@ -1,42 +1,52 @@
 <cfscript>
 	groupId     = args.groupId ?: "";
-	widgets     = args.widgets    ?: QueryNew('');
-	dashboardId = rc.dashboard    ?: "";
-	column      = rc.column       ?: 1;
+	widgets     = args.widgets ?: QueryNew('');
+	dashboardId = rc.dashboard ?: "";
+	column      = rc.column    ?: 1;
 	linkQs      = "dashboard=#dashboardId#&column=#column#";
 	baseLink    = event.buildAdminLink( linkTo="adminDashboards.addWidget", queryString="#linkQs#&widget={widgetid}" );
 </cfscript>
 
 <cfoutput>
 	<cfif widgets.recordcount>
-		<ul class="list-unstyled admin-dashboard-widget-picker" id="group-#groupId#">
-			<cfloop query="widgets">
-				<cfscript>
-					widgetLink = baseLink.replace( "{widgetid}", widgets.id );
-					widgetIcon = findNoCase(" ", widgets.icon) gt 0 ? widgets.icon : "#widgets.icon#";
+		<cfloop query="widgets">
+			<cfscript>
+				widgetId   = widgets.id;
+				widgetLink = baseLink.replace( "{widgetid}", widgetId );
+				widgetIcon = findNoCase(" ", widgets.icon) gt 0 ? widgets.icon : "#widgets.icon#";
 
-					if ( IsStruct( widgets.config ?: "" ) ) {
-						for ( var key in widgets.config ) {
-							widgetLink &= "&config-#key#=#widgets.config[ key ]#";
-						}
-					}
+				if ( Len( Trim( widgets.recordId ?: "" ) ) ) {
+					widgetLink &= "&templateId=#widgets.recordId#";
+				}
 
-					isTemplate = isTrue( widgets.isTemplate ?: "" );
-				</cfscript>
+				isTemplate = isTrue( widgets.isTemplate ?: "" );
+			</cfscript>
 
-				<li>
-					<a href="#widgetLink#">
-						<i class="fa fa-lg #widgetIcon#"></i>
-						<h4>
-							#widgets.title#
-							<cfif isTemplate>
-								<code>(template)</code>
-							</cfif>
-						</h4>
-						<p>#widgets.description#</p>
-					</a>
-				</li>
-			</cfloop>
-		</ul>
+			<li class="admin-dashboard-widget-item" data-widget-group="#groupId#" data-widget-id="#widgetId#">
+				<a class="admin-dashboard-widget-item-link" href="#widgetLink#">
+					<h4 class="admin-dashboard-widget-item-title">
+						#widgets.title#
+					</h4>
+
+					<cfif !isTemplate>
+						<div class="admin-dashboard-widget-tags">
+							<span class="admin-dashboard-widget-tag-item">
+								#translateResource( uri="admindashboards:item.tag.uncategorised.label" )#
+							</span>
+						</div>
+					</cfif>
+
+					<cfif Len( Trim( widgets.description ?: "" ) )>
+						<p class="admin-dashboard-widget-item-desc">
+							#widgets.description#
+						</p>
+					</cfif>
+
+					<cfif Len( Trim( widgets.previewImg ?: "" ) )>
+						<img class="admin-dashboard-widget-item-image" src="#widgets.previewImg#" />
+					</cfif>
+				</a>
+			</li>
+		</cfloop>
 	</cfif>
 </cfoutput>

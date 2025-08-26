@@ -25,11 +25,11 @@
 						<div class="dashboard-column-add">
 							<a href="#Replace( importLink, "{column}", c )#" class="widget-import-config-link" title="#addTitle#" data-dashboard-id="#dashboardId#" data-column-index="#c#">
 								<button class="btn btn-success btn-sm">
-									<i class="fa fa-fw fa-upload"></i>
+									<i class="fa fa-fw fa-download"></i>
 									#importTitle#
 								</button>
 							</a>
-							<a href="#replace( addLink, "{column}", c )#" data-toggle="bootbox-modal" data-target="##add-widget-modal" data-buttons="cancel" data-modal-class="page-type-picker" title="#addTitle#">
+							<a href="#replace( addLink, "{column}", c )#" data-toggle="bootbox-modal" data-target="##add-widget-modal" data-buttons="cancel" data-modal-class="full-screen-dialog" title="#addTitle#">
 								<button class="btn btn-success btn-sm">
 									<i class="fa fa-fw fa-plus"></i>
 									#addTitle#

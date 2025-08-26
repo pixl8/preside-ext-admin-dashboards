@@ -348,6 +348,27 @@ component {
 		return $helpers.isTrue( result ?: "" );
 	}
 
+	public boolean function isSystemWidgetTemplate( required string templateId ) {
+		return $getPresideObject( "admin_dashboard_widget_template" ).dataExists( filter={
+			  id        = arguments.templateId
+			, is_system = true
+		} );
+	}
+
+	public struct function getSystemWidgetTemplateConfig( required string templateId ) {
+		var templateConfig = {};
+		var templateDetail = $getPresideObject( "admin_dashboard_widget_template" ).selectData(
+			  id           = arguments.templateId
+			, selectFields = [ "config" ]
+		);
+
+		if ( Len( templateDetail.config ?: "" ) && IsJSON( templateDetail.config ) ) {
+			templateConfig = DeserializeJSON( templateDetail.config );
+		}
+
+		return templateConfig;
+	}
+
 	public void function syncDashboardWidgetTemplates() {
 		var coldbox     = $getColdbox();
 		var templateDao = $getPresideObject( "admin_dashboard_widget_template" );
@@ -400,6 +421,7 @@ component {
 								, description = template.description
 								, group       = template.group
 								, config      = template.config
+								, is_system   = true
 							} );
 						} else {
 							templateDao.insertData( data={
@@ -409,6 +431,7 @@ component {
 								, group       = template.group
 								, config_hash = templateConfigHash
 								, config      = template.config
+								, is_system   = true
 							} );
 						}
 					}
@@ -433,10 +456,12 @@ component {
 		var templatesQuery  = $getPresideObject( "admin_dashboard_widget_template" ).selectData(
 			  filter       = { widget_id=arguments.widgetId }
 			, selectFields = [
-				  "title"
+				  "id"
+				, "title"
 				, "description"
 				, "group"
 				, "config"
+				, "is_system"
 			]
 		);
 
@@ -445,10 +470,12 @@ component {
 				var templateConfig = Duplicate( arguments.widgetConfig );
 
 				StructAppend( templateConfig, {
-					  title       = template.title
+					  recordId    = template.id
+					, title       = template.title
 					, description = template.description
 					, group       = template.group
 					, config      = DeserializeJSON( template.config )
+					, isSystem    = $helpers.isTrue( template.is_system )
 					, isTemplate  = true
 				} );
 

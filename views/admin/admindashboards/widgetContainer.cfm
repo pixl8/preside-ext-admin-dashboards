@@ -51,7 +51,7 @@
 					#args.additionalMenu#
 					<a class="widget-fullscreen-link orange" href="##" title="#htmlEditFormat( fullscreenTitle )#"><i class="fa fa-fw fa-expand"></i></a>
 					<cfif args.hasConfig>
-						<a class="widget-export-config-link green" href="##" title="#htmlEditFormat( exportConfigTitle )#"><i class="fa fa-fw fa-download"></i></a>
+						<a class="widget-export-config-link green" href="##" title="#htmlEditFormat( exportConfigTitle )#"><i class="fa fa-fw fa-share"></i></a>
 						<a class="widget-configuration-link grey" href="##" title="#htmlEditFormat( configureTitle )#"><i class="fa fa-fw fa-cog"></i></a>
 					</cfif>
 					<cfif args.canDeleteWidget>

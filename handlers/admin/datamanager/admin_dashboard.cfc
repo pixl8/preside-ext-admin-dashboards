@@ -158,6 +158,17 @@ component extends="preside.system.base.AdminHandler" {
 		return actions;
 	}
 
+	private void function extraTopRightButtonsForObject( event, rc, prc, args={} ) {
+		args.actions = args.actions ?: [];
+
+		ArrayPrepend( args.actions, {
+			  link      = event.buildAdminLink( objectName="admin_dashboard_widget_template" )
+			, btnClass  = "btn-default"
+			, iconClass = translateResource( "preside-objects.admin_dashboard_widget_template:iconClass" )
+			, title     = translateResource( "preside-objects.admin_dashboard_widget_template:manage.btn" )
+		} );
+	}
+
 	private void function extraTopRightButtonsForViewRecord( event, rc, prc, args={} ) {
 		var objectName = args.objectName ?: "";
 		var recordId   = prc.recordId    ?: "";

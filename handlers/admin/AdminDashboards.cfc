@@ -141,26 +141,43 @@ component extends="preside.system.base.AdminHandler" {
 		ArraySort(   prc.groups, "textnocase" );
 
 		if ( ArrayLen( prc.groups ) ) {
-			event.include( "/js/admin/specific/admindashboards/widgetDialog/" );
+			event.include( "/js/admin/specific/admindashboards/widgetDialog/"  )
+			     .include( "/css/admin/specific/admindashboards/widgetDialog/" );
 		}
 
 		event.setView( view="admin/admindashboards/browserDialog" );
 	}
 
+	public array function widgetDialogSearchWidgets( event, rc, prc, args={} ) {
+		var searchQuery = Trim( rc.q ?: "" );
+
+		if ( Len( searchQuery ) ) {
+			var widgets  = _getSortedAndTranslatedAdminWidgets();
+			var filtered = QueryFilter( widgets, function( _widget ) {
+				return ( Len( _widget.title ?: "" ) && ReFindNoCase( searchQuery, _widget.title ) )
+					|| ( Len( _widget.description ?: "" ) && ReFindNoCase( searchQuery, _widget.description ) );
+			} );
+
+			if ( filtered.recordcount ) {
+				return ValueArray( filtered, "id" );
+			}
+		}
+
+		return [];
+	}
+
 	public function addWidget( event, rc, prc, args={} ) {
-		var dashboardId = rc.dashboard ?: "";
-		var widgetId    = rc.widget    ?: "";
-		var column      = rc.column    ?: 1;
+		var templateId  = Trim( rc.templateId ?: "" );
+		var dashboardId = Trim( rc.dashboard  ?: "" );
+		var widgetId    = Trim( rc.widget     ?: "" );
+		var column      = rc.column ?: 1;
 		var instanceId  = createUUID();
 		var nextSlot    = widgetService.nextWidgetSlot( dashboardId, column );
 		var title       = widgetService.getInstanceTitle( dashboardId, widgetId );
 		var config      = {};
-		var configKeys  = ArrayFilter( StructKeyArray( arguments.rc ), function(_key) {
-			return ListFirst( _key, "-" ) == "config";
-		} );
 
-		for ( var configKey in configKeys ) {
-			config[ ListLast( configKey, "-" ) ] = arguments.rc[ configKey ];
+		if ( Len( templateId ) ) {
+			config = widgetService.getSystemWidgetTemplateConfig( templateId=templateId );
 		}
 
 		widgetService.addWidget(
@@ -227,7 +244,9 @@ component extends="preside.system.base.AdminHandler" {
 				widget.description = translateResource( uri=widget.description, defaultValue="" );
 				widget.icon        = translateResource( uri=widget.icon       , defaultValue="fa-magic" );
 				widget.group       = translateResource( uri="admin.admindashboards.widget.#id#:group", defaultValue="" );
+				widget.previewImg  = "";
 				widget.isTemplate  = false;
+				widget.isSystem    = true;
 
 				ArrayAppend( tempArray, widget );
 
@@ -242,6 +261,6 @@ component extends="preside.system.base.AdminHandler" {
 			return widget1.title == widget2.title ? 0 : ( widget1.title > widget2.title ? 1 : -1 );
 		} );
 
-		return arrayOfStructsToQuery( "id,title,group,description,icon,isTemplate,config", tempArray );
+		return arrayOfStructsToQuery( "id,title,group,description,icon,previewImg,isTemplate,recordId,config", tempArray );
 	}
 }
