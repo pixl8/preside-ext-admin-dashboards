@@ -63,6 +63,8 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 		if ( !StructIsEmpty( accessibleDashboards ) ) {
 			ArrayAppend( prc.adminSidebarItems, accessibleDashboards );
 		}
+
+		prc.adminSidebarFooter = renderView( view="/admin/datamanager/admin_dashboard/_sidebarFooter", args=args );
 	}
 
 	private void function preFetchRecordsForGridListing( event, rc, prc, args={} ) {
@@ -200,21 +202,23 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 	}
 
 	private string function renderSidebarHeader( event, rc, prc, args={} ) {
-		prc.adminSidebarItems      = prc.adminSidebarItems ?: [];
-		args.dashboardExtraFilters = [ {
-			  filter       = "admin_dashboard.id != :admin_dashboard.id"
-			, filterParams = { "admin_dashboard.id"=args.recordId ?: "" }
-		} ];
+		var customSidebarItems = [];
 
 		var createdByMeDashboards = _getCreatedByMeSidenav( argumentCollection=arguments );
 		if ( !StructIsEmpty( createdByMeDashboards ) ) {
-			ArrayAppend( prc.adminSidebarItems, createdByMeDashboards );
+			ArrayAppend( customSidebarItems, createdByMeDashboards );
 		}
 
 		var accessibleDashboards = _getAccessibleDashboardsSidenav( argumentCollection=arguments );
 		if ( !StructIsEmpty( accessibleDashboards ) ) {
-			ArrayAppend( prc.adminSidebarItems, accessibleDashboards );
+			ArrayAppend( customSidebarItems, accessibleDashboards );
 		}
+
+		if ( ArrayLen( customSidebarItems ) ) {
+			prc.adminSidebarItems = customSidebarItems;
+		}
+
+		prc.adminSidebarFooter = renderView( view="/admin/datamanager/admin_dashboard/_sidebarFooter", args=args );
 
 		return renderView( view="/admin/datamanager/admin_dashboard/_sidebarHeader", args=args );
 	}
@@ -224,6 +228,15 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 		prc.pageSubtitle = len( prc.recordLabel ?: "" ) ? "" : prc.pageSubtitle;
 
 		return renderView( view="/admin/adminDashboards/recordView", args=args );
+	}
+
+	private void function extraTopRightButtonsForObject( event, rc, prc, args={} ) {
+		for ( var action in args.actions ?: [] ) {
+			if ( ( action.globalKey ?: "" ) == "a" ) {
+				action.title = translateResource( uri="preside-objects.admin_dashboard:create.btn" );
+				continue;
+			}
+		}
 	}
 
 	private void function preCloneRecordAction( event, rc, prc, args={} ) {
@@ -315,15 +328,21 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 	}
 
 	private struct function _getCreatedByMeSidenav( event, rc, prc, args={} ) {
+		var isViewAction = event.getCurrentAction() == "viewRecord";
+		var recordId     = prc.recordId ?: ( args.recordId ?: "" );
 		var dashboards   = dashboardService.getUserDashboards( extraFilters=args.dashboardExtraFilters ?: [] );
 		var myDashboards = [];
+		var hasAnyActive = !isViewAction;
 
 		for ( var dashboard in dashboards ) {
 			ArrayAppend( myDashboards, {
 				  display = true
 				, title   = dashboard.name
 				, link    = event.buildAdminLink( objectName="admin_dashboard", recordId=dashboard.id )
+				, active  = isViewAction ? ( dashboard.id == recordId ) : false
 			} );
+
+			hasAnyActive = hasAnyActive || ( dashboard.id == recordId );
 		}
 
 		if ( ArrayLen( myDashboards ) ) {
@@ -331,7 +350,7 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 
 			return {
 				  display      = true
-				, open         = true
+				, open         = hasAnyActive
 				, title        = translateResource( uri="preside-objects.admin_dashboard:sidenav.mydashboards.title" )
 				, icon         = translateResource( uri="preside-objects.admin_dashboard:sidenav.mydashboards.iconClass" )
 				, link         = ""
@@ -352,21 +371,27 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 			} );
 		}
 
+		var isViewAction         = event.getCurrentAction() == "viewRecord";
+		var recordId             = prc.recordId ?: ( args.recordId ?: "" );
 		var availableDashboards  = dashboardService.getUserAccessibleDashboards( extraFilters=extraFilters );
 		var accessibleDashboards = [];
+		var hasAnyActive         = false;
 
 		for ( var dashboard in availableDashboards ) {
 			ArrayAppend( accessibleDashboards, {
 				  display = true
 				, title   = dashboard.name
 				, link    = event.buildAdminLink( objectName="admin_dashboard", recordId=dashboard.id )
+				, active  = isViewAction ? ( dashboard.id == recordId ) : false
 			} );
+
+			hasAnyActive = hasAnyActive || ( dashboard.id == recordId );
 		}
 
 		if ( ArrayLen( accessibleDashboards ) ) {
 			return {
 				  display      = true
-				, open         = false
+				, open         = hasAnyActive
 				, title        = translateResource( uri="preside-objects.admin_dashboard:sidenav.accessibledashboards.title" )
 				, icon         = translateResource( uri="preside-objects.admin_dashboard:sidenav.accessibledashboards.iconClass" )
 				, link         = ""
