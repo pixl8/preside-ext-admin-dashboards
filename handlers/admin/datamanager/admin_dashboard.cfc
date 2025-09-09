@@ -64,7 +64,10 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 			ArrayAppend( prc.adminSidebarItems, accessibleDashboards );
 		}
 
+		prc.adminSidebarHeader = renderView( view="/admin/datamanager/admin_dashboard/_sidebarHeader", args=args );
 		prc.adminSidebarFooter = renderView( view="/admin/datamanager/admin_dashboard/_sidebarFooter", args=args );
+		prc.pageTitle          = "";
+		prc.pageIcon           = "";
 	}
 
 	private void function preFetchRecordsForGridListing( event, rc, prc, args={} ) {
