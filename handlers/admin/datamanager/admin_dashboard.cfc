@@ -65,7 +65,6 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 		}
 
 		prc.adminSidebarHeader = renderView( view="/admin/datamanager/admin_dashboard/_sidebarHeader", args=args );
-		prc.adminSidebarFooter = renderView( view="/admin/datamanager/admin_dashboard/_sidebarFooter", args=args );
 		prc.pageTitle          = "";
 		prc.pageIcon           = "";
 	}
@@ -205,7 +204,12 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 	}
 
 	private string function renderSidebarHeader( event, rc, prc, args={} ) {
-		var customSidebarItems = [];
+		var customSidebarItems = [ {
+			  active = event.getCurrentEvent() == "admin.datamanager.object"
+			, title  = translateResource( uri="preside-objects.admin_dashboard:sidenav.all.label" )
+			, link   = event.buildAdminLink( objectName="admin_dashboard" )
+			, icon   = "fa-tachometer"
+		} ];
 
 		var createdByMeDashboards = _getCreatedByMeSidenav( argumentCollection=arguments );
 		if ( !StructIsEmpty( createdByMeDashboards ) ) {
