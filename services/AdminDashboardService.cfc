@@ -14,6 +14,16 @@ component {
 	}
 
 // PUBLIC API METHODS
+	public query function getUserDashboards(
+		  string adminUserId  = $getAdminLoggedInUserId()
+		, array  extraFilters = []
+	) {
+		return $getPresideObject( "admin_dashboard" ).selectData(
+			  filter       = { owner=arguments.adminUserId }
+			, extraFilters = arguments.extraFilters
+		);
+	}
+
 	public boolean function userCanViewDashboard( required string dashboardId, string adminUserId=$getAdminLoggedInUserId() ) {
 		if ( hasFullAccess( arguments.adminUserId ) ) {
 			return true;
@@ -73,6 +83,12 @@ component {
 
 	public boolean function hasFullAccess( required string adminUserId ) {
 		return permissionService.hasPermission( permissionKey="adminDashboards.fullaccess", userId=arguments.adminUserId );
+	}
+
+	public boolean function isDashboardUsingGridLayout( required string dashboardId ) {
+		return $getPresideObject( "admin_dashboard" ).dataExists(
+			filter = { id=arguments.dashboardId, dashboard_layout="grid" }
+		);
 	}
 
 // PRIVATE HELPERS
