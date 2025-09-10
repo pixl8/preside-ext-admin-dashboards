@@ -8,7 +8,13 @@ component {
 		_setupPermissionsAndRoles( settings );
 		_setupInterceptors( conf );
 
-		settings.adminConfigurationMenuItems.append( "adminDashboards" );
+		settings.adminMenuItems                 = settings.adminMenuItems ?: [];
+		settings.adminMenuItems.adminDashboards = {
+			  permissionKey = "adminDashboards.navigate"
+			, buildLinkArgs = { objectName="admin_dashboard"}
+			, activeChecks  = { datamanagerObject="admin_dashboard" }
+			, subMenuItems  = [ "adminDashboardListing" ]
+		};
 	}
 
 	private void function _setupEnums( settings ) {

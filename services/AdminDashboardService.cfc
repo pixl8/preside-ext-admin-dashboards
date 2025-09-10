@@ -17,10 +17,14 @@ component {
 	public query function getUserDashboards(
 		  string adminUserId  = $getAdminLoggedInUserId()
 		, array  extraFilters = []
+		, string  orderBy      = "name"
+		, numeric maxRows      = 0
 	) {
 		return $getPresideObject( "admin_dashboard" ).selectData(
 			  filter       = { owner=arguments.adminUserId }
 			, extraFilters = arguments.extraFilters
+			, orderBy      = arguments.orderBy
+			, maxRows      = arguments.maxRows
 		);
 	}
 
