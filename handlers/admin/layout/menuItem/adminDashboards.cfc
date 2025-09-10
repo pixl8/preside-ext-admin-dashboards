@@ -10,11 +10,11 @@ component {
 				var dashboardId = dashboard.id;
 
 				ArrayAppend( args.subMenuItems, {
-					  id    = dashboardId
-					, title = dashboard.name
-					, icon  = "fa-tachometer"
+					  id     = dashboardId
+					, title  = dashboard.name
+					, icon   = "fa-tachometer"
 					, active = ( rc.id ?: "" ) == dashboardId
-					, link = event.buildAdminLink( objectName="admin_dashboard", recordId=dashboardId )
+					, link   = event.buildAdminLink( objectName="admin_dashboard", recordId=dashboardId )
 				} );
 			}
 
