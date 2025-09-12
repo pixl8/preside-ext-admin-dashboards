@@ -12,8 +12,6 @@ component {
 		settings.adminMenuItems.adminDashboards = {
 			  permissionKey = "adminDashboards.navigate"
 			, buildLinkArgs = { objectName="admin_dashboard"}
-			, activeChecks  = { datamanagerObject="admin_dashboard" }
-			, subMenuItems  = [ "adminDashboardListing" ]
 		};
 	}
 
