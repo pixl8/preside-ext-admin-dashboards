@@ -15,8 +15,8 @@ component {
 
 // PUBLIC API METHODS
 	public query function getUserDashboards(
-		  string adminUserId  = $getAdminLoggedInUserId()
-		, array  extraFilters = []
+		  string  adminUserId  = $getAdminLoggedInUserId()
+		, array   extraFilters = []
 		, string  orderBy      = "name"
 		, numeric maxRows      = 0
 	) {
@@ -29,8 +29,10 @@ component {
 	}
 
 	public query function getUserAccessibleDashboards(
-		  string adminUserId  = $getAdminLoggedInUserId()
-		, array  extraFilters = []
+		  string  adminUserId  = $getAdminLoggedInUserId()
+		, array   extraFilters = []
+		, string  orderBy      = "name"
+		, numeric maxRows      = 0
 	) {
 		var adminUserGroups = _getAdminUserGroups( adminUserId=arguments.adminUserId );
 
@@ -44,6 +46,8 @@ component {
 				, adminUserGroups = { type="varchar", value=adminUserGroups, list=true }
 			}
 			, extraFilters = arguments.extraFilters
+			, orderBy      = arguments.orderBy
+			, maxRows      = arguments.maxRows
 		);
 	}
 
