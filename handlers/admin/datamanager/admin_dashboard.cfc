@@ -225,6 +225,7 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 			prc.adminSidebarItems = customSidebarItems;
 		}
 
+		args.canEditDashboard  = dashboardService.userCanEditDashboard( prc.recordId, event.getAdminUserId() );
 		prc.adminSidebarFooter = renderView( view="/admin/datamanager/admin_dashboard/_sidebarFooter", args=args );
 
 		return renderView( view="/admin/datamanager/admin_dashboard/_sidebarHeader", args=args );
@@ -292,12 +293,14 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 				} );
 				*/
 
-				actions.append( {
-					  link      = event.buildAdminLink( objectName=objectName, operation="editdashboardlayout", recordId=recordId )
-					, btnClass  = "btn-primary"
-					, iconClass = ""
-					, title     = translateResource( "preside-objects.admin_dashboard:gridlayout.editlayout.btn" )
-				} );
+				if ( dashboardService.userCanEditDashboard( recordId, event.getAdminUserId() ) ) {
+					ArrayAppend( actions, {
+						  link      = event.buildAdminLink( objectName=objectName, operation="editdashboardlayout", recordId=recordId )
+						, btnClass  = "btn-primary"
+						, iconClass = ""
+						, title     = translateResource( "preside-objects.admin_dashboard:gridlayout.editlayout.btn" )
+					} );
+				}
 
 				dropdownActions = customizationService.runCustomization(
 					  objectName     = objectName
@@ -398,7 +401,7 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 		);
 
 		if ( !dashboardService.userCanShareDashboard( recordId, event.getAdminUserId() ) ) {
-			event.accessDenied();
+			event.adminAccessDenied();
 		}
 
 		event.addAdminBreadCrumb(
@@ -426,8 +429,8 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 	public void function sharingAction( event, rc, prc, args={} ) {
 		var recordId = rc.id ?: "";
 
-		if ( !dashboardService.userCanEditDashboard( recordId, event.getAdminUserId() ) ) {
-			event.accessDenied();
+		if ( !dashboardService.userCanShareDashboard( recordId, event.getAdminUserId() ) ) {
+			event.adminAccessDenied();
 		}
 
 		if ( ( rc.view_access ?: "" ) != "specific" ) {
@@ -457,6 +460,10 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 	public void function editDashboardLayout( event, rc, prc ) {
 		var objectName = "admin_dashboard"
 		var recordId   = rc.id ?: "";
+
+		if ( !dashboardService.userCanEditDashboard( recordId, event.getAdminUserId() ) ) {
+			event.adminAccessDenied();
+		}
 
 		event.initializeDatamanagerPage( objectName=objectName, recordId=recordId, includeAllFormulaFields=true );
 
