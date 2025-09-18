@@ -84,7 +84,11 @@
 				const uberSelect = $( `#${fields[i]}` ).data( "uberSelect" );
 
 				if( uberSelect != undefined ) {
-					if( uberSelect.getSelected().length ) {
+					// If both selected, and current value is empty, then it is indeed empty.
+					if( !uberSelect.getSelected().length && !uberSelect.value.length ) {
+						fieldLabelValues[ fields[i] ] = "";
+					} else if( uberSelect.getSelected().length ) {
+						// Sometimes hidden field is empty due to being programatically reset, if so, there is really no selected value.
 						if( uberSelect.hidden_field.val().length ) {
 							fieldLabelValues[ fields[i] ] = uberSelect.getSelected()[0].text;
 						} else {
