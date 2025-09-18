@@ -342,7 +342,6 @@ component {
 		}
 
 		if ( _isUserGeneratedDashboard( dashboardId ) ) {
-			StructDelete( arguments.requestData, "widget_title" );
 			var data = { config=SerializeJson( config ) };
 			if ( structKeyExists( arguments.requestData, "widget_title" ) && len( arguments.requestData.widget_title ) ) {
 				data.title = arguments.requestData.widget_title;
