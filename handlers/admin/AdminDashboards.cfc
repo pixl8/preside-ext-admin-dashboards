@@ -42,10 +42,6 @@ component extends="preside.system.base.AdminHandler" {
 
 		event.include( "/js/admin/specific/admindashboards/configmodal/" );
 
-		if ( getController().viewletExists( "admin.admindashboards.widget.#widgetId#.titleGenerator" ) ) {
-			event.includeData( { titleGeneratorEndpoint=event.buildAdminLink( linkTo="admindashboards.widget.#widgetId#.titleGenerator" ) } );
-		}
-
 		event.setLayout( "adminModalDialog" );
 	}
 
@@ -112,14 +108,14 @@ component extends="preside.system.base.AdminHandler" {
 		var column      = rc.column    ?: 1;
 		var instanceId  = createUUID();
 		var nextSlot    = widgetService.nextWidgetSlot( dashboardId, column );
-		var title       = widgetService.getInstanceTitle( dashboardId, widgetId );
+		var title       = "";
 
 		widgetService.addWidget(
 			  dashboardId = dashboardId
 			, widgetId    = widgetId
 			, instanceId  = instanceId
 			, column      = column
-			, slot         = nextSlot
+			, slot        = nextSlot
 			, title       = title
 			, config      = {}
 		);
