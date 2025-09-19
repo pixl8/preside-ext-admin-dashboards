@@ -1,0 +1,76 @@
+.presidecms {
+
+	.btn-primary-invert {
+		background-color : white !important;
+		border-color     : var( --color-info-100, #429ae5 ) !important;
+		color            : var( --color-info-100, #429ae5 ) !important;
+
+		&:active,
+		&:hover,
+		&:hover:active,
+		&:focus,
+		&:focus:hover,
+		&:focus:active {
+			background-color : var( --color-info-100, #429ae5 ) !important;
+			border-color     : white !important;
+			color            : white !important;
+		}
+	}
+
+	.btn-default-invert {
+		background-color : white !important;
+		border-color     : var( --color-neutral-20, #d2d3d5 ) !important;
+		color            : var( --color-neutral-100, #21262b ) !important;
+
+		&:active,
+		&:hover,
+		&:hover:active,
+		&:focus,
+		&:focus:hover,
+		&:focus:active {
+			background-color : var( --color-neutral-100, #21262b ) !important;
+			border-color     : white !important;
+			color            : white !important;
+		}
+
+		svg {
+			vertical-align : middle;
+		}
+	}
+
+	.btn-favourite {
+		background-color : white !important;
+		border-color     : var( --color-neutral-20, #d2d3d5 ) !important;
+		color            : var( --color-neutral-100, #21262b ) !important;
+
+		&:hover:active,
+		&:focus:hover,
+		&:focus:active {
+			background-color : var( --color-neutral-20, #d2d3d5 ) !important;
+		}
+
+		svg {
+			vertical-align : middle;
+		}
+
+		&.is-active {
+
+			svg {
+				fill   : var( --color-warning-100, #F7B538 );
+
+				path {
+					stroke : var( --color-warning-100, #F7B538 );
+				}
+			}
+		}
+	}
+
+	.btn-grid-autolayout {
+		padding : 0 !important;
+
+		> span {
+			display : inline-block;
+			padding : var( --button-padding-vertical ) var( --button-padding-horizontal );
+		}
+	}
+}

@@ -139,7 +139,14 @@
 					, callback: function() {
 						$widgetEl.find( ".widget-dynamic-content" ).presideLoadingSheen( true );
 						$.ajax( $link.attr( "href" ), {
-							  success  : function() { $widgetEl.remove(); }
+							  success  : function() {
+								const $gridStackItem = $widgetEl.closest( ".grid-stack-item" );
+								if( $gridStackItem.length ) {
+									GridStack.init().removeWidget( $gridStackItem.get(0) );
+								} else {
+									$widgetEl.remove();
+								}
+							}
 							, error    : function() { $widgetEl.find( ".widget-dynamic-content" ).presideLoadingSheen( false ); }
 							, complete : function() { confirmationDialog.modal( "hide" ); }
 						} );

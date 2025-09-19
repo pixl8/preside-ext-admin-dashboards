@@ -87,7 +87,11 @@ component {
 		return rendered;
 	}
 
-	public struct function renderUserGeneratedDashboard( required string dashboardId, boolean allowEditing=true, struct contextData={}	) {
+	public struct function renderUserGeneratedDashboard(
+		  required string  dashboardId
+		,          boolean allowEditing = true
+		,          struct  contextData  = {}
+	) {
 		var dashboard     = $getPresideObject( "admin_dashboard" ).selectData( id=arguments.dashboardId );
 		var savedWidgets  = $getPresideObject( "admin_dashboard_widget" ).selectData(
 			  filter  = { dashboard=arguments.dashboardId }
@@ -136,6 +140,81 @@ component {
 		return dashboardArgs;
 	}
 
+	public struct function renderUserGeneratedGridDashboard(
+		  required string  dashboardId
+		,          boolean allowEditing    = true
+		,          struct  contextData     = {}
+		,          boolean showTempWidgets = false
+	) {
+		var dashboard           = $getPresideObject( "admin_dashboard" ).selectData( id=arguments.dashboardId );
+		var widget              = {};
+		var widgets             = [];
+		var dashboardArgs       = {};
+		var defaultGridConfig   = _getGridWidgetsDefaultConfig();
+		var canEdit             = arguments.allowEditing && _getDashboardService().userCanEditDashboard( arguments.dashboardId );
+		var widgetsExtraFilters = [];
+
+		if( arguments.showTempWidgets ) {
+			widgetsExtraFilters = [ {
+				filter = "dashboard_edit_temp_delete IS NOT true"
+			} ];
+		} else {
+			widgetsExtraFilters = [ {
+				filter = "dashboard_edit_temp_add IS NOT true"
+			} ];
+		}
+
+		var savedWidgets = $getPresideObject( "admin_dashboard_widget" ).selectData(
+			  filter  = {
+			  	  dashboard = arguments.dashboardId
+			}
+			, extraFilters = widgetsExtraFilters
+			, orderBy      = "datemodified desc"
+		);
+
+		for( var record in dashboard ) {
+			dashboardArgs = record;
+			break;
+		}
+
+		for( var savedWidget in savedWidgets ) {
+			var gridConfig = IsJSON( savedWidget.grid_config ) ? DeserializeJSON( savedWidget.grid_config ) : {};
+			StructAppend( gridConfig, defaultGridConfig[ savedWidget.widget_id ] ?: {}, false );
+
+			var editTempGridConfig = IsJSON( savedWidget.dashboard_edit_temp_grid_config ) ? DeserializeJSON( savedWidget.dashboard_edit_temp_grid_config ) : {};
+			StructAppend( editTempGridConfig, gridConfig, false );
+			StructAppend( editTempGridConfig, defaultGridConfig[ savedWidget.widget_id ] ?: {}, false );
+
+			widget = {
+				  id               = savedWidget.widget_id
+				, title            = savedWidget.title
+				, configInstanceId = savedWidget.instance_id
+				, contextData      = IsJSON( savedWidget.config ) ? DeserializeJSON( savedWidget.config ) : {}
+				, ajax             = true
+			};
+			widget.contextData.canEditDashboard = canEdit;
+
+			widgets.append( {
+				  gridConfig         = gridConfig
+				, editTempGridConfig = editTempGridConfig
+				, html               = renderWidgetContainer(
+					  dashboardId      = arguments.dashboardId
+					, widgetId         = widget.id
+					, contextData      = _namespaceContextData( widget.contextData )
+					, configInstanceId = widget.configInstanceId
+					, title            = widget.title ?: ""
+					, ajax             = widget.ajax
+					, layout           = "grid"
+				)
+			} );
+		}
+
+		dashboardArgs.widgets = widgets;
+		dashboardArgs.canEdit = canEdit;
+
+		return dashboardArgs;
+	}
+
 	public string function renderWidgetContainer(
 		  required string  dashboardId
 		, required string  widgetId
@@ -144,6 +223,7 @@ component {
 		,          string  configInstanceId = ""
 		,          string  title            = ""
 		,          boolean ajax             = true
+		,          string  layout           = "default"
 	) {
 		var instanceId             = "dashboard-widget-" & LCase( Hash( arguments.dashboardId & arguments.widgetId & SerializeJson( arguments.contextData ) ) );
 		var menuViewlet            = "admin.admindashboards.widget.#arguments.widgetId#.additionalMenu";
@@ -196,9 +276,14 @@ component {
 			, canDeleteWidget        = userGeneratedDashboard && canEditDashboard
 			, additionalMenu         = additionalMenu
 			, content                = content
+			, layout                 = arguments.layout
 		};
 
 		$announceInterception( "onRenderAdminWidgetContainer", args );
+
+		if( arguments.layout == "grid" ) {
+			return $renderViewlet( event="admin.admindashboards.layoutGrid.widgetContainer", args=args );
+		}
 
 		return $renderViewlet( event="admin.admindashboards.widgetContainer", args=args );
 	}
@@ -214,18 +299,24 @@ component {
 	}
 
 	public string function getWidgetConfigFormName( required string dashboardId, required string widgetId, required string instanceId ) {
-		var formName = "admin.admindashboards.widget.#widgetId#";
-		if ( _isUserGeneratedDashboard( dashboardId ) ) {
+		var formName        = "admin.admindashboards.widget.#widgetId#";
+		var isUserDashboard = _isUserGeneratedDashboard( dashboardId );
+
+		if ( isUserDashboard ) {
 			formName = _getFormsService().getMergedFormName( formName, "admin.admindashboards.config" );
 		}
 
-		return formName;
+		var formArgs = { formName=formName, widget=arguments, isUserDashboard=isUserDashboard };
+
+		$announceInterception( "onGetWidgetConfigFormName", formArgs );
+
+		return formArgs.formName;
 	}
 
 	public string function renderWidgetConfigForm( required string dashboardId, required string widgetId, required string instanceId ) {
 		var formName        = getWidgetConfigFormName( argumentCollection=arguments );
 		var savedConfigData = getWidgetConfiguration( arguments.dashboardId, arguments.widgetId, arguments.instanceId );
-		var renderFormArgs  = { formName=formName, savedData=savedConfigData };
+		var renderFormArgs  = { formName=formName, savedData=savedConfigData, widget=arguments };
 
 		$announceInterception( "onRenderWidgetConfigForm", renderFormArgs );
 
@@ -236,8 +327,14 @@ component {
 		return _getFormsService().formExists( "admin.admindashboards.widget.#widgetId#" );
 	}
 
-	public void function saveWidgetConfiguration( required string dashboardId, required string widgetId, required string instanceId, required struct requestData ) {
-		var fields = _getFormsService().listFields( formName="admin.admindashboards.widget.#widgetId#" );
+	public void function saveWidgetConfiguration(
+		  required string dashboardId
+		, required string widgetId
+		, required string instanceId
+		, required struct requestData
+		, required string formName
+	) {
+		var fields = _getFormsService().listFields( formName=arguments.formName );
 		var config = {};
 
 		for( var field in fields ) {
@@ -400,23 +497,77 @@ component {
 		,          struct  config = {}
 	) {
 		return $getPresideObject( "admin_dashboard_widget" ).insertData( data={
-			  dashboard   = arguments.dashboardId
-			, widget_id   = arguments.widgetId
-			, instance_id = arguments.instanceId
-			, title       = arguments.title
-			, column      = arguments.column
-			, slot        = arguments.slot
-			, config      = serializeJson( arguments.config )
+			  dashboard               = arguments.dashboardId
+			, widget_id               = arguments.widgetId
+			, instance_id             = arguments.instanceId
+			, title                   = arguments.title
+			, column                  = arguments.column
+			, slot                    = arguments.slot
+			, config                  = serializeJson( arguments.config )
+			, dashboard_edit_temp_add = true
 		} );
 	}
 
-	public void function deleteWidget(
+	public numeric function deleteWidget(
 		  required string dashboardId
 		, required string instanceId
 	) {
+		return $getPresideObject( "admin_dashboard_widget" ).updateData(
+			  data   = { dashboard_edit_temp_delete = true }
+			, filter = {
+				  dashboard   = arguments.dashboardId
+				, instance_id = arguments.instanceId
+			}
+		);
+	}
+
+	public void function saveEditDashboardWidgets(
+		  required string dashboardId
+	) {
+
+		$getPresideObject( "admin_dashboard_widget" ).updateData(
+			  data   = { dashboard_edit_temp_add = false }
+			, filter = {
+				  dashboard               = arguments.dashboardId
+				, dashboard_edit_temp_add = true
+			}
+		);
+
+		$getPresideObject( "admin_dashboard_widget" ).updateData(
+			  data   = { dashboard_edit_temp_grid_config = "" }
+			, filter = {
+				  dashboard = arguments.dashboardId
+			}
+		);
+
 		$getPresideObject( "admin_dashboard_widget" ).deleteData( filter={
-			  dashboard    = arguments.dashboardId
-			, instance_id  = arguments.instanceId
+			  dashboard                  = arguments.dashboardId
+			, dashboard_edit_temp_delete = true
+		} );
+	}
+
+	public void function cancelEditDashboardWidgets(
+		  required string dashboardId
+	) {
+
+		$getPresideObject( "admin_dashboard_widget" ).updateData(
+			  data   = { dashboard_edit_temp_delete = false }
+			, filter = {
+				  dashboard                  = arguments.dashboardId
+				, dashboard_edit_temp_delete = true
+			}
+		);
+
+		$getPresideObject( "admin_dashboard_widget" ).updateData(
+			  data   = { dashboard_edit_temp_grid_config = "" }
+			, filter = {
+				  dashboard = arguments.dashboardId
+			}
+		);
+
+		$getPresideObject( "admin_dashboard_widget" ).deleteData( filter={
+			  dashboard               = arguments.dashboardId
+			, dashboard_edit_temp_add = true
 		} );
 	}
 
@@ -586,6 +737,30 @@ component {
 		return merged;
 	}
 
+	private struct function _getGridWidgetsDefaultConfig() {
+		return {
+			"CrmMembershipCounts" = {
+				  "min-w" : "2"
+				, "min-h" : "2"
+			}
+			, "DatavizBarChart" = {
+				  "min-w" : "2"
+				, "min-h" : "2"
+			}
+			, "DatavizTimeSeriesChart" = {
+				  "min-w" : "2"
+				, "min-h" : "2"
+			}
+			, "DatavizPieChart" = {
+				  "min-w" : "2"
+				, "min-h" : "2"
+			}
+			, "dashboardDataFilter" = {
+				  "min-w" : "3"
+				, "min-h" : "2"
+			}
+		}
+	}
 
 
 // GETTERS AND SETTERS
