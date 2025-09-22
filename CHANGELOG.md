@@ -1,5 +1,13 @@
 # Changelog
 
+## v3.1.2
+
+* Changelog
+
+## v3.1.1
+
+* [DASH-61](https://projects.pixl8.london/browse/DASH-61) - Migration of previous dashboard URLs
+
 ## v3.1.0
 
 * [DASH-39](https://github.com/pixl8/preside-ext-admin-dashboards/pull/19) - Generic dashboard - view and edit mode screen
