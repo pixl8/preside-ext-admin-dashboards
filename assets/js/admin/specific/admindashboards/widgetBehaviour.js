@@ -15,18 +15,38 @@
 		  , callbacks = {
 				onLoad : function( iframe ) { dialogIframe = iframe; },
 				onok : function(){
-					var config = $.extend( {}, dialogIframe.getAdminDashboardWidgetConfig(), getWidgetDetails( $widgetEl ), getWidgetContextData( $widgetEl ) );
+					let config    = $.extend( {}, dialogIframe.getAdminDashboardWidgetConfig(), getWidgetDetails( $widgetEl ), getWidgetContextData( $widgetEl ) )
+					  , validated = true;
 
 					$.ajax( buildAdminLink( "admindashboards", "saveWidgetConfig" ), {
-						  data     : config
-						, method   : "POST"
-						, complete : function() {
-							loadContent( $widgetEl, true );
-							if ( config.widget_title ) {
-								$( ".widget-title span", $widgetEl ).text( config.widget_title );
+						  data    : config
+						, method  : "POST"
+						, async   : false
+						, success : function( data ) {
+							validated     = data.success;
+							errorMessages = data.errorMessages;
+
+							if ( validated ) {
+								loadContent( $widgetEl, true );
+								if ( config.widget_title ) {
+									$( ".widget-title span", $widgetEl ).text( config.widget_title );
+								}
+							} else {
+								dialogIframe.clearAllFormErrors();
+
+								$.each( errorMessages, function( index, val ) {
+									var $fieldEl = dialogIframe.getModalElements( index );
+
+									if ( $fieldEl.length > 0 ) {
+										$fieldEl.closest( ".clearfix" ).append( '<div class="help-block error-message">' + i18n.translateResource( val.message, { data: val.params } ) + '</div>' );
+										$fieldEl.closest( ".form-group" ).addClass( "has-error" );
+									}
+								} );
 							}
-						  }
+						}
 					} );
+
+					return validated;
 				}
 			}
 		  , browserIframeModal = new PresideIframeModal( iframeSrc, "100%", "100%", callbacks, modalOptions )
@@ -185,7 +205,14 @@
 					, callback: function() {
 						$widgetEl.find( ".widget-dynamic-content" ).presideLoadingSheen( true );
 						$.ajax( $link.attr( "href" ), {
-							  success  : function() { $widgetEl.remove(); }
+							  success  : function() {
+								const $gridStackItem = $widgetEl.closest( ".grid-stack-item" );
+								if( $gridStackItem.length ) {
+									GridStack.init().removeWidget( $gridStackItem.get(0) );
+								} else {
+									$widgetEl.remove();
+								}
+							}
 							, error    : function() { $widgetEl.find( ".widget-dynamic-content" ).presideLoadingSheen( false ); }
 							, complete : function() { confirmationDialog.modal( "hide" ); }
 						} );

@@ -1,5 +1,24 @@
 # Changelog
 
+## v3.1.2
+
+* Changelog
+
+## v3.1.1
+
+* [DASH-61](https://projects.pixl8.london/browse/DASH-61) - Migration of previous dashboard URLs
+
+## v3.1.0
+
+* [DASH-39](https://github.com/pixl8/preside-ext-admin-dashboards/pull/19) - Generic dashboard - view and edit mode screen
+* [DASH-44](https://github.com/pixl8/preside-ext-admin-dashboards/pull/18) - Implement left-hand menu on dashboard
+* [DASH-45](https://github.com/pixl8/preside-ext-admin-dashboards/pull/17) - Auto generate widget title from selected metric
+* [DASH-46](https://github.com/pixl8/preside-ext-admin-dashboards/pull/20) - Add generic dashboard urgent actions panel
+* [DASH-49](https://github.com/pixl8/preside-ext-admin-dashboards/pull/22) - Additional interceptor behaviour for widget config forms
+* [DASH-55](https://github.com/pixl8/preside-ext-admin-dashboards/pull/24) - Deleting a dashboard
+* [DASH-57](https://github.com/pixl8/preside-ext-admin-dashboards/pull/26) - Sticky widget titles and prevention of scrollbar overflow
+* [DASH-58] - Add dashboard to new report menu
+
 ## v3.0.9
 
 * [PR-15](https://github.com/pixl8/preside-ext-admin-dashboards/pull/15) - Dashboard listing 500 error for admin without `Admin dashboard super admin` role

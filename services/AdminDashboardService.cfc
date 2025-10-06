@@ -14,6 +14,43 @@ component {
 	}
 
 // PUBLIC API METHODS
+	public query function getUserDashboards(
+		  string  adminUserId  = $getAdminLoggedInUserId()
+		, array   extraFilters = []
+		, string  orderBy      = "name"
+		, numeric maxRows      = 0
+	) {
+		return $getPresideObject( "admin_dashboard" ).selectData(
+			  filter       = { owner=arguments.adminUserId }
+			, extraFilters = arguments.extraFilters
+			, orderBy      = arguments.orderBy
+			, maxRows      = arguments.maxRows
+		);
+	}
+
+	public query function getUserAccessibleDashboards(
+		  string  adminUserId  = $getAdminLoggedInUserId()
+		, array   extraFilters = []
+		, string  orderBy      = "name"
+		, numeric maxRows      = 0
+	) {
+		var adminUserGroups = _getAdminUserGroups( adminUserId=arguments.adminUserId );
+
+		return $getPresideObject( "admin_dashboard" ).selectData(
+			  filter = "view_access = 'public'
+						OR admin_dashboard.owner = :adminUserId
+						OR ( view_access = 'specific' AND ( view_users.id = :adminUserId OR view_groups.id in ( :adminUserGroups ) ) )
+						OR ( edit_access = 'specific' AND ( edit_users.id = :adminUserId OR edit_groups.id in ( :adminUserGroups ) ) )"
+			, filterParams = {
+				  adminUserId     = { type="varchar", value=arguments.adminUserId }
+				, adminUserGroups = { type="varchar", value=adminUserGroups, list=true }
+			}
+			, extraFilters = arguments.extraFilters
+			, orderBy      = arguments.orderBy
+			, maxRows      = arguments.maxRows
+		);
+	}
+
 	public boolean function userCanViewDashboard( required string dashboardId, string adminUserId=$getAdminLoggedInUserId() ) {
 		if ( hasFullAccess( arguments.adminUserId ) ) {
 			return true;
@@ -73,6 +110,12 @@ component {
 
 	public boolean function hasFullAccess( required string adminUserId ) {
 		return permissionService.hasPermission( permissionKey="adminDashboards.fullaccess", userId=arguments.adminUserId );
+	}
+
+	public boolean function isDashboardUsingGridLayout( required string dashboardId ) {
+		return $getPresideObject( "admin_dashboard" ).dataExists(
+			filter = { id=arguments.dashboardId, dashboard_layout="grid" }
+		);
 	}
 
 // PRIVATE HELPERS

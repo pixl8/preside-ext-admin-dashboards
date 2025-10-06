@@ -3,11 +3,16 @@
  * @nolabel
  */
 component {
-	property name="dashboard"     relationship="many-to-one" relatedto="admin_dashboard" required=true indexes="adminDashboardWidgetDashboard";
+	property name="dashboard"     relationship="many-to-one" relatedto="admin_dashboard" required=true indexes="adminDashboardWidgetDashboard" ondelete="cascade";
 	property name="widget_id"     type="string"  dbtype="varchar" maxlength=100          required=true;
 	property name="instance_id"   type="string"  dbtype="varchar" maxlength=100          required=true indexes="adminDashboardWidgetInstance";
-	property name="title"         type="string"  dbtype="varchar" maxlength=50           required=true;
+	property name="title"         type="string"  dbtype="varchar" maxlength=250          required=false;
 	property name="column"        type="numeric" dbtype="int";
 	property name="slot"          type="numeric" dbtype="int";
+	property name="grid_config"   type="string"  dbtype="text";
 	property name="config"        type="string"  dbtype="text";
+
+	property name="dashboard_edit_temp_grid_config" type="string"  dbtype="text";
+	property name="dashboard_edit_temp_add"         type="boolean" dbtype="boolean" default=false;
+	property name="dashboard_edit_temp_delete"      type="boolean" dbtype="boolean" default=false;
 }

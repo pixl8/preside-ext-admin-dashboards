@@ -1,7 +1,8 @@
 component extends="preside.system.base.AdminHandler" {
 
-	property name="widgetService" inject="adminDashboardWidgetService";
-	property name="siteService"   inject="delayedInjector:siteService";
+	property name="widgetService"    inject="adminDashboardWidgetService";
+	property name="dashboardService" inject="adminDashboardService";
+	property name="siteService"      inject="delayedInjector:siteService";
 
 	public void function renderWidgetContent( event, rc, prc ) {
 		var widgetId         = rc.widgetId         ?: "";
@@ -84,14 +85,44 @@ component extends="preside.system.base.AdminHandler" {
 			event.notFound();
 		}
 
-		widgetService.saveWidgetConfiguration(
+		var formData = event.getCollectionWithoutSystemVars();
+		var formName = widgetService.getWidgetConfigFormName(
 			  dashboardId = dashboardId
 			, widgetId    = widgetId
 			, instanceId  = instanceId
-			, requestData = event.getCollectionWithoutSystemVars()
 		);
 
-		event.renderData( data={ success=true }, type="json" );
+		var validationResult = validateForm( formName=formName, formData=formData );
+		var interceptData    = {
+			  widgetId         = widgetId
+			, dashboardId      = dashboardId
+			, instanceId       = instanceId
+			, formData         = formData
+			, validationResult = validationResult
+		};
+
+		event.announceInterception( "onValidateWidgetConfigForm", interceptData );
+
+		var validated     = interceptData.validationResult.validated();
+		var errorMessages = validated ? {} : interceptData.validationResult.getMessages();
+		var success       = true && validated;
+
+		try {
+			if ( validated ) {
+				widgetService.saveWidgetConfiguration(
+					  dashboardId = dashboardId
+					, widgetId    = widgetId
+					, instanceId  = instanceId
+					, requestData = interceptData.formData
+					, formName    = formName
+				);
+			}
+		} catch (any e) {
+			logError(e);
+			success = false;
+		}
+
+		event.renderData( data={ success=success, errorMessages=errorMessages }, type="json" );
 	}
 
 	private string function renderDashboard( event, rc, prc, args={} ) {
@@ -106,7 +137,8 @@ component extends="preside.system.base.AdminHandler" {
 	private string function renderUserGeneratedDashboard( event, rc, prc, args={} ) {
 		var dashboardId  = args.dashboardId ?: "";
 		var allowEditing = isTrue( args.allowEditing ?: "" );
-		var dashboard    = widgetService.renderUserGeneratedDashboard( dashboardId=dashboardId, allowEditing=allowEditing );
+		var action       = ListLast( rc.event ?: "", "." );
+		var dashboard    = widgetService.renderUserGeneratedGridDashboard( dashboardId=dashboardId, allowEditing=allowEditing, showTempWidgets=( action == "editdashboardlayout" ) );
 
 		event.include( "/js/admin/specific/admindashboards/" )
 		     .include( "/css/admin/specific/admindashboards/" );
@@ -115,7 +147,7 @@ component extends="preside.system.base.AdminHandler" {
 			event.include( "/js/admin/specific/admindashboards/editing/" );
 		}
 
-		return renderView( view="/admin/admindashboards/_userGenerated", args=dashboard );
+		return renderView( view="/admin/admindashboards/layoutGrid/_userGenerated", args=dashboard );
 	}
 
 	public void function importDialog( event, rc, prc ) {
@@ -190,7 +222,7 @@ component extends="preside.system.base.AdminHandler" {
 			, config      = config
 		);
 
-		setNextEvent( url=event.buildAdminLink( objectName="admin_dashboard", recordId=dashboardId ) );
+		setNextEvent( url=event.buildAdminLink( objectName="admin_dashboard", operation="editdashboardlayout", recordId=dashboardId ) );
 	}
 
 	public function deleteWidget( event, rc, prc, args={} ) {
@@ -205,6 +237,22 @@ component extends="preside.system.base.AdminHandler" {
 		setNextEvent( url=event.buildAdminLink( objectName="admin_dashboard", recordId=dashboardId ) );
 	}
 
+	public function saveEditDashboardLayout( event, rc, prc, args={} ) {
+		var dashboardId = args.dashboardId ?: ( rc.dashboardId ?: "" );
+
+		widgetService.saveEditDashboardWidgets( dashboardId=dashboardId );
+
+		setNextEvent( url=event.buildAdminLink( objectName="admin_dashboard", recordId=dashboardId ) );
+	}
+
+	public function cancelEditDashboardLayout( event, rc, prc, args={} ) {
+		var dashboardId = args.dashboardId ?: ( rc.dashboardId ?: "" );
+
+		widgetService.cancelEditDashboardWidgets( dashboardId=dashboardId );
+
+		setNextEvent( url=event.buildAdminLink( objectName="admin_dashboard", recordId=dashboardId ) );
+	}
+
 	public string function updateWidgetOrder( event, rc, prc, args={} ) {
 		var dashboardId = rc.dashboardId ?: "";
 		var column      = rc.column      ?: 1;
@@ -215,6 +263,25 @@ component extends="preside.system.base.AdminHandler" {
 			dao.updateData(
 				  filter = { dashboard=dashboardId, instance_id=widget }
 				, data   = { column=column, slot=slot }
+			);
+		} );
+
+		return "OK";
+	}
+
+	public string function updateGridWidgetOrderAndSize( event, rc, prc, args={} ) {
+		var dashboardId = rc.dashboardId ?: "";
+		var widgets     = rc.widgets     ?: "";
+		var isTemporary = rc.isTemporary ?: false;
+		var dao         = getPresideObject( "admin_dashboard_widget" );
+		var dataField   = isTrue( isTemporary ) ? "dashboard_edit_temp_grid_config" : "grid_config";
+
+		widgets = deserializeJSON( widgets );
+
+		widgets.each( function( widget, i ) {
+			dao.updateData(
+				  filter = { dashboard=dashboardId, instance_id=widget.id }
+				, data   = { "#dataField#" = serializeJSON( widget.gridConfig ) }
 			);
 		} );
 

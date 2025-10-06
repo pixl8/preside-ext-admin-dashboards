@@ -8,7 +8,11 @@ component {
 		_setupPermissionsAndRoles( settings );
 		_setupInterceptors( conf );
 
-		settings.adminConfigurationMenuItems.append( "adminDashboards" );
+		settings.adminMenuItems                 = settings.adminMenuItems ?: [];
+		settings.adminMenuItems.adminDashboards = {
+			  permissionKey = "adminDashboards.navigate"
+			, buildLinkArgs = { objectName="admin_dashboard"}
+		};
 	}
 
 	private void function _setupEnums( settings ) {
@@ -31,6 +35,10 @@ component {
 
 		conf.interceptorSettings.customInterceptionPoints = conf.interceptorSettings.customInterceptionPoints ?: [];
 		ArrayAppend( conf.interceptorSettings.customInterceptionPoints, "onRenderAdminWidgetContainer" );
+		ArrayAppend( conf.interceptorSettings.customInterceptionPoints, "onGetWidgetConfigFormName" );
+		ArrayAppend( conf.interceptorSettings.customInterceptionPoints, "onRenderWidgetConfigForm" );
+		ArrayAppend( conf.interceptorSettings.customInterceptionPoints, "preRenderDashboardAlert" );
+		ArrayAppend( conf.interceptorSettings.customInterceptionPoints, "onValidateWidgetConfigForm" );
 		ArrayAppend( conf.interceptorSettings.customInterceptionPoints, "onSyncAdminDashboardWidgetTemplates" );
 		ArrayAppend( conf.interceptorSettings.customInterceptionPoints, "onGetAdminDashboardWidgetTemplates" );
 	}
