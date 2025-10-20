@@ -1,5 +1,9 @@
 # Changelog
 
+## v3.1.3
+
+* [DASH-63](https://projects.pixl8.london/browse/DASH-63) - RenderAdminDashboard() helper: should have option to not render page header
+
 ## v3.1.2
 
 * Changelog
