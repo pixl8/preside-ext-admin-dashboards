@@ -15,18 +15,22 @@
 	isEditDashboardLayout = ( action == "editdashboardlayout" );
 
 	event.includeData( { dashboard_action=action } )
+
+	includePageHeader = IsTrue( args.includePageHeader ?:  "" );
 </cfscript>
 
 <cfoutput>
-	#renderView(
-		  view="/admin/admindashboards/layoutGrid/_pageTitle"
-		, args={
-			  title             = ( prc.pageTitle         ?: "" )
-			, subTitle          = ( prc.pageSubTitle      ?: "" )
-			, icon              = ( prc.pageIcon          ?: "" )
-			, pageHeaderButtons = ( prc.pageHeaderButtons ?: "" )
-		}
-	)#
+	<cfif includePageHeader>
+		#renderView(
+			view="/admin/admindashboards/layoutGrid/_pageTitle"
+			, args={
+				title             = ( prc.pageTitle         ?: "" )
+				, subTitle          = ( prc.pageSubTitle      ?: "" )
+				, icon              = ( prc.pageIcon          ?: "" )
+				, pageHeaderButtons = ( prc.pageHeaderButtons ?: "" )
+			}
+		)#
+	</cfif>
 
 	<div class="admin-dashboard-container" data-dashboard-id="#dashboardId#">
 
