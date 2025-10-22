@@ -1,8 +1,12 @@
 # Changelog
 
+## v3.1.4
+
+* Apply translation manager CI action
+
 ## v3.1.3
 
-* [DASH-63](https://projects.pixl8.london/browse/DASH-63) - RenderAdminDashboard() helper: should have option to not render page header
+* RenderAdminDashboard() helper: should have option to not render page header
 
 ## v3.1.2
 
@@ -10,7 +14,7 @@
 
 ## v3.1.1
 
-* [DASH-61](https://projects.pixl8.london/browse/DASH-61) - Migration of previous dashboard URLs
+* Migration of previous dashboard URLs
 
 ## v3.1.0
 
