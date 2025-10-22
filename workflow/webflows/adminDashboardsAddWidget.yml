@@ -1,0 +1,43 @@
+version: 1.0.0
+webflow:
+  id: adminDashboardsAddWidget
+  singleton: true
+  adminFlow: true
+  init:
+    state:
+      handler:
+        event: admin.webflow.adminDashboardsAddWidget.initState
+
+  steps:
+  - id: selectType
+    display:
+      viewlet:
+        event: admin.webflow.adminDashboardsAddWidget.selectType
+    submission:
+      handler:
+        event: admin.webflow.adminDashboardsAddWidget.selectTypeAction
+
+  - id: selectWidget
+    condition:
+      ref: coldbox.Handler
+      args:
+        event: admin.webflow.adminDashboardsAddWidget.showSelectWidget
+    display:
+      viewlet:
+        event: admin.webflow.adminDashboardsAddWidget.selectWidget
+    submission:
+      handler:
+        event: admin.webflow.adminDashboardsAddWidget.selectWidgetAction
+
+  - id: configWidget
+    display:
+      viewlet:
+        event: admin.webflow.adminDashboardsAddWidget.configWidget
+    submission:
+      handler:
+        event: admin.webflow.adminDashboardsAddWidget.configWidgetAction
+
+  - id: confirmation
+    display:
+      viewlet:
+        event: admin.webflow.adminDashboardsAddWidget.confirmation

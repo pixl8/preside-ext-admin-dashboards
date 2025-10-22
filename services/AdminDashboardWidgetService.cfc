@@ -318,10 +318,19 @@ component {
 		return formArgs.formName;
 	}
 
-	public string function renderWidgetConfigForm( required string dashboardId, required string widgetId, required string instanceId ) {
+	public string function renderWidgetConfigForm(
+		  required string dashboardId
+		, required string widgetId
+		, required string instanceId
+		,          struct configData = {}
+	) {
 		var formName        = getWidgetConfigFormName( argumentCollection=arguments );
 		var savedConfigData = getWidgetConfiguration( arguments.dashboardId, arguments.widgetId, arguments.instanceId );
 		var renderFormArgs  = { formName=formName, savedData=savedConfigData, widget=arguments };
+
+		if ( !StructIsEmpty( arguments.configData ) ) {
+			StructAppend( renderFormArgs.savedData, arguments.configData );
+		}
 
 		$announceInterception( "onRenderWidgetConfigForm", renderFormArgs );
 

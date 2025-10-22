@@ -159,23 +159,6 @@ component extends="preside.system.base.AdminHandler" {
 	public void function widgetDialog( event, rc, prc ) {
 		event.setLayout( "adminModalDialog" );
 		prc.widgets = _getSortedAndTranslatedAdminWidgets();
-		prc.grouped = {};
-
-		for ( var widget in prc.widgets ) {
-			var groupId = Len( widget.group ?: "" ) ? widget.group : "uncategorised";
-
-			prc.grouped[ groupId ] = prc.grouped[ groupId ] ?: [];
-			ArrayAppend( prc.grouped[ groupId ], widget );
-		}
-
-		prc.groups = StructKeyArray( prc.grouped );
-		ArrayDelete( prc.groups, "uncategorised" );
-		ArraySort(   prc.groups, "textnocase" );
-
-		if ( ArrayLen( prc.groups ) ) {
-			event.include( "/js/admin/specific/admindashboards/widgetDialog/"  )
-			     .include( "/css/admin/specific/admindashboards/widgetDialog/" );
-		}
 
 		event.setView( view="admin/admindashboards/browserDialog" );
 	}
@@ -311,7 +294,6 @@ component extends="preside.system.base.AdminHandler" {
 				widget.description = translateResource( uri=widget.description, defaultValue="" );
 				widget.icon        = translateResource( uri=widget.icon       , defaultValue="fa-magic" );
 				widget.group       = translateResource( uri="admin.admindashboards.widget.#id#:group", defaultValue="" );
-				widget.previewImg  = "";
 				widget.isTemplate  = false;
 				widget.isSystem    = true;
 
@@ -328,6 +310,6 @@ component extends="preside.system.base.AdminHandler" {
 			return widget1.title == widget2.title ? 0 : ( widget1.title > widget2.title ? 1 : -1 );
 		} );
 
-		return arrayOfStructsToQuery( "id,title,group,description,icon,previewImg,isTemplate,recordId,config", tempArray );
+		return arrayOfStructsToQuery( "id,title,group,description,icon,isTemplate,recordId,config", tempArray );
 	}
 }

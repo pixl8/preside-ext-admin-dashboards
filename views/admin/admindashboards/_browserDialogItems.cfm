@@ -41,10 +41,6 @@
 							#widgets.description#
 						</p>
 					</cfif>
-
-					<cfif Len( Trim( widgets.previewImg ?: "" ) )>
-						<img class="admin-dashboard-widget-item-image" src="#widgets.previewImg#" />
-					</cfif>
 				</a>
 			</li>
 		</cfloop>

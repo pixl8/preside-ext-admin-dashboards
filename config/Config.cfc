@@ -18,6 +18,7 @@ component {
 	private void function _setupEnums( settings ) {
 		settings.enum.adminDashboardViewAccess = [ "private", "public", "specific" ];
 		settings.enum.adminDashboardEditAccess = [ "private", "specific" ];
+		settings.enum.adminDashboardWidgetType = [ "gallery", "scratch", "import" ];
 	}
 
 	private void function _setupPermissionsAndRoles( required struct settings ) {
