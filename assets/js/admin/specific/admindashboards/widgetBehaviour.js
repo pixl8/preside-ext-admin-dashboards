@@ -85,13 +85,14 @@
 					  , importedConfig = $.parseJSON( config.import || "" )
 					  , dashboardId    = $importLink.data( "dashboardId" )
 					  , columnIndex    = $importLink.data( "columnIndex" )
-					  , widgetId       = importedConfig.widgetId || "";
+					  , widgetId       = importedConfig.widgetId || ""
+					  , newConfig      = {};
 
-					$.each( importedConfig, function(index, el) {
-						importedConfig[ "config-" + index ] = el;
+					Object.keys(importedConfig).forEach( function( index ) {
+						newConfig[ "config-" + index ] = importedConfig[ index ];
+					}) ;
 
-						delete importedConfig[ index ];
-					} );
+					importedConfig = newConfig;
 
 					$.ajax( buildAdminLink( "admindashboards", "addWidget", { dashboard: dashboardId, widget: widgetId, column: columnIndex } ), {
 						  data     : importedConfig
@@ -164,8 +165,8 @@
 		return false;
 	} );
 
-	$dashBoardContainer.on( "click", ".widget-import-config-link", function(){
-		event.preventDefault();
+	$dashBoardContainer.on( "click", ".widget-import-config-link", function( e ){
+		e.preventDefault();
 		importWidgetConfigDialog( $(this) );
 
 		return false;

@@ -76,7 +76,7 @@
 			</cfloop>
 
 			<cfif hasError && Len( errorMessages.widget_type.message ?: "" )>
-				<div for="widget_type" class="help-block">
+				<div class="help-block">
 					#errorMessages.widget_type.message#
 				</div>
 			</cfif>

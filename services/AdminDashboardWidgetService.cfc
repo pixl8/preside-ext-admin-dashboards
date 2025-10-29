@@ -33,7 +33,7 @@ component {
 		return widgets;
 	}
 	public struct function getWidget( required string widgetId ) {
-		var widgets = Duplicate( _getWidgets() );
+		var widgets = getWidgets();
 
 		return widgets[ arguments.widgetId ] ?: {};
 	}

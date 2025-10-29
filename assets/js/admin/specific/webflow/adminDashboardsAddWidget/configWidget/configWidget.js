@@ -1,9 +1,9 @@
 ( function( $ ){
 	// Derived from preside/system/handlers/rules/fieldtypes/TimePeriod.cfc$renderConfiguredField
 	function renderTimePeriodLabel( timePeriod={ type:"alltime" } ) {
-		let i18nArgs = { data:[] };
-		let type     = "alltime"
-		let timeUnit = timePeriod.unit || "d";
+		let i18nArgs = { data:[] }
+		  , type     = "alltime"
+		  , timeUnit = timePeriod.unit || "d";
 
 		switch( timePeriod.type || "alltime" ) {
 			case "between":
@@ -33,7 +33,7 @@
 				type          = timePeriod.type;
 				i18nArgs.data = [
 					  parseInt( timePeriod.measure || 0 )
-					, i18n.translateResource( "cms:time.period.unit.d" )
+					, i18n.translateResource( `cms:time.period.unit.${timeUnit}` )
 				];
 			break;
 			case "future":
@@ -56,21 +56,21 @@
 		return i18n.translateResource( `cms:rulesEngine.time.period.type.${type}.configured`, i18nArgs );
 	}
 
-	var $titleField  = $( "input.admin-dashboards-widget-title" )
+	let $titleField  = $( "input.admin-dashboards-widget-title" )
 	  , titleBasedOn = $titleField.data( "basedon" )
 	  , $form        = $titleField.closest( "form" );
 
 	if ( titleBasedOn && ( titleBasedOn.length > 0 ) ) {
-		var basedOnFields    = titleBasedOn.split( "|" )
+		let basedOnFields    = titleBasedOn.split( "|" )
 		  , fieldLabelValues = {}
 		  , regenerateTitle;
 
 		regenerateTitle = function( fields ) {
 
 			for ( var i = 0; i < fields.length; i++ ) {
-				const uberSelect = $( `#${fields[i]}` ).data( "uberSelect" );
+				let uberSelect = $( `#${fields[i]}` ).data( "uberSelect" );
 
-				if( uberSelect != undefined ) {
+				if( uberSelect !== undefined ) {
 					// If both selected, and current value is empty, then it is indeed empty.
 					if( !uberSelect.getSelected().length && !uberSelect.value.length ) {
 						fieldLabelValues[ fields[i] ] = "";
@@ -86,7 +86,7 @@
 					}
 				} else {
 					if ( $( `[name="${fields[i]}"]` ).length ) {
-						var thisFieldLabel = $( '[name="' + fields[i] + '"]' ).val();
+						let thisFieldLabel = $( '[name="' + fields[i] + '"]' ).val();
 
 						if ( $( `[name="${fields[i]}"]` ).is( "select" ) ) {
 							thisFieldLabel = $( `[name="${fields[i]}"] option:selected` ).attr( "title" );
@@ -137,7 +137,7 @@
 		} );
 
 		$form.on( "change dp.change", function( event ) {
-			const thisElName = event.target.getAttribute( "name" ) || event.target.getAttribute( "id" ) || "";
+			let thisElName = event.target.getAttribute( "name" ) || event.target.getAttribute( "id" ) || "";
 
 			if( ( !$titleField.val().trim().length || $titleField.hasClass( "is-empty-start" ) ) && !$titleField.hasClass( "has-user-custom-title" ) ) {
 				if( basedOnFields.includes( thisElName ) || ( basedOnFields.includes( "time_period" ) && thisElName.indexOf( "time_period" ) == 0 ) ) {
