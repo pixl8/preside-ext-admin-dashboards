@@ -7,7 +7,9 @@
 	canEditDashboard = isTrue( args.canEdit ?: "" );
 
 	addTitle         = translateResource( "preside-objects.admin_dashboard:widget.add.btn" );
+	importTitle      = translateResource( "preside-objects.admin_dashboard:widget.import.btn" );
 	addLink          = event.buildAdminLink( linkTo="adminDashboards.widgetDialog", queryString="dashboard=#dashboardId#&column={column}" );
+	importLink       = event.buildAdminLink( linkTo="adminDashboards.importDialog", queryString="dashboard=#dashboardId#&column={column}" );
 </cfscript>
 
 <cfoutput>
@@ -21,7 +23,13 @@
 
 					<cfif canEditDashboard>
 						<div class="dashboard-column-add">
-							<a href="#replace( addLink, "{column}", c )#" data-toggle="bootbox-modal" data-target="##add-widget-modal" data-buttons="cancel" data-modal-class="page-type-picker" title="#addTitle#">
+							<a href="#Replace( importLink, "{column}", c )#" class="widget-import-config-link" title="#addTitle#" data-dashboard-id="#dashboardId#" data-column-index="#c#">
+								<button class="btn btn-success btn-sm">
+									<i class="fa fa-fw fa-download"></i>
+									#importTitle#
+								</button>
+							</a>
+							<a href="#replace( addLink, "{column}", c )#" data-toggle="bootbox-modal" data-target="##add-widget-modal" data-buttons="cancel" data-modal-class="full-screen-dialog" title="#addTitle#">
 								<button class="btn btn-success btn-sm">
 									<i class="fa fa-fw fa-plus"></i>
 									#addTitle#

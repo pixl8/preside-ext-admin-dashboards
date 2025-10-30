@@ -1,0 +1,111 @@
+.presidecms {
+
+	.admin-dashboards-widgets-header {
+
+		.widgets-search-container {
+			position : relative;
+			display  : inline;
+
+			.widgets-search-bar {
+				width         : 100%;
+				padding       : 10px 30px 10px;
+				border-radius : var( --button-border-radius, 8px ) !important;
+			}
+
+			.widgets-search-icon {
+				position : absolute;
+				left     : 8px;
+				top      : 0;
+				padding  : 4px;
+			}
+
+			+ .widgets-filter-container {
+				margin-top: 12px;
+			}
+		}
+
+		.widgets-filter-container {
+			margin-bottom : 12px;
+			text-align    : right;
+		}
+	}
+
+	.admin-dashboards-widgets-container {
+		display: grid;
+		grid-template-columns: repeat( 2, minmax( 0, 1fr ) );
+		gap: 10px;
+
+		.widget-item {
+
+			.widget-item-input {
+				display: none;
+
+				&:checked {
+					+ .widget-item-wrapper {
+						background-color: var( --color-neutral-5, #f6f7f5 );
+					}
+				}
+			}
+
+			.widget-item-wrapper {
+				cursor           : pointer;
+				border-radius    : var( --button-border-radius, 8px );
+				border-width     : var( --button-border-width, 2px );
+				border-style     : var( --button-border-style, solid );
+				border-color     : var( --color-neutral-100, #21262b );
+				padding          : 15px;
+				display          : flex;
+				align-items      : center;
+				gap              : 20px;
+				flex-direction   : row;
+
+				&:hover {
+					background-color: var( --color-neutral-5, #f6f7f5 );
+				}
+
+				.widget-item-icon {
+					color     : var( --color-primary-100, #21262b );
+					font-size : 40px;
+					padding   : 0 5px;
+
+					@media (max-width:991px) {
+						align-self : flex-start;
+					}
+				}
+
+				.widget-item-content{
+
+					.widget-item-title {
+						margin-bottom: 0;
+						font-weight: 600;
+						font-size: 1.2em;
+
+						+ .widget-item-tags {
+							margin-top: 8px;
+						}
+					}
+
+					.widget-item-desc {
+						margin-bottom: 0;
+
+						+ .widget-item-tags {
+							margin-top: 8px;
+						}
+					}
+
+					.widget-item-tags {
+
+						.widget-item-tag {
+							border-radius : var( --button-border-radius, 8px );
+							border-width  : var( --button-border-width, 2px );
+							border-style  : var( --button-border-style, solid );
+							border-color  : var( --color-neutral-100, #21262b );
+							padding       : 2px 6px;
+							margin-right  : 6px;
+						}
+					}
+				}
+			}
+		}
+	}
+}

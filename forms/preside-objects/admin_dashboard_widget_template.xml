@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form i18nBaseUri="preside-objects.admin_dashboard_widget_template:">
+
+	<tab id="default">
+		<fieldset id="default">
+			<field binding="admin_dashboard_widget_template.title"       sortorder="10" required="true" control="textinput" />
+			<field binding="admin_dashboard_widget_template.description" sortorder="20" />
+			<field binding="admin_dashboard_widget_template.config"      sortorder="30" required="true" control="textarea" />
+		</fieldset>
+	</tab>
+
+</form>

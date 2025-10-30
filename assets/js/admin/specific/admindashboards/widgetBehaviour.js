@@ -2,7 +2,7 @@
 
 	var $dashBoardContainer = $( ".admin-dashboard-container" )
 	  , $widgets            = $( ".admin-dashboard-container .admin-dashboard-widget" )
-	  , openWidgetConfigDialog, loadContent, getWidgetDetails
+	  , openWidgetConfigDialog, exportWidgetConfigDialog, importWidgetConfigDialog, loadContent, getWidgetDetails
 	  , onWidgetContentFetchSuccess, onWidgetContentFetchError;
 
 	openWidgetConfigDialog = function( $widgetEl ){
@@ -47,6 +47,60 @@
 					} );
 
 					return validated;
+				}
+			}
+		  , browserIframeModal = new PresideIframeModal( iframeSrc, "100%", "100%", callbacks, modalOptions )
+		  , dialogIframe;
+
+		browserIframeModal.open();
+	};
+
+	exportWidgetConfigDialog = function( $widgetEl ){
+		var iframeSrc       = buildAdminLink( "admindashboards", "exportModal", getWidgetDetails( $widgetEl ) )
+		  , modalOptions    = {
+				title      : $widgetEl.data( "exportModalTitle" ),
+				className  : "full-screen-dialog",
+				buttonList : [ "cancel" ]
+			}
+		  , callbacks = {
+				onLoad : function( iframe ) { dialogIframe = iframe; }
+			}
+		  , browserIframeModal = new PresideIframeModal( iframeSrc, "100%", "100%", callbacks, modalOptions )
+		  , dialogIframe;
+
+		browserIframeModal.open();
+	};
+
+	importWidgetConfigDialog = function( $importLink ){
+		var iframeSrc       = $importLink.attr( "href" )
+		  , modalOptions    = {
+				title      : $importLink.attr( "title" ),
+				className  : "full-screen-dialog",
+				buttonList : [ "ok", "cancel" ]
+			}
+		  , callbacks = {
+				onLoad : function( iframe ) { dialogIframe = iframe; },
+				onok : function(){
+					var config         = $.extend( {}, dialogIframe.getAdminDashboardWidgetImport() )
+					  , importedConfig = $.parseJSON( config.import || "" )
+					  , dashboardId    = $importLink.data( "dashboardId" )
+					  , columnIndex    = $importLink.data( "columnIndex" )
+					  , widgetId       = importedConfig.widgetId || ""
+					  , newConfig      = {};
+
+					Object.keys(importedConfig).forEach( function( index ) {
+						newConfig[ "config-" + index ] = importedConfig[ index ];
+					}) ;
+
+					importedConfig = newConfig;
+
+					$.ajax( buildAdminLink( "admindashboards", "addWidget", { dashboard: dashboardId, widget: widgetId, column: columnIndex } ), {
+						  data     : importedConfig
+						, method   : "POST"
+						, complete : function() {
+							location.reload();
+						}
+					} );
 				}
 			}
 		  , browserIframeModal = new PresideIframeModal( iframeSrc, "100%", "100%", callbacks, modalOptions )
@@ -101,6 +155,19 @@
 
 	$dashBoardContainer.on( "click", ".admin-dashboard-widget .widget-configuration-link", function(){
 		openWidgetConfigDialog( $( this ).closest( ".admin-dashboard-widget" ) );
+
+		return false;
+	} );
+
+	$dashBoardContainer.on( "click", ".admin-dashboard-widget .widget-export-config-link", function(){
+		exportWidgetConfigDialog( $( this ).closest( ".admin-dashboard-widget" ) );
+
+		return false;
+	} );
+
+	$dashBoardContainer.on( "click", ".widget-import-config-link", function( e ){
+		e.preventDefault();
+		importWidgetConfigDialog( $(this) );
 
 		return false;
 	} );
