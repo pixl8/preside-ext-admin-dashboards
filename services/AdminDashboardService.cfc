@@ -33,6 +33,7 @@ component {
 		, array   extraFilters = []
 		, string  orderBy      = "name"
 		, numeric maxRows      = 0
+		, string  groupBy      = "admin_dashboard.id"
 	) {
 		var adminUserGroups = _getAdminUserGroups( adminUserId=arguments.adminUserId );
 
@@ -48,6 +49,7 @@ component {
 			, extraFilters = arguments.extraFilters
 			, orderBy      = arguments.orderBy
 			, maxRows      = arguments.maxRows
+			, groupBy      = arguments.groupBy
 		);
 	}
 
