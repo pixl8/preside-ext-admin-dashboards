@@ -1,8 +1,7 @@
 <cfoutput>
-	#renderWebflow(
+	#renderAjaxWebflow(
 		  webflowId   = "adminDashboardsAddWidget"
-		, instanceRef = event.getAdminUserId() & ( rc.dashboard ?: "" )
+		, instanceRef = event.getAdminUserId() & "_" & ( rc.dashboard ?: "" )
 		, lazyLoad    = false
-		, layout      = "webflow.default.ajaxLayout"
 	)#
 </cfoutput>

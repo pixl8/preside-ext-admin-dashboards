@@ -146,13 +146,15 @@ component {
 		return renderView( view="/admin/webflow/adminDashboardsAddWidget/configWidget", args=args );
 	}
 	private void function configWidgetAction( event, rc, prc, webflowId, wfInstance, validationResult, args={} ) {
-		var submittedData = event.getCollectionWithoutSystemVars();
+		var wfInstanceArgs   = arguments.wfInstance.getInstanceArgs();
+		var wfInstanceSubRef = Trim( wfInstanceArgs.subreference ?: "" );
+		var submittedData    = event.getCollectionWithoutSystemVars();
 
 		StructDelete( submittedData, "$presideform" );
 		StructDelete( submittedData, "_sid" );
 		StructDelete( submittedData, "_wid" );
 
-		var dashboardId = submittedData.dashboardId ?: "";
+		var dashboardId = ( ListLen( wfInstanceSubRef, "_" ) > 1 ) ? ListLast( wfInstanceSubRef, "_" ) : ( submittedData.dashboardId ?: "" );
 		var widgetId    = submittedData.widgetId    ?: "";
 		var column      = rc.column ?: 1;
 		var instanceId  = CreateUUID();
@@ -170,6 +172,14 @@ component {
 	}
 
 	private string function confirmation( event, rc, prc, webflowId, wfInstance, args={} ) {
+		event.include( "/js/admin/specific/webflow/adminDashboardsAddWidget/confirmation/" );
+
+		var savedState       = args.state ?: arguments.wfInstance.getState();
+		var wfInstanceArgs   = arguments.wfInstance.getInstanceArgs();
+		var wfInstanceSubRef = Trim( wfInstanceArgs.subreference ?: "" );
+
+		args.dashboardId = ( ListLen( wfInstanceSubRef, "_" ) > 1 ) ? ListLast( wfInstanceSubRef, "_" ) : ( savedState.dashboardId ?: "" );
+
 		return renderView( view="/admin/webflow/adminDashboardsAddWidget/confirmation", args=args );
 	}
 }

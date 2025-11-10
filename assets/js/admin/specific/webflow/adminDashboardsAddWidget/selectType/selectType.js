@@ -3,8 +3,8 @@
 	  , toggleImportItem, autoSubmitForm;
 
 	toggleImportItem = function( $el, animated=false ) {
-		var selectedType = $el.find( ".widget-type-input:checked" ).val()
-		  , $importItem  = $el.find( widgetImportItem );
+		var selectedType = $( ".widget-type-input:checked" ).val()
+		  , $importItem  = $( widgetImportItem );
 
 		if ( selectedType == "import" ) {
 			$importItem.removeClass( "hide" );
@@ -24,10 +24,10 @@
 		}
 	};
 
-	toggleImportItem( $( ".webflow-form-ajax-submit" ) );
+	toggleImportItem( $( ".widget-type-input" ) );
 
-	$( ".webflow-form-ajax-submit" ).on( "change click", ".widget-type-input", function(event) {
-		toggleImportItem( $(this).closest( ".webflow-form-ajax-submit" ), true );
+	$( ".widget-type-input" ).on( "change click", function(event) {
+		toggleImportItem( $(this), true );
 		autoSubmitForm( $(this) );
 	});
 } )( presideJQuery );

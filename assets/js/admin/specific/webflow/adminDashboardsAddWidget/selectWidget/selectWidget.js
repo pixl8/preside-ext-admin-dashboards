@@ -1,11 +1,11 @@
 ( function( $ ){
-	var webflowContainerName = ".webflow-form-ajax-submit"
-	  , $webflowContainer    = $( webflowContainerName )
-	  , searchField          = ".widgets-search-bar"
-	  , groupField           = ".widgets-filter-select"
-	  , resultContainer      = ".admin-dashboards-widgets-container"
-	  , messageContainer     = ".admin-dashboards-widgets-message-container"
-	  , searchResultUrl      = cfrequest.resultUrl || ""
+	var widgetWrapper    = ".admin-dashboards-widgets-wrapper"
+	  , $widgetWrapper   = $( widgetWrapper )
+	  , searchField      = ".widgets-search-bar"
+	  , groupField       = ".widgets-filter-select"
+	  , resultContainer  = ".admin-dashboards-widgets-container"
+	  , messageContainer = ".admin-dashboards-widgets-message-container"
+	  , searchResultUrl  = cfrequest.resultUrl || ""
 	  , updateSearchResult;
 
 	if ( searchResultUrl.length > 0 ) {
@@ -39,14 +39,14 @@
 			} );
 		};
 
-		$webflowContainer.find( messageContainer ).hide();
+		$widgetWrapper.find( messageContainer ).hide();
 
-		$webflowContainer.on( "keyup", searchField, function(event) {
-			updateSearchResult( $(this).closest( webflowContainerName ) );
+		$widgetWrapper.on( "keyup", searchField, function(event) {
+			updateSearchResult( $(this).closest( widgetWrapper ) );
 		} );
 
-		$webflowContainer.on( "change", groupField, function(event) {
-			updateSearchResult( $(this).closest( webflowContainerName ) );
+		$widgetWrapper.on( "change", groupField, function(event) {
+			updateSearchResult( $(this).closest( widgetWrapper ) );
 		} );
 	}
 } )( presideJQuery );
