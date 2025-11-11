@@ -1,5 +1,9 @@
 # Changelog
 
+## v3.1.5
+
+* Duplicated shared dashboards fix
+
 ## v3.1.4
 
 * Apply translation manager CI action
