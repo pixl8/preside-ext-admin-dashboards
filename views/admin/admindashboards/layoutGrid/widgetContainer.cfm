@@ -17,10 +17,12 @@
 <cfparam name="args.userGeneratedDashboard" default="false" />
 
 <cfscript>
-	editModalTitle = translateResource( uri="admindashboards:configure.widget.dialog.title", data=[ args.title ] );
-	configureTitle = translateResource( uri="admindashboards:configure.widget.title" );
-	moveTitle      = translateResource( uri="admindashboards:move.widget.title" );
-	deletePrompt   = translateResource( uri="admindashboards:delete.widget.confirmation" );
+	editModalTitle    = translateResource( uri="admindashboards:configure.widget.dialog.title", data=[ args.title ] );
+	configureTitle    = translateResource( uri="admindashboards:configure.widget.title" );
+	moveTitle         = translateResource( uri="admindashboards:move.widget.title" );
+	deletePrompt      = translateResource( uri="admindashboards:delete.widget.confirmation" );
+	exportConfigTitle = translateResource( uri="admindashboards:export.widget.title" );
+	exportModalTitle  = translateResource( uri="admindashboards:export.widget.dialog.title", data=[ args.title ] );
 
 	event.includeData( { "#args.instanceId#"=args.contextData } );
 
@@ -38,6 +40,7 @@
 				data-instance-id        = "#args.instanceId#"
 				data-has-config         = "#args.hasConfig#"
 				data-config-modal-title = "#HtmlEditFormat( editModalTitle )#"
+				data-export-modal-title = "#HtmlEditFormat( exportModalTitle )#"
 				data-config-instance-id = "#args.configInstanceId#">
 			<div class="widget-header">
 				<h4 class="widget-title">
@@ -46,12 +49,13 @@
 				<div class="widget-toolbar">
 					<cfif isEditDashboardLayout>
 						#args.additionalMenu#
-						<a class="widget-draggable-handle" title="#htmlEditFormat( moveTitle )#"><i class="fa fa-fw fa-arrows"></i></a>
+						<a class="widget-draggable-handle" title="#HtmlEditFormat( moveTitle )#"><i class="fa fa-fw fa-arrows"></i></a>
 						<cfif args.hasConfig>
-							<a class="widget-configuration-link" href="##" title="#htmlEditFormat( configureTitle )#"><i class="fa fa-fw fa-pencil"></i></a>
+							<a class="widget-export-config-link" href="##" title="#HtmlEditFormat( exportConfigTitle )#"><i class="fa fa-fw fa-share"></i></a>
+							<a class="widget-configuration-link" href="##" title="#HtmlEditFormat( configureTitle )#"><i class="fa fa-fw fa-pencil"></i></a>
 						</cfif>
 						<cfif args.canDeleteWidget>
-							<a class="widget-delete-link" title="#htmlEditFormat( deletePrompt )#" href="#event.buildAdminLink( linkTo="adminDashboards.deleteWidget", queryString="dashboardId=#args.dashboardId#&instanceId=#args.configInstanceId#" )#"><i class="fa fa-fw fa-trash"></i></a>
+							<a class="widget-delete-link" title="#HtmlEditFormat( deletePrompt )#" href="#event.buildAdminLink( linkTo="adminDashboards.deleteWidget", queryString="dashboardId=#args.dashboardId#&instanceId=#args.configInstanceId#" )#"><i class="fa fa-fw fa-trash"></i></a>
 						</cfif>
 					</cfif>
 				</div>

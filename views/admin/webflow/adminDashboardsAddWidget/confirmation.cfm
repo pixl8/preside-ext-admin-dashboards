@@ -12,7 +12,9 @@
 		</div>
 	</cfif>
 
-	<a class="btn btn-info admin-dashbboard-widget-confirmation" href="#buttonUrl#">
-		#translateResource( uri="webflow.adminDashboardsAddWidget:step.confirmation.btn" )#
-	</a>
+	<div class="text-right">
+		<a class="btn btn-info admin-dashbboard-widget-confirmation" href="#buttonUrl#">
+			#translateResource( uri="webflow.adminDashboardsAddWidget:step.confirmation.btn" )#
+		</a>
+	</div>
 </cfoutput>

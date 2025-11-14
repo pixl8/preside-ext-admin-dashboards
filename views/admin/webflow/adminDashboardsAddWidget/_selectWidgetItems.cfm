@@ -32,12 +32,6 @@
 						</cfif>
 
 						<div class="widget-item-tags">
-							<cfif isTrue( availableWidgets.isTemplate ?: "" )>
-								<span class="widget-item-tag">
-									#translateResource( uri="webflow.adminDashboardsAddWidget:step.selectWidget.tag.template.label" )#
-								</span>
-							</cfif>
-
 							<cfif Len( Trim( availableWidgets.group ?: "" ) )>
 								<cfloop list="#availableWidgets.group#" item="group">
 									<span class="widget-item-tag">

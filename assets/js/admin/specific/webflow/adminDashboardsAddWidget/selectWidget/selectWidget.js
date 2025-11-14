@@ -1,24 +1,35 @@
 ( function( $ ){
-	var widgetWrapper    = ".admin-dashboards-widgets-wrapper"
-	  , $widgetWrapper   = $( widgetWrapper )
-	  , searchField      = ".widgets-search-bar"
-	  , groupField       = ".widgets-filter-select"
-	  , resultContainer  = ".admin-dashboards-widgets-container"
-	  , messageContainer = ".admin-dashboards-widgets-message-container"
-	  , searchResultUrl  = cfrequest.resultUrl || ""
+	var widgetWrapper      = ".admin-dashboards-widgets-wrapper"
+	  , $widgetWrapper     = $( widgetWrapper )
+	  , searchField        = ".widgets-search-bar"
+	  , selectItemField    = ".widgets-filter-selected-item"
+	  , $selectedContainer = $( ".widgets-filter-selected" )
+	  , resultContainer    = ".admin-dashboards-widgets-container"
+	  , messageContainer   = ".admin-dashboards-widgets-message-container"
+	  , groupFieldName     = cfrequest.groupFieldName || "group"
+	  , searchResultUrl    = cfrequest.resultUrl      || ""
 	  , updateSearchResult;
 
 	if ( searchResultUrl.length > 0 ) {
 		updateSearchResult = function( $el ) {
-			var queryText = $el.find( searchField ).val()
-			  , groupVal  = $el.find( groupField ).val();
+			var queryText      = $el.find( searchField ).val()
+			  , selectedGroups = []
+			  , $checkedGroups = $el.find( '[name="' + groupFieldName + '"]:checked' );
+
+			$selectedContainer.empty();
+			$checkedGroups.each( function( ind, el ) {
+				var groupVal = $( el ).val();
+
+				$selectedContainer.append( '<a href="#" class="widgets-filter-selected-item" data-value="' + groupVal + '">' + $( el ).data( "label" ) + '</a>' );
+				selectedGroups.push( groupVal );
+			} );
 
 			$.ajax( {
 				  url  : searchResultUrl
 				, type : "GET"
 				, data : {
 					  isGallery      : $el.find( '[name="is_gallery"]' ).val()
-					, group          : groupVal
+					, groups         : selectedGroups.toString()
 					, q              : queryText
 					, selectedWidget : $el.find( '[name="selected_widget"]' ).val()
 				}
@@ -45,8 +56,16 @@
 			updateSearchResult( $(this).closest( widgetWrapper ) );
 		} );
 
-		$widgetWrapper.on( "change", groupField, function(event) {
+		$widgetWrapper.on( "change", '[name="' + groupFieldName + '"]', function(event) {
 			updateSearchResult( $(this).closest( widgetWrapper ) );
 		} );
+
+		$widgetWrapper.on( "click", selectItemField, function(event) {
+			event.preventDefault();
+
+			$( 'input[name="' + groupFieldName + '"][value="' + $(this).data( "value" ) + '"]' ).prop( "checked", false );
+
+			updateSearchResult( $(this).closest( widgetWrapper ) );
+		});
 	}
 } )( presideJQuery );
