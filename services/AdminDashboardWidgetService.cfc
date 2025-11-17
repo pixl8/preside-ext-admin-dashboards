@@ -729,6 +729,16 @@ component {
 		} );
 	}
 
+	public boolean function hasTempDashboardWidgets( required string dashboardId ) {
+		return $getPresideObject( "admin_dashboard_widget" ).dataExists(
+			  filter       = "dashboard = :dashboard AND ( dashboard_edit_temp_add = :trueVal OR dashboard_edit_temp_delete = :trueVal )"
+			, filterParams = {
+				  dashboard = arguments.dashboardId
+				, trueVal  = { type="cf_sql_bit", value=true }
+			}
+		);
+	}
+
 	public void function reload() {
 		_autoDiscoverWidgets();
 		_loadWidgetsFromConfig();
