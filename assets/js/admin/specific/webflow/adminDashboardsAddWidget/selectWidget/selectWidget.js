@@ -1,5 +1,5 @@
 ( function( $ ){
-	var widgetWrapper      = ".admin-dashboards-widgets-wrapper"
+	let widgetWrapper      = ".admin-dashboards-widgets-wrapper"
 	  , $widgetWrapper     = $( widgetWrapper )
 	  , searchField        = ".widgets-search-bar"
 	  , selectItemField    = ".widgets-filter-selected-item"
