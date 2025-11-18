@@ -147,7 +147,9 @@ component extends="preside.system.base.AdminHandler" {
 			event.include( "/js/admin/specific/admindashboards/editing/" );
 		}
 
-		return renderView( view="/admin/admindashboards/layoutGrid/_userGenerated", args=dashboard );
+		StructAppend( args, dashboard );
+
+		return renderView( view="/admin/admindashboards/layoutGrid/_userGenerated", args=args );
 	}
 
 	public void function importDialog( event, rc, prc ) {

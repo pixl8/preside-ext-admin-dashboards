@@ -11,8 +11,9 @@
 	</cfif>
 
 	#renderAdminDashboard(
-	      dashboardId   = dashboardId
-		, userGenerated = true
-		, allowEditing  = true
+	      dashboardId       = dashboardId
+		, userGenerated     = true
+		, allowEditing      = true
+		, includePageHeader = true
 	)#
 </cfoutput>
