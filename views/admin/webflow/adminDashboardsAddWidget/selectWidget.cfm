@@ -3,10 +3,7 @@
 	availableWidgets = args.widgets   ?: QueryNew( "" );
 	widgetGroups     = ListToArray( ListRemoveDuplicates( ValueList( availableWidgets.group ) ) );
 	selectedWidget   = rc.widget ?: ( args.state.widget ?: "" );
-
-	if ( ArrayLen( widgetGroups ) ) {
-		ArrayPrepend( widgetGroups, "all" );
-	}
+	hasWidgetGroups  = isTrue( ArrayLen( widgetGroups ) );
 
 	errorMessages    = {};
 	validationResult = rc.validationResult ?: "";
@@ -38,15 +35,9 @@
 				<i class="fa fa-fw fa-search widgets-search-icon"></i>
 			</div>
 
-			<cfif ArrayLen( widgetGroups )>
+			<cfif hasWidgetGroups>
 				<div class="widgets-filter-container">
-					<select class="widgets-filter-select" name="widget_group">
-						<cfloop array="#widgetGroups#" item="group">
-							<option value="#group#">
-								#translateResource( uri="admindashboards:group.#group#.label", defaultValue=UcFirst( group ) )#
-							</option>
-						</cfloop>
-					</select>
+					<div class="widgets-filter-selected"></div>
 				</div>
 			</cfif>
 		</div>
@@ -58,8 +49,16 @@
 			</div>
 		</div>
 
-		<div class="admin-dashboards-widgets-container">
-			#renderView( view="/admin/webflow/adminDashboardsAddWidget/_selectWidgetItems", args=args )#
+		<div class="row admin-dashboards-widgets">
+			<div class="col-md-#hasWidgetGroups ? "10" : "12"# admin-dashboards-widgets-container">
+				#renderView( view="/admin/webflow/adminDashboardsAddWidget/_selectWidgetItems", args=args )#
+			</div>
+
+			<cfif hasWidgetGroups>
+				<div class="col-md-2">
+					#renderView( view="/admin/webflow/adminDashboardsAddWidget/_selectWidgetFilters", args={ widgetGroups=widgetGroups } )#
+				</div>
+			</cfif>
 		</div>
 	</div>
 </cfoutput>

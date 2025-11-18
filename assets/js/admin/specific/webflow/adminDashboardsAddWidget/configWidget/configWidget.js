@@ -56,12 +56,12 @@
 		return i18n.translateResource( `cms:rulesEngine.time.period.type.${type}.configured`, i18nArgs );
 	}
 
-	let $titleField  = $( "input.admin-dashboards-widget-title" )
+	let $titleField  = $( "[name='widget_title'], input.admin-dashboards-widget-title" )
 	  , titleBasedOn = $titleField.data( "basedon" )
 	  , $form        = $titleField.closest( "form" );
 
 	if ( titleBasedOn && ( titleBasedOn.length > 0 ) ) {
-		let basedOnFields    = titleBasedOn.split( "|" )
+		var basedOnFields    = titleBasedOn.split( "|" )
 		  , fieldLabelValues = {}
 		  , regenerateTitle;
 

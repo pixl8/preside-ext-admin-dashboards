@@ -94,17 +94,17 @@ component {
 
 	public string function getAvailableWidgets( event, rc, prc, args={} ) {
 		var isGallery   = isTrue( rc.isGallery ?: ( args.isGallery ?: "" ) );
-		var groupVal    = Trim( rc.group ?: "" );
-		var searchQuery = Trim( rc.q     ?: "" );
+		var groupsVal   = ListToArray( Trim( rc.groups ?: "" ) );
+		var searchQuery = Trim( rc.q ?: "" );
 
 		args.widgets = renderViewlet( event="admin.adminDashboards._getSortedAndTranslatedAdminWidgets" );
 		args.widgets = QueryFilter( args.widgets, function( _widget ) {
 			return isGallery ? isTrue( _widget.isTemplate ?: "" ) : isFalse( _widget.isTemplate ?: "" );
 		} );
 
-		if ( Len( groupVal ) && ( groupVal != "all" ) ) {
+		if ( ArrayLen( groupsVal ) ) {
 			args.widgets = QueryFilter( args.widgets, function( _widget ) {
-				return _widget.group == groupVal;
+				return ArrayFindNoCase( groupsVal, _widget.group );
 			} );
 		}
 
