@@ -488,7 +488,7 @@ component {
 		var allWidgets  = getWidgets();
 
 		for ( var widgetId in allWidgets ) {
-			if ( isUserDashboardWidget( widgetId=widgetId ) ) {
+			if ( isEnabled( widgetId=widgetId ) && isUserDashboardWidget( widgetId=widgetId ) ) {
 				var widgetTemplateEvent = "admin.admindashboards.widget.#widgetId#.getDashboardWidgetTemplates";
 				var widgetConfig        = allWidgets[ widgetId ];
 				var widgetTemplates     = [];
