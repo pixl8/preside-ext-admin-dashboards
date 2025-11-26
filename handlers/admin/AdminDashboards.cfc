@@ -159,7 +159,7 @@ component extends="preside.system.base.AdminHandler" {
 	}
 
 	public void function widgetDialog( event, rc, prc ) {
-		event.setLayout( "adminModalDialog" );
+		event.noLayout();
 		prc.widgets = _getSortedAndTranslatedAdminWidgets();
 
 		event.setView( view="admin/admindashboards/browserDialog" );
