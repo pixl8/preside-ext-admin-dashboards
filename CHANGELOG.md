@@ -1,5 +1,9 @@
 # Changelog
 
+## v3.1.6
+
+* [DASH-65](https://projects.pixl8.london/browse/DASH-65) - Unsaved dashboard widgets alert and confirmation
+
 ## v3.1.5
 
 * Duplicated shared dashboards fix
