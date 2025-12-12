@@ -146,6 +146,8 @@
 								} else {
 									$widgetEl.remove();
 								}
+
+								location.reload();
 							}
 							, error    : function() { $widgetEl.find( ".widget-dynamic-content" ).presideLoadingSheen( false ); }
 							, complete : function() { confirmationDialog.modal( "hide" ); }
