@@ -243,19 +243,20 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 			]
 		);
 
+		args.hasTempWidgets   = args.hasTempWidgets ?: widgetService.hasTempDashboardWidgets( dashboardId=args.recordId ?: prc.recordId );
 		prc.pageHeaderButtons = _renderPageHeaderButtons( argumentCollection=arguments );
-
-		args.dashboardAlert = _renderDashboardAlert( argumentCollection=arguments );
+		args.dashboardAlert   = _renderDashboardAlert( argumentCollection=arguments );
 
 		return renderView( view="/admin/adminDashboards/recordView", args=args );
 	}
 
 	private string function _renderDashboardAlert( event, rc, prc, args={} ) {
 		var interceptArgs = {
-			  objectName   = args.objectName ?: ""
-			, recordId     = args.recordId   ?: ""
-			, record       = prc.record      ?: {}
-			, action       = ListLast( rc.event ?: "", "." )
+			  objectName     = args.objectName ?: ""
+			, recordId       = args.recordId   ?: ""
+			, record         = prc.record      ?: {}
+			, action         = ListLast( rc.event ?: "", "." )
+			, hasTempWidgets = isTrue( args.hasTempWidgets ?: widgetService.hasTempDashboardWidgets( dashboardId=args.recordId ?: prc.recordId ) )
 
 			// Default dashboard alert values
 			, alertType         = "alert-warning"
@@ -264,6 +265,11 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 			, alertContent      = "" // Populate in the interceptor
 			, isCollapsibleOpen = true
 		};
+
+		if ( interceptArgs.hasTempWidgets ) {
+			interceptArgs.heading      = translateResource( uri="preside-objects.admin_dashboard:gridlayout.unsaved.alert.heading" );
+			interceptArgs.alertContent = translateResource( uri="preside-objects.admin_dashboard:gridlayout.unsaved.alert.content" );
+		}
 
 		announceInterception( "preRenderDashboardAlert", interceptArgs );
 
@@ -335,23 +341,25 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 				}
 			}
 
-			if( action == "editdashboardlayout" ) {
+			if ( action == "editdashboardlayout" ) {
+				args.hasTempWidgets   = args.hasTempWidgets ?: widgetService.hasTempDashboardWidgets( dashboardId=recordId );
 
-				actions.append( {
+				ArrayAppend( actions, {
 					  link      = event.buildAdminLink( linkto="AdminDashboards.cancelEditDashboardLayout", querystring="dashboardId=#recordId#" )
 					, btnClass  = "btn-link"
 					, iconClass = ""
-					, title     = translateResource( "preside-objects.admin_dashboard:gridlayout.cancel.btn" )
+					, title     = translateResource( uri="preside-objects.admin_dashboard:gridlayout.cancel.btn" )
+					, prompt    = args.hasTempWidgets ? translateResource( uri="preside-objects.admin_dashboard:gridlayout.cancel.confirmation" ) : ""
 				} );
 
-				actions.append( {
+				ArrayAppend( actions, {
 					  link      = event.buildAdminLink( linkto="AdminDashboards.saveEditDashboardLayout", querystring="dashboardId=#recordId#" )
 					, btnClass  = "js-save-layout btn-primary"
 					, iconClass = ""
-					, title     = translateResource( "preside-objects.admin_dashboard:gridlayout.save.btn" )
+					, title     = translateResource( uri="preside-objects.admin_dashboard:gridlayout.save.btn" )
 				} );
 
-				actions.append( {
+				ArrayAppend( actions, {
 					  link      = "##"
 					, btnClass  = "js-grid-auto-layout btn-grid-autolayout btn-default-invert"
 					, iconClass = ""
