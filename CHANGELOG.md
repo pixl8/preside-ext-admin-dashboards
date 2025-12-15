@@ -1,5 +1,9 @@
 # Changelog
 
+## v3.2.0
+
+* [DASH-47](https://projects.pixl8.london/browse/DASH-47) - Preconfigured / template metric widgets
+
 ## v3.1.6
 
 * [DASH-65](https://projects.pixl8.london/browse/DASH-65) - Unsaved dashboard widgets alert and confirmation
