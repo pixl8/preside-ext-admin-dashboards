@@ -489,9 +489,10 @@ component {
 
 		for ( var widgetId in allWidgets ) {
 			if ( isEnabled( widgetId=widgetId ) && isUserDashboardWidget( widgetId=widgetId ) ) {
-				var widgetTemplateEvent = "admin.admindashboards.widget.#widgetId#.getDashboardWidgetTemplates";
-				var widgetConfig        = allWidgets[ widgetId ];
-				var widgetTemplates     = [];
+				var widgetTemplateEvent   = "admin.admindashboards.widget.#widgetId#.getDashboardWidgetTemplates";
+				var widgetConfig          = allWidgets[ widgetId ];
+				var widgetTemplates       = [];
+				var widgetTenplatesExists = templateDao.dataExists( filter={ widget_id=widgetId, is_system=true } );
 
 				if ( coldbox.handlerExists( widgetTemplateEvent ) ) {
 					widgetConfig.title       = $translateResource( uri=widgetConfig.title                             , defaultValue=widgetConfig.title );
@@ -505,6 +506,8 @@ component {
 						, prePostExempt  = true
 						, eventArguments = { args=widgetConfig }
 					);
+				} else if ( widgetTenplatesExists ) {
+					templateDao.deleteData( filter={ widget_id=widgetId, is_system=true } );
 				}
 
 				widgetTemplates = IsArray( widgetTemplates ) ? widgetTemplates : [];
