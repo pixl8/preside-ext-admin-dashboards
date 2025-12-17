@@ -1,5 +1,9 @@
 # Changelog
 
+## v3.2.1
+
+* [DASH-67](https://projects.pixl8.london/browse/DASH-67) - Incorrect unique indexes combination in widget template object
+
 ## v3.2.0
 
 * [DASH-47](https://projects.pixl8.london/browse/DASH-47) - Preconfigured / template metric widgets
