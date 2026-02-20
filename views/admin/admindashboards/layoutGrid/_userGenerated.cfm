@@ -22,12 +22,13 @@
 <cfoutput>
 	<cfif includePageHeader>
 		#renderView(
-			view="/admin/admindashboards/layoutGrid/_pageTitle"
-			, args={
-				title             = ( prc.pageTitle         ?: "" )
-				, subTitle          = ( prc.pageSubTitle      ?: "" )
-				, icon              = ( prc.pageIcon          ?: "" )
-				, pageHeaderButtons = ( prc.pageHeaderButtons ?: "" )
+			  view = "/admin/admindashboards/layoutGrid/_pageTitle"
+			, args = {
+				  title                 = ( prc.pageTitle             ?: "" )
+				, subTitle              = ( prc.pageSubTitle          ?: "" )
+				, icon                  = ( prc.pageIcon              ?: "" )
+				, pageHeaderButtons     = ( prc.pageHeaderButtons     ?: "" )
+				, showDashboardSelector = ( prc.showDashboardSelector ?: URL.showDashboardSelector ?: false ) // Static way (URL scope), please update accordingly in the proper BE implementation
 			}
 		)#
 	</cfif>
