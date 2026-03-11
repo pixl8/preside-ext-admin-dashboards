@@ -9,7 +9,8 @@
 	hasButtons            = Len( Trim( args.pageHeaderButtons ) );
 	hasIcon               = Len( Trim( args.icon ) );
 	hasCustomImg          = Len( Trim( args.customImg ) );
-	showDashboardSelector = args.showDashboardSelector ?: false;
+	availableDashboards   = args.availableDashboards ?: [];
+	showDashboardSelector = ( args.showDashboardSelector ?: false ) && ( ArrayLen( availableDashboards ) > 0 );
 
 	if( hasCustomImg ) {
 		customImg = event.buildLink( assetId=args.customImg, derivative="customHeaderImg75px" );
@@ -20,7 +21,9 @@
 <cfoutput>
 	<div class="page-header<cfif hasButtons> with-buttons</cfif><cfif hasIcon> with-icon</cfif><cfif hasCustomImg> with-image</cfif>">
 		<div class="page-header-title">
-			<cfif !showDashboardSelector>
+			<cfif isTrue( showDashboardSelector )>
+				#renderView( view="/admin/admindashboards/dashboardSelector/index", args=args )#
+			<cfelse>
 				<h1>
 					<cfif hasIcon>
 						<i class="fa fa-fw #icon#"></i>
@@ -39,8 +42,6 @@
 						</span>
 					</cfif>
 				</h1>
-			<cfelse>
-				#renderView( view="/admin/admindashboards/dashboardSelector/index" )#
 			</cfif>
 		</div>
 		<cfif hasButtons>

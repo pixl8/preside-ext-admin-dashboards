@@ -138,7 +138,12 @@ component extends="preside.system.base.AdminHandler" {
 		var dashboardId  = args.dashboardId ?: "";
 		var allowEditing = isTrue( args.allowEditing ?: "" );
 		var action       = ListLast( rc.event ?: "", "." );
-		var dashboard    = widgetService.renderUserGeneratedGridDashboard( dashboardId=dashboardId, allowEditing=allowEditing, showTempWidgets=( action == "editdashboardlayout" ) );
+		var dashboard    = widgetService.renderUserGeneratedGridDashboard(
+			  dashboardId     = dashboardId
+			, allowEditing    = allowEditing
+			, contextData     = args.contextData ?: {}
+			, showTempWidgets = ( action == "editdashboardlayout" )
+		);
 
 		event.include( "/js/admin/specific/admindashboards/" )
 		     .include( "/css/admin/specific/admindashboards/" );
@@ -149,7 +154,44 @@ component extends="preside.system.base.AdminHandler" {
 
 		StructAppend( args, dashboard );
 
+		var currentEvent          = rc.event ?: event.getCurrentEvent();
+		var dashboardsForSelector = dashboardService.getDashboardsForSelector(
+			  currentDashboardId = dashboardId
+			, contextData        = args.contextData ?: {}
+			, includeTemplates   = isTrue( args.includeTemplatesForSelector ?: false )
+			, includeUser        = isTrue( args.includeUserForSelector      ?: true )
+			, includeAccess      = isTrue( args.includeAccessForSelector    ?: true )
+		);
+
+		prc.activeDashboard       = dashboardsForSelector.activeDashboard     ?: {};
+		prc.availableDashboards   = dashboardsForSelector.availableDashboards ?: [];
+		prc.showDashboardSelector = !ReFindNoCase( "editDashboardLayout", currentEvent ) && ArrayLen( prc.availableDashboards ) > 0;
+
+		if ( !StructIsEmpty( args.contextData ?: {} ) ) {
+			args.hasContextData    = true;
+			args.nonContextWidgets = ArrayFilter( dashboard.widgets ?: [], function( _widget ) {
+				return isFalse( _widget.supportContext ?: "" );
+			} );
+		}
+
 		return renderView( view="/admin/admindashboards/layoutGrid/_userGenerated", args=args );
+	}
+
+	private string function renderDashboardHeader( event, rc, prc, args={} ) {
+		var includeHeader = isTrue( args.includePageHeader ?: ( prc.includePageHeader ?: false ) );
+		if ( !includeHeader ) {
+			return "";
+		}
+
+		return renderView( view="/admin/admindashboards/layoutGrid/_pageTitle", args={
+			  title                 = ( prc.pageTitle             ?: "" )
+			, subTitle              = ( prc.pageSubTitle          ?: "" )
+			, icon                  = ( prc.pageIcon              ?: "" )
+			, pageHeaderButtons     = ( prc.pageHeaderButtons     ?: "" )
+			, showDashboardSelector = ( prc.showDashboardSelector ?: false )
+			, availableDashboards   = ( prc.availableDashboards   ?: [] )
+			, activeDashboard       = ( prc.activeDashboard       ?: {} )
+		} );
 	}
 
 	public void function importDialog( event, rc, prc ) {
@@ -292,12 +334,13 @@ component extends="preside.system.base.AdminHandler" {
 					continue;
 				}
 
-				widget.title       = translateResource( uri=widget.title      , defaultValue=widget.title );
-				widget.description = translateResource( uri=widget.description, defaultValue="" );
-				widget.icon        = translateResource( uri=widget.icon       , defaultValue="fa-magic" );
-				widget.group       = translateResource( uri="admin.admindashboards.widget.#id#:group", defaultValue="" );
-				widget.isTemplate  = false;
-				widget.isSystem    = true;
+				widget.title          = translateResource( uri=widget.title      , defaultValue=widget.title );
+				widget.description    = translateResource( uri=widget.description, defaultValue="" );
+				widget.icon           = translateResource( uri=widget.icon       , defaultValue="fa-magic" );
+				widget.group          = translateResource( uri="admin.admindashboards.widget.#id#:group", defaultValue="" );
+				widget.isTemplate     = false;
+				widget.isSystem       = true;
+				widget.supportContext = widgetService.isWidgetSupportContext( widget.id );
 
 				ArrayAppend( tempArray, widget );
 
@@ -312,6 +355,6 @@ component extends="preside.system.base.AdminHandler" {
 			return widget1.title == widget2.title ? 0 : ( widget1.title > widget2.title ? 1 : -1 );
 		} );
 
-		return arrayOfStructsToQuery( "id,title,group,description,icon,isTemplate,recordId,config", tempArray );
+		return arrayOfStructsToQuery( "id,title,group,description,icon,isTemplate,recordId,config,supportContext", tempArray );
 	}
 }

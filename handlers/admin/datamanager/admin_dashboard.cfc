@@ -4,6 +4,7 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 	property name="widgetService"        inject="adminDashboardWidgetService";
 	property name="datamanagerService"   inject="datamanagerService";
 	property name="presideObjectService" inject="presideObjectService";
+	property name="enumService"          inject="enumService";
 
 	variables.sidebarNavigation = true;
 	variables.infoCol3          = [];
@@ -47,12 +48,32 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 	public void function preRenderListing( event, rc, prc, args={} ) {
 		prc.adminSidebarItems = prc.adminSidebarItems ?: [];
 
+		var curEvent  = event.getCurrentEvent();
+		var curObject = prc.objectName ?: "";
+		var forSystem = isTrue( rc.systemOnly ?: "" );
+
+		if ( forSystem ) {
+			prc.gridFields       = [ "contexts", "name", "description", "datecreated" ];
+			prc.hiddenGridFields = prc.hiddenGridFields ?: [];
+			ArrayAppend( prc.hiddenGridFields, [ "view_access", "edit_access" ], true );
+		}
+
 		ArrayAppend( prc.adminSidebarItems, {
-			  active = event.getCurrentEvent() == "admin.datamanager.object"
+			  active = !forSystem && ( curEvent == "admin.datamanager.object" ) && ( curObject == "admin_dashboard" )
 			, title  = translateResource( uri="preside-objects.admin_dashboard:sidenav.all.label" )
 			, link   = event.buildAdminLink( objectName="admin_dashboard" )
 			, icon   = "fa-tachometer"
 		} );
+
+		prc.hasSystemDashboards = prc.hasSystemDashboards ?: getPresideObject( "admin_dashboard" ).dataExists( filter={ is_system=true, owner="" } );
+		if ( isTrue( prc.hasSystemDashboards ) ) {
+			ArrayAppend( prc.adminSidebarItems, {
+				  active = forSystem && ( curEvent == "admin.datamanager.object" ) && ( curObject == "admin_dashboard" )
+				, title  = translateResource( uri="preside-objects.admin_dashboard:sidenav.systemdashboards.title" )
+				, link   = event.buildAdminLink( objectName="admin_dashboard", queryString="systemOnly=true" )
+				, icon   = "fa-th-large"
+			} );
+		}
 
 		var createdByMeDashboards = _getCreatedByMeSidenav( argumentCollection=arguments );
 		if ( !StructIsEmpty( createdByMeDashboards ) ) {
@@ -69,14 +90,51 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 		prc.pageIcon           = "";
 	}
 
+	private string function listingViewlet( event, rc, prc, args={} ) {
+		var forSystem = isTrue( rc.systemOnly ?: "" );
+
+		if ( forSystem ) {
+			args.allRecordsLink       = event.buildAdminLink( objectName="admin_dashboard", queryString="systemOnly=true" );
+			args.categoryLinkBase     = event.buildAdminLink( objectName="admin_dashboard", queryString="systemOnly=true&activeCategoryId={activeCategoryId}" );
+			args.allListingCategories = enumService.listItems( enum="adminDashboardContexts" );
+			args.currentListingView   = runEvent(
+				  event          = "admin.dataManager._objectListingViewlet"
+				, private        = true
+				, prePostExempt  = true
+				, eventArguments = { args=args }
+			);
+
+			return renderView( view="/admin/datamanager/_listingWithCategories", args=args );
+		}
+
+		return super.listingViewlet( argumentCollection=arguments );
+	}
+
+	private string function getAdditionalQueryStringForBuildAjaxListingLink( event, rc, prc, args={} ) {
+		var qs = [];
+
+		if ( isTrue( rc.systemOnly ?: "" ) ) {
+			ArrayAppend( qs, "systemOnly=true" );
+		}
+
+		if ( Len( rc.activeCategoryId ?: "" ) ) {
+			ArrayAppend( qs, "context=#UrlEncodedFormat( rc.activeCategoryId )#" );
+		}
+
+		return ArrayToList( qs, "&" );
+	}
+
 	private void function preFetchRecordsForGridListing( event, rc, prc, args={} ) {
+		args.extraFilters = args.extraFilters ?: [];
+
+		var systemOnly  = isTrue( rc.systemOnly ?: "" );
+		var contextVal  = Trim( rc.context ?: "" );
 		var adminUserId = event.getAdminUserId();
 
 		if ( !dashboardService.hasFullAccess( adminUserId ) ) {
 			var adminUserGroups = _getAdminUserGroups( adminUserId );
 
 			args.selectFields = args.selectFields ?: [];
-			args.extraFilters = args.extraFilters ?: [];
 			args.extraFilters.append( {
 				  filter       = "view_access = 'public'
 						or admin_dashboard.owner = :adminUserId
@@ -94,6 +152,19 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 			ArrayAppend( args.selectFields, "edit_groups_list" );
 			ArrayAppend( args.selectFields, "edit_users_list"  );
 		}
+
+		if ( systemOnly ) {
+			ArrayAppend( args.extraFilters, { filter={ is_system=true } } );
+		} else {
+			ArrayAppend( args.extraFilters, { filter={ is_system=false } } );
+		}
+
+		if ( Len( contextVal ) ) {
+			ArrayAppend( args.extraFilters, {
+				  filter       = "admin_dashboard.contexts LIKE (:contexts)"
+				, filterParams = { contexts={ type="cf_sql_varchar", value="%#contextVal#%" } }
+			} );
+		}
 	}
 
 	private void function postFetchRecordsForGridListing( event, rc, prc, args={} ) {
@@ -108,16 +179,27 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 		var canClone        = [];
 		var canViewThis     = false;
 		var canEditThis     = false;
+		var isSystem        = false;
 		var hasFullAccess   = dashboardService.hasFullAccess( adminUserId );
 
 		for ( var r in records ) {
 			canEditThis = ( prc.canEdit ?: false ) && ( r.owner_id == adminUserId || ( r.edit_access == "specific" && ( listFind( r.edit_users_list, adminUserId ) || _listFindOneOf( r.edit_groups_list, adminUserGroups ) ) ) );
-			canViewThis = canEditThis || r.view_access == "public" || ( r.view_access == "specific" && ( listFind( r.view_users_list, adminUserId ) || _listFindOneOf( r.view_groups_list, adminUserGroups ) ) )
-			ArrayAppend( canEdit  , hasFullAccess || canEditThis );
+			canViewThis = canEditThis || r.view_access == "public" || ( r.view_access == "specific" && ( listFind( r.view_users_list, adminUserId ) || _listFindOneOf( r.view_groups_list, adminUserGroups ) ) );
+			isSystem    = isTrue( r.is_system ?: dashboardService.isSystemDashboard( dashboardId=r.id ) );
+
+			ArrayAppend( canEdit  , !isSystem && ( hasFullAccess || canEditThis ) );
 			ArrayAppend( canView  , hasFullAccess || canViewThis );
-			ArrayAppend( canShare , hasFullAccess || r.owner_id == adminUserId );
-			ArrayAppend( canDelete, hasFullAccess || ( ( prc.canDelete ?: false ) && r.owner_id == adminUserId ) );
+			ArrayAppend( canShare , !isSystem && ( hasFullAccess || r.owner_id == adminUserId ) );
+			ArrayAppend( canDelete, !isSystem && ( hasFullAccess || ( ( prc.canDelete ?: false ) && r.owner_id == adminUserId ) ) );
 			ArrayAppend( canClone , hasFullAccess || ( ( prc.canClone  ?: false ) && canViewThis ) );
+
+			if ( StructKeyExists( r, "contexts" ) ) {
+				QuerySetCell( records, "contexts", renderContent(
+					  renderer = "adminDashboardContexts"
+					, data     = r.contexts
+					, args     = r
+				), QueryCurrentRow( records ) );
+			}
 		}
 
 		QueryAddColumn( records, "canView"  , canView   );
@@ -215,12 +297,25 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 	}
 
 	private string function renderSidebarHeader( event, rc, prc, args={} ) {
+		var curEvent           = event.getCurrentEvent();
+		var curObject          = prc.objectName ?: "";
+		var forSystem          = isTrue( rc.systemOnly ?: "" );
 		var customSidebarItems = [ {
-			  active = event.getCurrentEvent() == "admin.datamanager.object"
+			  active = !forSystem && ( curEvent == "admin.datamanager.object" ) && ( curObject == "admin_dashboard" )
 			, title  = translateResource( uri="preside-objects.admin_dashboard:sidenav.all.label" )
 			, link   = event.buildAdminLink( objectName="admin_dashboard" )
 			, icon   = "fa-tachometer"
 		} ];
+
+		prc.hasSystemDashboards = prc.hasSystemDashboards ?: getPresideObject( "admin_dashboard" ).dataExists( filter={ is_system=true, owner="" } );
+		if ( isTrue( prc.hasSystemDashboards ) ) {
+			ArrayAppend( customSidebarItems, {
+				  active = forSystem && ( curEvent == "admin.datamanager.object" ) && ( curObject == "admin_dashboard" )
+				, title  = translateResource( uri="preside-objects.admin_dashboard:sidenav.systemdashboards.title" )
+				, link   = event.buildAdminLink( objectName="admin_dashboard", queryString="systemOnly=true" )
+				, icon   = "fa-th-large"
+			} );
+		}
 
 		var createdByMeDashboards = _getCreatedByMeSidenav( argumentCollection=arguments );
 		if ( !StructIsEmpty( createdByMeDashboards ) ) {
@@ -480,7 +575,7 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 		var objectName = "admin_dashboard"
 		var recordId   = rc.id ?: "";
 
-		if ( !dashboardService.userCanEditDashboard( recordId, event.getAdminUserId() ) ) {
+		if ( dashboardService.isSystemDashboard( recordId ) || !dashboardService.userCanEditDashboard( recordId, event.getAdminUserId() ) ) {
 			event.adminAccessDenied();
 		}
 
