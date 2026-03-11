@@ -123,8 +123,16 @@ component {
 		var context = Trim( arguments.contextData.context ?: "" );
 		if ( Len( context ) ) {
 			var contextFilter = {
-				  filter       = "admin_dashboard.contexts LIKE (:contexts)"
-				, filterParams = { contexts={ type="cf_sql_varchar", value="%#context#%" } }
+				  filter       = "admin_dashboard.contexts = :context
+						OR admin_dashboard.contexts LIKE :contextAtStart
+						OR admin_dashboard.contexts LIKE :contextAtEnd
+						OR admin_dashboard.contexts LIKE :contextInMiddle"
+				, filterParams = {
+					  context         = { type="cf_sql_varchar", value=context }
+					, contextAtStart = { type="cf_sql_varchar", value="#context#,%" }
+					, contextAtEnd   = { type="cf_sql_varchar", value="%,#context#" }
+					, contextInMiddle = { type="cf_sql_varchar", value="%,#context#,%" }
+				}
 			};
 
 			ArrayAppend( systemExtraFilters, contextFilter );
@@ -291,13 +299,22 @@ component {
 
 				if ( handler.type eq "File" ) {
 					var dashboardId = ReReplace( handler.name, "\.cfc$", "" );
-					var recordId     = dashboardId;
+					var recordId          = dashboardId;
+					var existingDashboard = dashboardDao.selectData(
+						  filter       = { system_id=dashboardId, is_system=true }
+						, selectFields = [ "id" ]
+						, maxRows      = 1
+					);
 
 					if ( Len( recordId ) > 32 ) {
-						recordId = Left( dashboardId, 24 ) & ListFirst( CreateUUID(), "-" );
+						recordId = Left( dashboardId, 24 ) & Left( LCase( Hash( dashboardId ) ), 8 );
 					}
 
-					var dashboardExists = dashboardDao.dataExists( filter={ id=recordId, is_system=true } );
+					if ( existingDashboard.recordcount ) {
+						recordId = existingDashboard.id[ 1 ];
+					}
+
+					var dashboardExists = existingDashboard.recordcount || dashboardDao.dataExists( filter={ id=recordId, is_system=true } );
 					var dashboardData   = {
 						  name        = $translateResource( uri="#i18nBase##dashboardId#:title", defaultValue=dashboardId )
 						, description = $translateResource( uri="#i18nBase##dashboardId#:description", defaultValue="" )

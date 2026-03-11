@@ -48,8 +48,6 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 	public void function preRenderListing( event, rc, prc, args={} ) {
 		prc.adminSidebarItems = prc.adminSidebarItems ?: [];
 
-		var curEvent  = event.getCurrentEvent();
-		var curObject = prc.objectName ?: "";
 		var forSystem = isTrue( rc.systemOnly ?: "" );
 
 		if ( forSystem ) {
@@ -58,31 +56,9 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 			ArrayAppend( prc.hiddenGridFields, [ "view_access", "edit_access" ], true );
 		}
 
-		ArrayAppend( prc.adminSidebarItems, {
-			  active = !forSystem && ( curEvent == "admin.datamanager.object" ) && ( curObject == "admin_dashboard" )
-			, title  = translateResource( uri="preside-objects.admin_dashboard:sidenav.all.label" )
-			, link   = event.buildAdminLink( objectName="admin_dashboard" )
-			, icon   = "fa-tachometer"
-		} );
-
-		prc.hasSystemDashboards = prc.hasSystemDashboards ?: getPresideObject( "admin_dashboard" ).dataExists( filter={ is_system=true, owner="" } );
-		if ( isTrue( prc.hasSystemDashboards ) ) {
-			ArrayAppend( prc.adminSidebarItems, {
-				  active = forSystem && ( curEvent == "admin.datamanager.object" ) && ( curObject == "admin_dashboard" )
-				, title  = translateResource( uri="preside-objects.admin_dashboard:sidenav.systemdashboards.title" )
-				, link   = event.buildAdminLink( objectName="admin_dashboard", queryString="systemOnly=true" )
-				, icon   = "fa-th-large"
-			} );
-		}
-
-		var createdByMeDashboards = _getCreatedByMeSidenav( argumentCollection=arguments );
-		if ( !StructIsEmpty( createdByMeDashboards ) ) {
-			ArrayAppend( prc.adminSidebarItems, createdByMeDashboards );
-		}
-
-		var accessibleDashboards = _getAccessibleDashboardsSidenav( argumentCollection=arguments );
-		if ( !StructIsEmpty( accessibleDashboards ) ) {
-			ArrayAppend( prc.adminSidebarItems, accessibleDashboards );
+		var sidebarItems = _getSidebarItems( argumentCollection=arguments );
+		if ( ArrayLen( sidebarItems ) ) {
+			ArrayAppend( prc.adminSidebarItems, sidebarItems, true );
 		}
 
 		prc.adminSidebarHeader = renderView( view="/admin/datamanager/admin_dashboard/_sidebarHeader", args=args );
@@ -161,8 +137,16 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 
 		if ( Len( contextVal ) ) {
 			ArrayAppend( args.extraFilters, {
-				  filter       = "admin_dashboard.contexts LIKE (:contexts)"
-				, filterParams = { contexts={ type="cf_sql_varchar", value="%#contextVal#%" } }
+				  filter       = "admin_dashboard.contexts = :context
+						or admin_dashboard.contexts like :contextAtStart
+						or admin_dashboard.contexts like :contextAtEnd
+						or admin_dashboard.contexts like :contextInMiddle"
+				, filterParams = {
+					  context         = { type="cf_sql_varchar", value=contextVal }
+					, contextAtStart = { type="cf_sql_varchar", value="#contextVal#,%" }
+					, contextAtEnd   = { type="cf_sql_varchar", value="%,#contextVal#" }
+					, contextInMiddle = { type="cf_sql_varchar", value="%,#contextVal#,%" }
+				}
 			} );
 		}
 	}
@@ -297,35 +281,7 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 	}
 
 	private string function renderSidebarHeader( event, rc, prc, args={} ) {
-		var curEvent           = event.getCurrentEvent();
-		var curObject          = prc.objectName ?: "";
-		var forSystem          = isTrue( rc.systemOnly ?: "" );
-		var customSidebarItems = [ {
-			  active = !forSystem && ( curEvent == "admin.datamanager.object" ) && ( curObject == "admin_dashboard" )
-			, title  = translateResource( uri="preside-objects.admin_dashboard:sidenav.all.label" )
-			, link   = event.buildAdminLink( objectName="admin_dashboard" )
-			, icon   = "fa-tachometer"
-		} ];
-
-		prc.hasSystemDashboards = prc.hasSystemDashboards ?: getPresideObject( "admin_dashboard" ).dataExists( filter={ is_system=true, owner="" } );
-		if ( isTrue( prc.hasSystemDashboards ) ) {
-			ArrayAppend( customSidebarItems, {
-				  active = forSystem && ( curEvent == "admin.datamanager.object" ) && ( curObject == "admin_dashboard" )
-				, title  = translateResource( uri="preside-objects.admin_dashboard:sidenav.systemdashboards.title" )
-				, link   = event.buildAdminLink( objectName="admin_dashboard", queryString="systemOnly=true" )
-				, icon   = "fa-th-large"
-			} );
-		}
-
-		var createdByMeDashboards = _getCreatedByMeSidenav( argumentCollection=arguments );
-		if ( !StructIsEmpty( createdByMeDashboards ) ) {
-			ArrayAppend( customSidebarItems, createdByMeDashboards );
-		}
-
-		var accessibleDashboards = _getAccessibleDashboardsSidenav( argumentCollection=arguments );
-		if ( !StructIsEmpty( accessibleDashboards ) ) {
-			ArrayAppend( customSidebarItems, accessibleDashboards );
-		}
+		var customSidebarItems = _getSidebarItems( argumentCollection=arguments );
 
 		if ( ArrayLen( customSidebarItems ) ) {
 			prc.adminSidebarItems = customSidebarItems;
@@ -636,6 +592,40 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 			  filter       = { "users.id"=arguments.adminUserId }
 			, selectFields = [ "id" ]
 		).valueList( "id" );
+	}
+
+	private array function _getSidebarItems( event, rc, prc, args={} ) {
+		var curEvent     = event.getCurrentEvent();
+		var curObject    = prc.objectName ?: "";
+		var forSystem    = isTrue( rc.systemOnly ?: "" );
+		var sidebarItems = [ {
+			  active = !forSystem && ( curEvent == "admin.datamanager.object" ) && ( curObject == "admin_dashboard" )
+			, title  = translateResource( uri="preside-objects.admin_dashboard:sidenav.all.label" )
+			, link   = event.buildAdminLink( objectName="admin_dashboard" )
+			, icon   = "fa-tachometer"
+		} ];
+
+		prc.hasSystemDashboards = prc.hasSystemDashboards ?: getPresideObject( "admin_dashboard" ).dataExists( filter={ is_system=true, owner="" } );
+		if ( isTrue( prc.hasSystemDashboards ) ) {
+			ArrayAppend( sidebarItems, {
+				  active = forSystem && ( curEvent == "admin.datamanager.object" ) && ( curObject == "admin_dashboard" )
+				, title  = translateResource( uri="preside-objects.admin_dashboard:sidenav.systemdashboards.title" )
+				, link   = event.buildAdminLink( objectName="admin_dashboard", queryString="systemOnly=true" )
+				, icon   = "fa-th-large"
+			} );
+		}
+
+		var createdByMeDashboards = _getCreatedByMeSidenav( argumentCollection=arguments );
+		if ( !StructIsEmpty( createdByMeDashboards ) ) {
+			ArrayAppend( sidebarItems, createdByMeDashboards );
+		}
+
+		var accessibleDashboards = _getAccessibleDashboardsSidenav( argumentCollection=arguments );
+		if ( !StructIsEmpty( accessibleDashboards ) ) {
+			ArrayAppend( sidebarItems, accessibleDashboards );
+		}
+
+		return sidebarItems;
 	}
 
 	private struct function _getCreatedByMeSidenav( event, rc, prc, args={} ) {
