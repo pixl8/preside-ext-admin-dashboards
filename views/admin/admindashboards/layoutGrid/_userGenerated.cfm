@@ -10,27 +10,33 @@
 		 .include( "/css/admin/specific/admindashboards/gridlayout/" );
 
 	action = LCase( ListLast( rc.event ?: "", "." ) );
+	if ( action != "editdashboardlayout" && action != "viewrecord" ) {
+		action = "viewrecord";
+	}
 
 	isViewRecord          = ( action == "viewrecord" );
 	isEditDashboardLayout = ( action == "editdashboardlayout" );
 
 	event.includeData( { dashboard_action=action } )
 
-	includePageHeader = IsTrue( args.includePageHeader ?:  "" );
+	includePageHeader = isTrue( args.includePageHeader ?:  "" );
+	hasContextData    = isTrue( args.hasContextData ?: "" );
+	nonContextWidgets = args.nonContextWidgets ?: [];
 </cfscript>
 
 <cfoutput>
-	<cfif includePageHeader>
-		#renderView(
-			view="/admin/admindashboards/layoutGrid/_pageTitle"
-			, args={
-				title             = ( prc.pageTitle         ?: "" )
-				, subTitle          = ( prc.pageSubTitle      ?: "" )
-				, icon              = ( prc.pageIcon          ?: "" )
-				, pageHeaderButtons = ( prc.pageHeaderButtons ?: "" )
-			}
-		)#
+	<cfif hasContextData and ArrayLen( nonContextWidgets )>
+		<div class="alert alert-warning no-margin-bottom">
+			<p><i class="fa fa-fw fa-exclamation-triangle"></i> #translateResource( uri="admindashboards:non.contextual.widgets.message" )#</p>
+			<ul>
+				<cfloop array="#nonContextWidgets#" item="nonContextWidget">
+					<li>#nonContextWidget.title#</li>
+				</cfloop>
+			</ul>
+		</div>
 	</cfif>
+
+	#renderViewlet( event="admin.adminDashboards.renderDashboardHeader", args=args )#
 
 	<div class="admin-dashboard-container" data-dashboard-id="#dashboardId#">
 

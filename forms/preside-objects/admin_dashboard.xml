@@ -4,6 +4,7 @@
 		<fieldset id="main">
 			<field binding="admin_dashboard.name"             sortOrder="10" />
 			<field binding="admin_dashboard.description"      sortOrder="20" />
+			<field binding="admin_dashboard.contexts"         sortOrder="30" control="enumSelect" enum="adminDashboardContexts" multiple="true" />
 		</fieldset>
 	</tab>
 </form>

@@ -197,10 +197,17 @@ component {
 				, contextData      = IsJSON( savedWidget.config ) ? DeserializeJSON( savedWidget.config ) : {}
 				, ajax             = true
 			};
+
+			if ( !StructIsEmpty( arguments.contextData ) ) {
+				StructAppend( widget.contextData, arguments.contextData );
+			}
+
 			widget.contextData.canEditDashboard = canEdit;
 
-			widgets.append( {
-				  gridConfig         = gridConfig
+			ArrayAppend( widgets, {
+				  title              = savedWidget.title
+				, supportContext     = isWidgetSupportContext( widget.id )
+				, gridConfig         = gridConfig
 				, editTempGridConfig = editTempGridConfig
 				, html               = renderWidgetContainer(
 					  dashboardId      = arguments.dashboardId
@@ -453,6 +460,22 @@ component {
 		if ( coldbox.handlerExists( isUserDashboardWidgetEvent ) ) {
 			result = coldbox.runEvent(
 				  event         = isUserDashboardWidgetEvent
+				, private       = true
+				, prePostExempt = true
+			);
+		}
+
+		return $helpers.isTrue( result ?: "" );
+	}
+
+	public boolean function isWidgetSupportContext( required string widgetId ) {
+		var coldbox      = $getColdbox();
+		var viewletEvent = "admin.admindashboards.widget.#widgetId#.isWidgetSupportContext";
+		var result       = false;
+
+		if ( coldbox.handlerExists( viewletEvent ) ) {
+			result = coldbox.runEvent(
+				  event         = viewletEvent
 				, private       = true
 				, prePostExempt = true
 			);

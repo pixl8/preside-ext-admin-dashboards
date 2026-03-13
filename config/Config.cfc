@@ -4,6 +4,7 @@ component {
 		var conf     = arguments.config;
 		var settings = conf.settings ?: {};
 
+		_setupFeatures( settings );
 		_setupEnums( settings );
 		_setupPermissionsAndRoles( settings );
 		_setupInterceptors( conf );
@@ -15,10 +16,15 @@ component {
 		};
 	}
 
+	private void function _setupFeatures( required struct settings ) {
+		settings.features.adminDashboards = { enabled=true };
+	}
+
 	private void function _setupEnums( settings ) {
 		settings.enum.adminDashboardViewAccess = [ "private", "public", "specific" ];
 		settings.enum.adminDashboardEditAccess = [ "private", "specific" ];
 		settings.enum.adminDashboardWidgetType = [ "gallery", "scratch", "import" ];
+		settings.enum.adminDashboardContexts   = settings.enum.adminDashboardContexts ?: [];
 	}
 
 	private void function _setupPermissionsAndRoles( required struct settings ) {
