@@ -1,17 +1,28 @@
 <cfscript>
-	dashboardId      = args.id           ?: "";
+	dashboardId      = args.dashboardId  ?: args.id ?: "";
 	widgets          = args.widgets      ?: [];
 	canEditDashboard = isTrue( args.canEdit ?: "" );
 
 	addTitle = translateResource( "preside-objects.admin_dashboard:widget.add.btn" );
-	addLink  = event.buildAdminLink( linkTo="adminDashboards.widgetDialog", queryString="dashboard=#dashboardId#" );
+	addQs    = "dashboard=#dashboardId#";
+
+	if ( Len( Trim( args.inlineToolbarPostAddDashboardUrl ?: "" ) ) ) {
+		addQs &= "&post_add_dashboard_url=#UrlEncodedFormat( args.inlineToolbarPostAddDashboardUrl )#";
+	}
+
+	addLink  = event.buildAdminLink( linkTo="adminDashboards.widgetDialog", queryString=addQs );
 
 	event.include( "/js/admin/specific/admindashboards/gridlayout/" )
 		 .include( "/css/admin/specific/admindashboards/gridlayout/" );
 
-	action = LCase( ListLast( rc.event ?: "", "." ) );
-	if ( action != "editdashboardlayout" && action != "viewrecord" ) {
-		action = "viewrecord";
+	action = LCase( args.dashboardLayoutAction ?: "" );
+
+	if ( !Len( action ) ) {
+		action = LCase( ListLast( rc.event ?: "", "." ) );
+
+		if ( action != "editdashboardlayout" && action != "viewrecord" ) {
+			action = "viewrecord";
+		}
 	}
 
 	isViewRecord          = ( action == "viewrecord" );
@@ -22,6 +33,8 @@
 	includePageHeader = isTrue( args.includePageHeader ?:  "" );
 	hasContextData    = isTrue( args.hasContextData ?: "" );
 	nonContextWidgets = args.nonContextWidgets ?: [];
+
+	args.pageHeaderButtons = args.pageHeaderButtons ?: renderView( view="/admin/admindashboards/layoutGrid/_inlineDashboardEditToolbar", args=args );
 </cfscript>
 
 <cfoutput>

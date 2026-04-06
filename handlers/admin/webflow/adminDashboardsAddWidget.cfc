@@ -1,9 +1,16 @@
 component {
-	property name="widgetService" inject="adminDashboardWidgetService";
-	property name="enumService"   inject="EnumService";
+	property name="widgetService"        inject="adminDashboardWidgetService";
+	property name="enumService"          inject="EnumService";
+	property name="dashboardService"     inject="adminDashboardService";
 
 	private struct function initState( event, rc, prc, args={}, instanceRef, webflowId, webflow ) {
-		return {};
+		var postAdd = Trim( rc.post_add_dashboard_url ?: "" );
+
+		if ( Len( postAdd ) && !dashboardService.isSafeAdminReturnUrl( postAdd ) ) {
+			postAdd = "";
+		}
+
+		return { post_add_dashboard_url=postAdd };
 	}
 
 	private string function selectType( event, rc, prc, webflowId, wfInstance, args={} ) {
@@ -179,6 +186,7 @@ component {
 		var wfInstanceSubRef = Trim( wfInstanceArgs.subreference ?: "" );
 
 		args.dashboardId = ( ListLen( wfInstanceSubRef, "_" ) > 1 ) ? ListLast( wfInstanceSubRef, "_" ) : ( savedState.dashboardId ?: "" );
+		args.post_add_dashboard_url = savedState.post_add_dashboard_url ?: "";
 
 		return renderView( view="/admin/webflow/adminDashboardsAddWidget/confirmation", args=args );
 	}

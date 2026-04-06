@@ -348,6 +348,66 @@ component {
 		}
 	}
 
+	public string function buildDashboardViewLink(
+		  required string dashboardId
+		,          struct contextData = {}
+	) {
+		return _buildLinkForDashboard( argumentCollection=arguments );
+	}
+
+	public string function buildDashboardEditLayoutLink(
+		  required string dashboardId
+		,          struct contextData = {}
+	) {
+		var ctx = Trim( arguments.contextData.context ?: "" );
+
+		if ( Len( ctx ) ) {
+			var editViewlet = "admin.adminDashboards.context.#ctx#.dashboardEditLayoutLink";
+
+			if ( $getColdbox().viewletExists( editViewlet ) ) {
+				var dashboardData             = getDashboard( dashboardId=arguments.dashboardId );
+				    dashboardData.contextData = arguments.contextData ?: {};
+
+				var customEditLink = $renderViewlet( event=editViewlet, args=dashboardData );
+
+				if ( IsSimpleValue( customEditLink ) && Len( Trim( customEditLink ) ) ) {
+					return Trim( customEditLink );
+				}
+			}
+		}
+
+		return _appendQueryParam(
+			  url       = buildDashboardViewLink( dashboardId=arguments.dashboardId, contextData=arguments.contextData ?: {} )
+			, paramName = "adminDashboardEditLayout"
+			, value     = "true"
+		);
+	}
+
+	public string function getValidatedAdminReturnUrlOrDefault(
+		  required string candidateUrl
+		, required string defaultUrl
+	) {
+		var trimmed = Trim( arguments.candidateUrl );
+
+		if ( Len( trimmed ) && isSafeAdminReturnUrl( trimmed ) ) {
+			return trimmed;
+		}
+
+		return arguments.defaultUrl;
+	}
+
+	public boolean function isSafeAdminReturnUrl( required string url ) {
+		var path = Trim( arguments.url );
+
+		if ( !Len( path ) ) {
+			return false;
+		}
+
+		var prefix = _getAdminUrlPathPrefix();
+
+		return Len( prefix ) && Left( path, Len( prefix ) ) == prefix;
+	}
+
 // PRIVATE HELPERS
 	private string function _getAdminUserGroups( required string adminUserId ) {
 		return $getPresideObject( "security_group" ).selectData(
@@ -404,6 +464,32 @@ component {
 		}
 
 		return $getRequestContext().buildAdminLink( objectName="admin_dashboard", recordId=arguments.dashboardId );
+	}
+
+	private string function _appendQueryParam(
+		  required string url
+		, required string paramName
+		, required string value
+	) {
+		var separator = Find( "?", arguments.url ) ? "&" : "?";
+
+		return arguments.url & separator & arguments.paramName & "=" & UrlEncodedFormat( arguments.value );
+	}
+
+	private string function _getAdminUrlPathPrefix() {
+		var sample = ListFirst( $getRequestContext().buildAdminLink( linkTo="index" ), "?" );
+
+		while ( Len( sample ) && Right( sample, 1 ) == "/" ) {
+			sample = Left( sample, Len( sample ) - 1 );
+		}
+
+		if ( ReFind( "/[^/]+$", sample ) ) {
+			var stripped = ReReplace( sample, "/[^/]+$", "" );
+
+			return Len( stripped ) ? stripped : sample;
+		}
+
+		return sample;
 	}
 
 // GETTERS AND SETTERS
