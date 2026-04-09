@@ -295,13 +295,14 @@ component extends="preside.system.base.AdminHandler" {
 
 	public function deleteWidget( event, rc, prc, args={} ) {
 		var dashboardId = args.dashboardId ?: ( rc.dashboardId ?: "" );
-		var instanceId  = args.instanceId  ?: ( rc.instanceId  ?: "" );
-		var defaultUrl  = event.buildAdminLink( objectName="admin_dashboard", recordId=dashboardId );
-		var nextUrl     = dashboardService.getValidatedAdminReturnUrlOrDefault( candidateUrl=rc.returnUrl ?: "", defaultUrl=defaultUrl );
 
 		if ( !_userCanMutateDashboard( event, dashboardId ) ) {
 			event.adminAccessDenied();
 		}
+
+		var instanceId = args.instanceId  ?: ( rc.instanceId  ?: "" );
+		var defaultUrl = event.buildAdminLink( objectName="admin_dashboard", recordId=dashboardId );
+		var nextUrl    = dashboardService.getValidatedAdminReturnUrlOrDefault( candidateUrl=rc.returnUrl ?: "", defaultUrl=defaultUrl );
 
 		widgetService.deleteWidget(
 			  dashboardId = dashboardId
@@ -313,12 +314,13 @@ component extends="preside.system.base.AdminHandler" {
 
 	public function saveEditDashboardLayout( event, rc, prc, args={} ) {
 		var dashboardId = args.dashboardId ?: ( rc.dashboardId ?: "" );
-		var defaultUrl  = event.buildAdminLink( objectName="admin_dashboard", recordId=dashboardId );
-		var nextUrl     = dashboardService.getValidatedAdminReturnUrlOrDefault( candidateUrl=rc.returnUrl ?: "", defaultUrl=defaultUrl );
 
 		if ( !_userCanMutateDashboard( event, dashboardId ) ) {
 			event.adminAccessDenied();
 		}
+
+		var defaultUrl = event.buildAdminLink( objectName="admin_dashboard", recordId=dashboardId );
+		var nextUrl    = dashboardService.getValidatedAdminReturnUrlOrDefault( candidateUrl=rc.returnUrl ?: "", defaultUrl=defaultUrl );
 
 		widgetService.saveEditDashboardWidgets( dashboardId=dashboardId );
 
@@ -327,12 +329,13 @@ component extends="preside.system.base.AdminHandler" {
 
 	public function cancelEditDashboardLayout( event, rc, prc, args={} ) {
 		var dashboardId = args.dashboardId ?: ( rc.dashboardId ?: "" );
-		var defaultUrl  = event.buildAdminLink( objectName="admin_dashboard", recordId=dashboardId );
-		var nextUrl     = dashboardService.getValidatedAdminReturnUrlOrDefault( candidateUrl=rc.returnUrl ?: "", defaultUrl=defaultUrl );
 
 		if ( !_userCanMutateDashboard( event, dashboardId ) ) {
 			event.adminAccessDenied();
 		}
+
+		var defaultUrl = event.buildAdminLink( objectName="admin_dashboard", recordId=dashboardId );
+		var nextUrl    = dashboardService.getValidatedAdminReturnUrlOrDefault( candidateUrl=rc.returnUrl ?: "", defaultUrl=defaultUrl );
 
 		widgetService.cancelEditDashboardWidgets( dashboardId=dashboardId );
 
@@ -341,13 +344,14 @@ component extends="preside.system.base.AdminHandler" {
 
 	public string function updateWidgetOrder( event, rc, prc, args={} ) {
 		var dashboardId = rc.dashboardId ?: "";
-		var column      = rc.column      ?: 1;
-		var widgets     = rc.widgets     ?: [];
-		var dao         = getPresideObject( "admin_dashboard_widget" );
 
 		if ( !_userCanMutateDashboard( event, dashboardId ) ) {
 			event.adminAccessDenied();
 		}
+
+		var column  = rc.column      ?: 1;
+		var widgets = rc.widgets     ?: [];
+		var dao     = getPresideObject( "admin_dashboard_widget" );
 
 		widgets.each( function( widget, slot ) {
 			dao.updateData(
