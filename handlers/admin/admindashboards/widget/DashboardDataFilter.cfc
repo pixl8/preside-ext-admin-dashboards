@@ -26,12 +26,31 @@ component extends="preside.system.base.AdminHandler" {
 			return !isEmptyString( item );
 		});
 
+		var datasourceQueryString = "action=admindashboards.widget.DashboardDataFilter.getFilterResultsForAjaxDatatables&objectName=#objectName#&gridFields=#arrayToList( gridFields )#&sSavedFilterExpressions=#savedFilter#";
+
+		if ( isWidgetSupportContext( argumentCollection=arguments ) ) {
+			var prepareViewlet = "admin.admindashboards.context.#objectName#.dashboardDataFilter.prepareContextFilter";
+			var coldbox        = getController();
+
+			if ( coldbox.viewletExists( prepareViewlet ) ) {
+				var preparedFilters = coldbox.renderViewlet(
+					  event          = prepareViewlet
+					, args           = args
+					, throwOnMissing = false
+				);
+
+				if ( IsArray( preparedFilters ) && ArrayLen( preparedFilters ) ) {
+					datasourceQueryString &= "&sContextExtraFilters=#URLEncodedFormat( SerializeJson( preparedFilters ) )#";
+				}
+			}
+		}
+
 		return renderView( view="/admin/datamanager/_objectDataTable", args={
 			  objectName        = objectName
 			, useMultiActions   = false
 			, allowSearch       = false
 			, allowFilter       = false
-			, datasourceUrl     = event.buildAdminLink( linkTo="ajaxProxy", queryString="action=admindashboards.widget.DashboardDataFilter.getFilterResultsForAjaxDatatables&objectName=#objectName#&gridFields=#arrayToList( gridFields )#&sSavedFilterExpressions=#savedFilter#" )
+			, datasourceUrl     = event.buildAdminLink( linkTo="ajaxProxy", queryString=datasourceQueryString )
 			, gridFields        = gridFields
 			, sortableFields    = listToArray( sortableFields )
 			, filterContextData = { widgetInstanceId=args.instanceId ?: "" }
@@ -40,6 +59,29 @@ component extends="preside.system.base.AdminHandler" {
 
 	private boolean function isUserDashboardWidget( event, rc, prc, args={} ) {
 		return true;
+	}
+
+	private boolean function isWidgetSupportContext( event, rc, prc, args={} ) {
+		var targetObject = Trim( args.config.applies_to ?: args.contextData.applies_to ?: "" );
+
+		if ( isEmptyString( targetObject ) ) {
+			return false;
+		}
+
+		var supportViewlet = "admin.admindashboards.context.#targetObject#.dashboardDataFilter.supportContext";
+		var coldbox        = getController();
+
+		if ( !coldbox.viewletExists( supportViewlet ) ) {
+			return false;
+		}
+
+		var viewletResult = coldbox.renderViewlet(
+			  event          = supportViewlet
+			, args           = args
+			, throwOnMissing = false
+		);
+
+		return isTrue( viewletResult ?: "" );
 	}
 
 	private string function ajaxCallback( event, rc, prc, args={} ) {
@@ -58,15 +100,28 @@ component extends="preside.system.base.AdminHandler" {
 			return "";
 		}
 
+		var extraFilters = [];
+
+		if ( Len( Trim( rc.sContextExtraFilters ?: "" ) ) ) {
+			try {
+				var decoded = DeserializeJSON( rc.sContextExtraFilters );
+
+				if ( IsArray( decoded ) ) {
+					extraFilters = decoded;
+				}
+			} catch ( any e ) {}
+		}
+
 		runEvent(
 			  event          = "admin.DataManager._getObjectRecordsForAjaxDataTables"
 			, prePostExempt  = true
 			, private        = true
 			, includeActions = false
 			, eventArguments = {
-				  object      = rc.objectName
-				, actionsView = "/admin/admindashboards/widget/dashboardDataFilter/_gridActions"
-				, gridFields  = rc.gridFields
+				  object       = rc.objectName
+				, actionsView  = "/admin/admindashboards/widget/dashboardDataFilter/_gridActions"
+				, gridFields   = rc.gridFields
+				, extraFilters = extraFilters
 			}
 		);
 	}

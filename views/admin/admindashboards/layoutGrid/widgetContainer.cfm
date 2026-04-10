@@ -26,10 +26,24 @@
 
 	event.includeData( { "#args.instanceId#"=args.contextData } );
 
-	action = ListLast( rc.event ?: "", "." );
+	action = LCase( args.dashboardLayoutAction ?: "" );
+
+	if ( !Len( action ) ) {
+		action = LCase( ListLast( rc.event ?: "", "." ) );
+	}
+
+	if ( action != "editdashboardlayout" && action != "viewrecord" ) {
+		action = "viewrecord";
+	}
 
 	isViewRecord          = ( action == "viewrecord" );
 	isEditDashboardLayout = ( action == "editdashboardlayout" );
+
+	deleteQs = "dashboardId=#args.dashboardId#&instanceId=#args.configInstanceId#";
+
+	if ( Len( Trim( args.deleteWidgetReturnUrl ?: "" ) ) ) {
+		deleteQs &= "&returnUrl=#UrlEncodedFormat( args.deleteWidgetReturnUrl )#";
+	}
 </cfscript>
 
 <cfoutput>
@@ -55,7 +69,7 @@
 							<a class="widget-configuration-link" href="##" title="#HtmlEditFormat( configureTitle )#"><i class="fa fa-fw fa-pencil"></i></a>
 						</cfif>
 						<cfif args.canDeleteWidget>
-							<a class="widget-delete-link" title="#HtmlEditFormat( deletePrompt )#" href="#event.buildAdminLink( linkTo="adminDashboards.deleteWidget", queryString="dashboardId=#args.dashboardId#&instanceId=#args.configInstanceId#" )#"><i class="fa fa-fw fa-trash"></i></a>
+							<a class="widget-delete-link" title="#HtmlEditFormat( deletePrompt )#" href="#event.buildAdminLink( linkTo="adminDashboards.deleteWidget", queryString=deleteQs )#"><i class="fa fa-fw fa-trash"></i></a>
 						</cfif>
 					</cfif>
 				</div>

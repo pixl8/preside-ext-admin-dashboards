@@ -135,39 +135,74 @@ component extends="preside.system.base.AdminHandler" {
 	}
 
 	private string function renderUserGeneratedDashboard( event, rc, prc, args={} ) {
-		var dashboardId  = args.dashboardId ?: "";
-		var allowEditing = isTrue( args.allowEditing ?: "" );
-		var action       = ListLast( rc.event ?: "", "." );
-		var dashboard    = widgetService.renderUserGeneratedGridDashboard(
-			  dashboardId     = dashboardId
-			, allowEditing    = allowEditing
-			, contextData     = args.contextData ?: {}
-			, showTempWidgets = ( action == "editdashboardlayout" )
+		var dashboardId       = args.dashboardId ?: "";
+		var allowEditing      = isTrue( args.allowEditing ?: "" );
+		var contextData       = args.contextData ?: {};
+		var layoutAction      = _resolveDashboardLayoutAction( event, rc, args );
+		var includePageHeader = isTrue( args.includePageHeader ?: "" );
+		var viewLink          = dashboardService.buildDashboardViewLink( dashboardId=dashboardId, contextData=contextData );
+		var canEditDashboard  = allowEditing && dashboardService.userCanEditDashboard( dashboardId, event.getAdminUserId() );
+		var editLayoutLink    = canEditDashboard ? dashboardService.buildDashboardEditLayoutLink( dashboardId=dashboardId, contextData=contextData ) : "";
+		var deleteReturnUrl   = "";
+
+		if ( layoutAction == "editdashboardlayout" ) {
+			if ( Len( Trim( contextData.context ?: "" ) ) ) {
+				deleteReturnUrl = Len( editLayoutLink ) ? editLayoutLink : viewLink;
+			} else {
+				deleteReturnUrl = event.buildAdminLink( objectName="admin_dashboard", operation="editdashboardlayout", recordId=dashboardId );
+			}
+		}
+
+		var dashboard = widgetService.renderUserGeneratedGridDashboard(
+			  dashboardId           = dashboardId
+			, allowEditing          = allowEditing
+			, contextData           = contextData
+			, showTempWidgets       = ( layoutAction == "editdashboardlayout" )
+			, deleteWidgetReturnUrl = deleteReturnUrl
+			, dashboardLayoutAction = layoutAction
 		);
 
 		event.include( "/js/admin/specific/admindashboards/" )
 		     .include( "/css/admin/specific/admindashboards/" );
 
-		if ( isTrue( dashboard.canEdit ?: "" ) ) {
+		if ( isTrue( dashboard.canEdit ?: "" ) && layoutAction == "editdashboardlayout" ) {
 			event.include( "/js/admin/specific/admindashboards/editing/" );
 		}
 
 		StructAppend( args, dashboard );
 
-		var currentEvent          = rc.event ?: event.getCurrentEvent();
+		args.dashboardLayoutAction = layoutAction;
+		args.contextData           = contextData;
+		args.includePageHeader     = includePageHeader;
+
+		var showInlineToolbar = !StructIsEmpty( contextData ) && allowEditing && isTrue( dashboard.canEdit ?: "" );
+
+		if ( showInlineToolbar ) {
+			args.showInlineDashboardEditToolbar   = true;
+			args.inlineToolbarViewLink            = viewLink;
+			args.inlineToolbarEditLink            = editLayoutLink;
+			args.inlineToolbarSaveLink            = event.buildAdminLink( linkTo="AdminDashboards.saveEditDashboardLayout", queryString="dashboardId=#dashboardId#&returnUrl=#UrlEncodedFormat( viewLink )#" );
+			args.inlineToolbarCancelLink          = event.buildAdminLink( linkTo="AdminDashboards.cancelEditDashboardLayout", queryString="dashboardId=#dashboardId#&returnUrl=#UrlEncodedFormat( viewLink )#" );
+			args.inlineToolbarHasTempWidgets      = widgetService.hasTempDashboardWidgets( dashboardId=dashboardId );
+			args.inlineToolbarPostAddDashboardUrl = layoutAction == "editdashboardlayout" ? editLayoutLink : "";
+		} else {
+			args.showInlineDashboardEditToolbar   = false;
+			args.inlineToolbarPostAddDashboardUrl = "";
+		}
+
 		var dashboardsForSelector = dashboardService.getDashboardsForSelector(
 			  currentDashboardId = dashboardId
-			, contextData        = args.contextData ?: {}
+			, contextData        = contextData
 			, includeTemplates   = isTrue( args.includeTemplatesForSelector ?: false )
 			, includeUser        = isTrue( args.includeUserForSelector      ?: true )
 			, includeAccess      = isTrue( args.includeAccessForSelector    ?: true )
 		);
 
-		prc.activeDashboard       = dashboardsForSelector.activeDashboard     ?: {};
-		prc.availableDashboards   = dashboardsForSelector.availableDashboards ?: [];
-		prc.showDashboardSelector = !ReFindNoCase( "editDashboardLayout", currentEvent ) && ArrayLen( prc.availableDashboards ) > 0;
+		prc.activeDashboard        = dashboardsForSelector.activeDashboard     ?: {};
+		prc.availableDashboards    = dashboardsForSelector.availableDashboards ?: [];
+		prc.showDashboardSelector  = ( layoutAction != "editdashboardlayout" ) && ArrayLen( prc.availableDashboards ) > 0;
 
-		if ( !StructIsEmpty( args.contextData ?: {} ) ) {
+		if ( !StructIsEmpty( contextData ) ) {
 			args.hasContextData    = true;
 			args.nonContextWidgets = ArrayFilter( dashboard.widgets ?: [], function( _widget ) {
 				return isFalse( _widget.supportContext ?: "" );
@@ -187,7 +222,7 @@ component extends="preside.system.base.AdminHandler" {
 			  title                 = ( prc.pageTitle             ?: "" )
 			, subTitle              = ( prc.pageSubTitle          ?: "" )
 			, icon                  = ( prc.pageIcon              ?: "" )
-			, pageHeaderButtons     = ( prc.pageHeaderButtons     ?: "" )
+			, pageHeaderButtons     = ( prc.pageHeaderButtons     ?: ( args.pageHeaderButtons ?: "" ) )
 			, showDashboardSelector = ( prc.showDashboardSelector ?: false )
 			, availableDashboards   = ( prc.availableDashboards   ?: [] )
 			, activeDashboard       = ( prc.activeDashboard       ?: {} )
@@ -234,6 +269,12 @@ component extends="preside.system.base.AdminHandler" {
 		var nextSlot    = widgetService.nextWidgetSlot( dashboardId, column );
 		var title       = widgetService.getInstanceTitle( dashboardId, widgetId );
 		var config      = {};
+		var defaultUrl  = event.buildAdminLink( objectName="admin_dashboard", operation="editdashboardlayout", recordId=dashboardId );
+		var nextUrl     = dashboardService.getValidatedAdminReturnUrlOrDefault( candidateUrl=rc.returnUrl ?: "", defaultUrl=defaultUrl );
+
+		if ( !_userCanMutateDashboard( event, dashboardId ) ) {
+			event.adminAccessDenied();
+		}
 
 		if ( Len( templateId ) ) {
 			config = widgetService.getSystemWidgetTemplateConfig( templateId=templateId );
@@ -249,42 +290,68 @@ component extends="preside.system.base.AdminHandler" {
 			, config      = config
 		);
 
-		setNextEvent( url=event.buildAdminLink( objectName="admin_dashboard", operation="editdashboardlayout", recordId=dashboardId ) );
+		setNextEvent( url=nextUrl );
 	}
 
 	public function deleteWidget( event, rc, prc, args={} ) {
 		var dashboardId = args.dashboardId ?: ( rc.dashboardId ?: "" );
-		var instanceId  = args.instanceId  ?: ( rc.instanceId  ?: "" );
+
+		if ( !_userCanMutateDashboard( event, dashboardId ) ) {
+			event.adminAccessDenied();
+		}
+
+		var instanceId = args.instanceId  ?: ( rc.instanceId  ?: "" );
+		var defaultUrl = event.buildAdminLink( objectName="admin_dashboard", recordId=dashboardId );
+		var nextUrl    = dashboardService.getValidatedAdminReturnUrlOrDefault( candidateUrl=rc.returnUrl ?: "", defaultUrl=defaultUrl );
 
 		widgetService.deleteWidget(
 			  dashboardId = dashboardId
 			, instanceId  = instanceId
 		);
 
-		setNextEvent( url=event.buildAdminLink( objectName="admin_dashboard", recordId=dashboardId ) );
+		setNextEvent( url=nextUrl );
 	}
 
 	public function saveEditDashboardLayout( event, rc, prc, args={} ) {
 		var dashboardId = args.dashboardId ?: ( rc.dashboardId ?: "" );
 
+		if ( !_userCanMutateDashboard( event, dashboardId ) ) {
+			event.adminAccessDenied();
+		}
+
+		var defaultUrl = event.buildAdminLink( objectName="admin_dashboard", recordId=dashboardId );
+		var nextUrl    = dashboardService.getValidatedAdminReturnUrlOrDefault( candidateUrl=rc.returnUrl ?: "", defaultUrl=defaultUrl );
+
 		widgetService.saveEditDashboardWidgets( dashboardId=dashboardId );
 
-		setNextEvent( url=event.buildAdminLink( objectName="admin_dashboard", recordId=dashboardId ) );
+		setNextEvent( url=nextUrl );
 	}
 
 	public function cancelEditDashboardLayout( event, rc, prc, args={} ) {
 		var dashboardId = args.dashboardId ?: ( rc.dashboardId ?: "" );
 
+		if ( !_userCanMutateDashboard( event, dashboardId ) ) {
+			event.adminAccessDenied();
+		}
+
+		var defaultUrl = event.buildAdminLink( objectName="admin_dashboard", recordId=dashboardId );
+		var nextUrl    = dashboardService.getValidatedAdminReturnUrlOrDefault( candidateUrl=rc.returnUrl ?: "", defaultUrl=defaultUrl );
+
 		widgetService.cancelEditDashboardWidgets( dashboardId=dashboardId );
 
-		setNextEvent( url=event.buildAdminLink( objectName="admin_dashboard", recordId=dashboardId ) );
+		setNextEvent( url=nextUrl );
 	}
 
 	public string function updateWidgetOrder( event, rc, prc, args={} ) {
 		var dashboardId = rc.dashboardId ?: "";
-		var column      = rc.column      ?: 1;
-		var widgets     = rc.widgets     ?: [];
-		var dao         = getPresideObject( "admin_dashboard_widget" );
+
+		if ( !_userCanMutateDashboard( event, dashboardId ) ) {
+			event.adminAccessDenied();
+		}
+
+		var column  = rc.column      ?: 1;
+		var widgets = rc.widgets     ?: [];
+		var dao     = getPresideObject( "admin_dashboard_widget" );
 
 		widgets.each( function( widget, slot ) {
 			dao.updateData(
@@ -303,6 +370,10 @@ component extends="preside.system.base.AdminHandler" {
 		var dao         = getPresideObject( "admin_dashboard_widget" );
 		var dataField   = isTrue( isTemporary ) ? "dashboard_edit_temp_grid_config" : "grid_config";
 
+		if ( !_userCanMutateDashboard( event, dashboardId ) ) {
+			event.adminAccessDenied();
+		}
+
 		widgets = deserializeJSON( widgets );
 
 		widgets.each( function( widget, i ) {
@@ -317,6 +388,47 @@ component extends="preside.system.base.AdminHandler" {
 
 
 // private helpers
+
+	private string function _resolveDashboardLayoutAction( event, rc, prc, args={} ) {
+		var fromArgs    = Trim( args.dashboardLayoutAction ?: "" );
+		var dashboardId = args.dashboardId ?: ( rc.currentDashboard ?: "" );
+
+		if ( Len( fromArgs ) ) {
+			return LCase( fromArgs );
+		}
+
+		var evt = LCase( ListLast( rc.event ?: "", "." ) );
+
+		if ( evt == "editdashboardlayout" || evt == "viewrecord" ) {
+			return evt;
+		}
+
+		if ( isTrue( rc.adminDashboardEditLayout ?: "" ) &&
+			 hasCmsPermission( "adminDashboards.edit" ) &&
+			 Len( dashboardId ) &&
+			 dashboardService.userCanEditDashboard( dashboardId, event.getAdminUserId() )
+		) {
+			return "editdashboardlayout";
+		}
+
+		return "viewrecord";
+	}
+
+	private boolean function _userCanMutateDashboard( event, required string dashboardId ) {
+		if ( !Len( Trim( arguments.dashboardId ) ) ) {
+			return false;
+		}
+
+		if ( !hasCmsPermission( "adminDashboards.edit" ) ) {
+			return false;
+		}
+
+		if ( dashboardService.isSystemDashboard( arguments.dashboardId ) ) {
+			return false;
+		}
+
+		return dashboardService.userCanEditDashboard( arguments.dashboardId, event.getAdminUserId() );
+	}
 
 	private query function _getSortedAndTranslatedAdminWidgets() {
 		// todo, cache this operation (per locale)

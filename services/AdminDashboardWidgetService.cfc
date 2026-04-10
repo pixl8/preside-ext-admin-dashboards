@@ -94,8 +94,9 @@ component {
 
 	public struct function renderUserGeneratedDashboard(
 		  required string  dashboardId
-		,          boolean allowEditing = true
-		,          struct  contextData  = {}
+		,          boolean allowEditing          = true
+		,          struct  contextData           = {}
+		,          string  deleteWidgetReturnUrl = ""
 	) {
 		var dashboard     = $getPresideObject( "admin_dashboard" ).selectData( id=arguments.dashboardId );
 		var savedWidgets  = $getPresideObject( "admin_dashboard_widget" ).selectData(
@@ -130,12 +131,13 @@ component {
 			widget.contextData.canEditDashboard = canEdit;
 
 			widgets[ widget.column ].append( renderWidgetContainer(
-				  dashboardId      = arguments.dashboardId
-				, widgetId         = widget.id
-				, contextData      = _namespaceContextData( widget.contextData )
-				, configInstanceId = widget.configInstanceId
-				, title            = widget.title ?: ""
-				, ajax             = widget.ajax
+				  dashboardId           = arguments.dashboardId
+				, widgetId              = widget.id
+				, contextData           = _namespaceContextData( widget.contextData )
+				, configInstanceId      = widget.configInstanceId
+				, title                 = widget.title ?: ""
+				, ajax                  = widget.ajax
+				, deleteWidgetReturnUrl = arguments.deleteWidgetReturnUrl
 			) );
 		}
 
@@ -147,9 +149,11 @@ component {
 
 	public struct function renderUserGeneratedGridDashboard(
 		  required string  dashboardId
-		,          boolean allowEditing    = true
-		,          struct  contextData     = {}
-		,          boolean showTempWidgets = false
+		,          boolean allowEditing          = true
+		,          struct  contextData           = {}
+		,          boolean showTempWidgets       = false
+		,          string  deleteWidgetReturnUrl = ""
+		,          string  dashboardLayoutAction = ""
 	) {
 		var dashboard           = $getPresideObject( "admin_dashboard" ).selectData( id=arguments.dashboardId );
 		var widget              = {};
@@ -204,21 +208,25 @@ component {
 
 			widget.contextData.canEditDashboard = canEdit;
 
-			ArrayAppend( widgets, {
-				  title              = savedWidget.title
-				, supportContext     = isWidgetSupportContext( widget.id )
-				, gridConfig         = gridConfig
-				, editTempGridConfig = editTempGridConfig
-				, html               = renderWidgetContainer(
-					  dashboardId      = arguments.dashboardId
-					, widgetId         = widget.id
-					, contextData      = _namespaceContextData( widget.contextData )
-					, configInstanceId = widget.configInstanceId
-					, title            = widget.title ?: ""
-					, ajax             = widget.ajax
-					, layout           = "grid"
-				)
-			} );
+			if ( userCanViewWidget( widgetId=widget.id, widgetConfig=widget ) ) {
+				ArrayAppend( widgets, {
+					  title              = savedWidget.title
+					, supportContext     = isWidgetSupportContext( widgetId=widget.id, widgetConfig=widget )
+					, gridConfig         = gridConfig
+					, editTempGridConfig = editTempGridConfig
+					, html               = renderWidgetContainer(
+						  dashboardId           = arguments.dashboardId
+						, widgetId              = widget.id
+						, contextData           = _namespaceContextData( widget.contextData )
+						, configInstanceId      = widget.configInstanceId
+						, title                 = widget.title ?: ""
+						, ajax                  = widget.ajax
+						, layout                = "grid"
+						, deleteWidgetReturnUrl = arguments.deleteWidgetReturnUrl
+						, dashboardLayoutAction = arguments.dashboardLayoutAction
+					)
+				} );
+			}
 		}
 
 		dashboardArgs.widgets = widgets;
@@ -236,6 +244,8 @@ component {
 		,          string  title            = ""
 		,          boolean ajax             = true
 		,          string  layout           = "default"
+		,          string  deleteWidgetReturnUrl = ""
+		,          string  dashboardLayoutAction = ""
 	) {
 		var instanceId             = "dashboard-widget-" & LCase( Hash( arguments.dashboardId & arguments.widgetId & SerializeJson( arguments.contextData ) ) );
 		var menuViewlet            = "admin.admindashboards.widget.#arguments.widgetId#.additionalMenu";
@@ -289,6 +299,8 @@ component {
 			, additionalMenu         = additionalMenu
 			, content                = content
 			, layout                 = arguments.layout
+			, deleteWidgetReturnUrl  = arguments.deleteWidgetReturnUrl
+			, dashboardLayoutAction  = arguments.dashboardLayoutAction
 		};
 
 		$announceInterception( "onRenderAdminWidgetContainer", args );
@@ -316,6 +328,11 @@ component {
 
 		if ( isUserDashboard ) {
 			formName = _getFormsService().getMergedFormName( formName, "admin.admindashboards.config" );
+
+			var contextFormName = "admin.admindashboards.widget.#arguments.widgetId#.userContext";
+			if ( _getFormsService().formExists( contextFormName ) ) {
+				formName = _getFormsService().getMergedFormName( formName, contextFormName );
+			}
 		}
 
 		var formArgs = { formName=formName, widget=arguments, isUserDashboard=isUserDashboard };
@@ -436,7 +453,10 @@ component {
 		return IsStruct( result ) ? result : {};
 	}
 
-	public boolean function userCanViewWidget( required string widgetId ) {
+	public boolean function userCanViewWidget(
+		  required string widgetId
+		,          struct widgetConfig = {}
+	) {
 		var coldbox         = $getColdbox();
 		var permissionEvent = "admin.admindashboards.widget.#widgetId#.hasPermission";
 		var result          = true;
@@ -446,6 +466,7 @@ component {
 				  event         = permissionEvent
 				, private       = true
 				, prePostExempt = true
+				, eventArguments = { args=arguments.widgetConfig }
 			);
 		}
 
@@ -468,7 +489,10 @@ component {
 		return $helpers.isTrue( result ?: "" );
 	}
 
-	public boolean function isWidgetSupportContext( required string widgetId ) {
+	public boolean function isWidgetSupportContext(
+		  required string widgetId
+		,          struct widgetConfig = {}
+	) {
 		var coldbox      = $getColdbox();
 		var viewletEvent = "admin.admindashboards.widget.#widgetId#.isWidgetSupportContext";
 		var result       = false;
@@ -478,6 +502,7 @@ component {
 				  event         = viewletEvent
 				, private       = true
 				, prePostExempt = true
+				, eventArguments = { args=arguments.widgetConfig }
 			);
 		}
 
