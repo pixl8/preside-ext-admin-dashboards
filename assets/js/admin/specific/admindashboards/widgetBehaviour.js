@@ -6,7 +6,7 @@
 	  , onWidgetContentFetchSuccess, onWidgetContentFetchError;
 
 	openWidgetConfigDialog = function( $widgetEl ){
-		var iframeSrc       = buildAdminLink( "admindashboards", "configModal", getWidgetDetails( $widgetEl ) )
+		var iframeSrc       = buildAdminLink( "admindashboards", "configModal", $.extend( {}, getWidgetDetails( $widgetEl ), getWidgetContextData( $widgetEl ) ) )
 		  , modalOptions    = {
 				title      : $widgetEl.data( "configModalTitle" ),
 				className  : "full-screen-dialog",

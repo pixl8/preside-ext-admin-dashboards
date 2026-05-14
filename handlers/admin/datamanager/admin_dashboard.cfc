@@ -47,6 +47,9 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 	public void function preRenderListing( event, rc, prc, args={} ) {
 		prc.adminSidebarItems = prc.adminSidebarItems ?: [];
 
+		var curEvent  = event.getCurrentEvent();
+		var curObject = prc.objectName ?: "";
+
 		ArrayAppend( prc.adminSidebarItems, {
 			  active = event.getCurrentEvent() == "admin.datamanager.object"
 			, title  = translateResource( uri="preside-objects.admin_dashboard:sidenav.all.label" )
@@ -62,6 +65,15 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 		var accessibleDashboards = _getAccessibleDashboardsSidenav( argumentCollection=arguments );
 		if ( !StructIsEmpty( accessibleDashboards ) ) {
 			ArrayAppend( prc.adminSidebarItems, accessibleDashboards );
+		}
+
+		if ( isFeatureEnabled( "adminDashboardSnapshots" ) && hasCmsPermission( "adminDashboards.manageSnapshots" ) ) {
+			ArrayAppend( prc.adminSidebarItems, {
+				  active = ( curEvent == "admin.datamanager.object" ) && ( curObject == "admin_dashboard_snapshot_schema" )
+				, title  = translateResource( uri="preside-objects.admin_dashboard_snapshot_schema:title" )
+				, link   = event.buildAdminLink( objectName="admin_dashboard_snapshot_schema" )
+				, icon   = "fa-camera"
+			} );
 		}
 
 		prc.adminSidebarHeader = renderView( view="/admin/datamanager/admin_dashboard/_sidebarHeader", args=args );
@@ -215,6 +227,8 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 	}
 
 	private string function renderSidebarHeader( event, rc, prc, args={} ) {
+		var curEvent           = event.getCurrentEvent();
+		var curObject          = prc.objectName ?: "";
 		var customSidebarItems = [ {
 			  active = event.getCurrentEvent() == "admin.datamanager.object"
 			, title  = translateResource( uri="preside-objects.admin_dashboard:sidenav.all.label" )
@@ -230,6 +244,15 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 		var accessibleDashboards = _getAccessibleDashboardsSidenav( argumentCollection=arguments );
 		if ( !StructIsEmpty( accessibleDashboards ) ) {
 			ArrayAppend( customSidebarItems, accessibleDashboards );
+		}
+
+		if ( hasCmsPermission( "adminDashboards.manageSnapshots" ) ) {
+			ArrayAppend( customSidebarItems, {
+				  active = ( curEvent == "admin.datamanager.object" ) && ( curObject == "admin_dashboard_snapshot_schema" )
+				, title  = translateResource( uri="preside-objects.admin_dashboard_snapshot_schema:title" )
+				, link   = event.buildAdminLink( objectName="admin_dashboard_snapshot_schema" )
+				, icon   = "fa-camera"
+			} );
 		}
 
 		if ( ArrayLen( customSidebarItems ) ) {
