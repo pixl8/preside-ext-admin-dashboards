@@ -53,6 +53,7 @@ component {
 		, numeric maxRows      = 0
 	) {
 		_prepareNonSystemDashboardFilter( argumentCollection=arguments );
+		_prepareNoContextDashboardFilter( argumentCollection=arguments );
 
 		return $getPresideObject( "admin_dashboard" ).selectData(
 			  filter       = { owner=arguments.adminUserId }
@@ -70,6 +71,7 @@ component {
 		, string  groupBy      = "admin_dashboard.id"
 	) {
 		_prepareNonSystemDashboardFilter( argumentCollection=arguments );
+		_prepareNoContextDashboardFilter( argumentCollection=arguments );
 
 		var adminUserGroups = _getAdminUserGroups( adminUserId=arguments.adminUserId );
 
@@ -434,6 +436,12 @@ component {
 
 	private array function _prepareNonSystemDashboardFilter( required array extraFilters ) {
 		ArrayAppend( arguments.extraFilters, { filter={ is_system=false } } );
+
+		return arguments.extraFilters;
+	}
+
+	private array function _prepareNoContextDashboardFilter( required array extraFilters ) {
+		ArrayAppend( arguments.extraFilters, { filter={ contexts="" } } );
 
 		return arguments.extraFilters;
 	}
