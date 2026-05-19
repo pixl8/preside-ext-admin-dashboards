@@ -4,7 +4,6 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 	property name="widgetService"        inject="adminDashboardWidgetService";
 	property name="datamanagerService"   inject="datamanagerService";
 	property name="presideObjectService" inject="presideObjectService";
-	property name="enumService"          inject="enumService";
 
 	variables.sidebarNavigation = true;
 	variables.infoCol3          = [];
@@ -53,7 +52,7 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 		var forSystem = isTrue( rc.systemOnly ?: "" );
 
 		if ( forSystem ) {
-			prc.gridFields       = [ "contexts", "name", "description", "datecreated" ];
+			prc.gridFields       = [ "name", "description", "datecreated" ];
 			prc.hiddenGridFields = prc.hiddenGridFields ?: [];
 			ArrayAppend( prc.hiddenGridFields, [ "view_access", "edit_access" ], true );
 		}
@@ -65,7 +64,7 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 			, icon   = "fa-tachometer"
 		} );
 
-		prc.hasSystemDashboards = prc.hasSystemDashboards ?: getPresideObject( "admin_dashboard" ).dataExists( filter={ is_system=true, owner="" } );
+		prc.hasSystemDashboards = prc.hasSystemDashboards ?: getPresideObject( "admin_dashboard" ).dataExists( filter={ is_system=true, owner="", contexts="" } );
 		if ( isTrue( prc.hasSystemDashboards ) ) {
 			ArrayAppend( prc.adminSidebarItems, {
 				  active = forSystem && ( curEvent == "admin.datamanager.object" ) && ( curObject == "admin_dashboard" )
@@ -90,45 +89,18 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 		prc.pageIcon           = "";
 	}
 
-	private string function listingViewlet( event, rc, prc, args={} ) {
-		var forSystem = isTrue( rc.systemOnly ?: "" );
-
-		if ( forSystem ) {
-			args.allRecordsLink       = event.buildAdminLink( objectName="admin_dashboard", queryString="systemOnly=true" );
-			args.categoryLinkBase     = event.buildAdminLink( objectName="admin_dashboard", queryString="systemOnly=true&activeCategoryId={activeCategoryId}" );
-			args.allListingCategories = enumService.listItems( enum="adminDashboardContexts" );
-			args.currentListingView   = runEvent(
-				  event          = "admin.dataManager._objectListingViewlet"
-				, private        = true
-				, prePostExempt  = true
-				, eventArguments = { args=args }
-			);
-
-			return renderView( view="/admin/datamanager/_listingWithCategories", args=args );
-		}
-
-		return super.listingViewlet( argumentCollection=arguments );
-	}
-
 	private string function getAdditionalQueryStringForBuildAjaxListingLink( event, rc, prc, args={} ) {
-		var qs = [];
-
 		if ( isTrue( rc.systemOnly ?: "" ) ) {
-			ArrayAppend( qs, "systemOnly=true" );
+			return "systemOnly=true";
 		}
 
-		if ( Len( rc.activeCategoryId ?: "" ) ) {
-			ArrayAppend( qs, "context=#UrlEncodedFormat( rc.activeCategoryId )#" );
-		}
-
-		return ArrayToList( qs, "&" );
+		return "";
 	}
 
 	private void function preFetchRecordsForGridListing( event, rc, prc, args={} ) {
 		args.extraFilters = args.extraFilters ?: [];
 
 		var systemOnly  = isTrue( rc.systemOnly ?: "" );
-		var contextVal  = Trim( rc.context ?: "" );
 		var adminUserId = event.getAdminUserId();
 
 		if ( !dashboardService.hasFullAccess( adminUserId ) ) {
@@ -154,17 +126,11 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 		}
 
 		if ( systemOnly ) {
-			ArrayAppend( args.extraFilters, { filter={ is_system=true } } );
+			ArrayAppend( args.extraFilters, { filter={ is_system=true, owner="", contexts="" } } );
 		} else {
 			ArrayAppend( args.extraFilters, { filter={ is_system=false } } );
 		}
 
-		if ( Len( contextVal ) ) {
-			ArrayAppend( args.extraFilters, {
-				  filter       = "admin_dashboard.contexts LIKE (:contexts)"
-				, filterParams = { contexts={ type="cf_sql_varchar", value="%#contextVal#%" } }
-			} );
-		}
 	}
 
 	private void function postFetchRecordsForGridListing( event, rc, prc, args={} ) {
@@ -307,7 +273,7 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 			, icon   = "fa-tachometer"
 		} ];
 
-		prc.hasSystemDashboards = prc.hasSystemDashboards ?: getPresideObject( "admin_dashboard" ).dataExists( filter={ is_system=true, owner="" } );
+		prc.hasSystemDashboards = prc.hasSystemDashboards ?: getPresideObject( "admin_dashboard" ).dataExists( filter={ is_system=true, owner="", contexts="" } );
 		if ( isTrue( prc.hasSystemDashboards ) ) {
 			ArrayAppend( customSidebarItems, {
 				  active = forSystem && ( curEvent == "admin.datamanager.object" ) && ( curObject == "admin_dashboard" )
