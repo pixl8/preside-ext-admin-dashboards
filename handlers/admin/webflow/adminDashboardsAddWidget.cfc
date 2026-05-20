@@ -125,10 +125,12 @@ component {
 	}
 
 	private string function configWidget( event, rc, prc, webflowId, wfInstance, args={} ) {
-		var savedState      = args.state ?: {};
-		var preconfigConfig = IsJSON( savedState.import_code ?: "" ) ? DeserializeJSON( savedState.import_code ) : {};
+		var savedState       = args.state ?: {};
+		var preconfigConfig  = IsJSON( savedState.import_code ?: "" ) ? DeserializeJSON( savedState.import_code ) : {};
+		var wfInstanceArgs   = arguments.wfInstance.getInstanceArgs();
+		var wfInstanceSubRef = Trim( wfInstanceArgs.subreference ?: "" );
 
-		args.dashboardId = rc.dashboard ?: ( prc.recordId ?: "" );
+		args.dashboardId = rc.dashboard ?: ( prc.recordId ?: ( ListLen( wfInstanceSubRef, "_" ) > 1 ) ? ListLast( wfInstanceSubRef, "_" ) : ( submittedData.dashboardId ?: "" ) );
 		args.widgetId    = preconfigConfig.widgetId ?: ( savedState.widget ?: "" );
 		args.templateId  = "";
 

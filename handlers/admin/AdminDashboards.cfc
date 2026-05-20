@@ -140,8 +140,10 @@ component extends="preside.system.base.AdminHandler" {
 		var contextData       = args.contextData ?: {};
 		var layoutAction      = _resolveDashboardLayoutAction( event, rc, args );
 		var includePageHeader = isTrue( args.includePageHeader ?: "" );
+		var adminUserId       = event.getAdminUserId();
 		var viewLink          = dashboardService.buildDashboardViewLink( dashboardId=dashboardId, contextData=contextData );
-		var canEditDashboard  = allowEditing && dashboardService.userCanEditDashboard( dashboardId, event.getAdminUserId() );
+		var canCloneDashboard = dashboardService.hasFullAccess( adminUserId ) || dashboardService.userCanViewDashboard( dashboardId, adminUserId );
+		var canEditDashboard  = allowEditing && dashboardService.userCanEditDashboard( dashboardId, adminUserId );
 		var editLayoutLink    = canEditDashboard ? dashboardService.buildDashboardEditLayoutLink( dashboardId=dashboardId, contextData=contextData ) : "";
 		var deleteReturnUrl   = "";
 
@@ -175,7 +177,7 @@ component extends="preside.system.base.AdminHandler" {
 		args.contextData           = contextData;
 		args.includePageHeader     = includePageHeader;
 
-		var showInlineToolbar = !StructIsEmpty( contextData ) && allowEditing && isTrue( dashboard.canEdit ?: "" );
+		var showInlineToolbar = !StructIsEmpty( contextData ) && allowEditing;
 
 		if ( showInlineToolbar ) {
 			args.showInlineDashboardEditToolbar   = true;
@@ -185,6 +187,16 @@ component extends="preside.system.base.AdminHandler" {
 			args.inlineToolbarCancelLink          = event.buildAdminLink( linkTo="AdminDashboards.cancelEditDashboardLayout", queryString="dashboardId=#dashboardId#&returnUrl=#UrlEncodedFormat( viewLink )#" );
 			args.inlineToolbarHasTempWidgets      = widgetService.hasTempDashboardWidgets( dashboardId=dashboardId );
 			args.inlineToolbarPostAddDashboardUrl = layoutAction == "editdashboardlayout" ? editLayoutLink : "";
+
+			args.inlineToolbarCanShareDashboard   = dashboardService.userCanShareDashboard( dashboardId, adminUserId );
+			args.inlineToolbarCanEditDashboard    = canEditDashboard;
+			args.inlineToolbarCanCloneDashboard   = canCloneDashboard;
+			args.inlineToolbarCanDeleteDashboard  = dashboardService.userCanDeleteDashboard( dashboardId, adminUserId );
+
+			args.inlineToolbarShareLink           = args.inlineToolbarCanShareDashboard  ? dashboardService.buildDashboardShareLink( dashboardId=dashboardId, contextData=contextData )      : "";
+			args.inlineToolbarEditRecordLink      = args.inlineToolbarCanEditDashboard   ? dashboardService.buildDashboardEditRecordLink( dashboardId=dashboardId, contextData=contextData ) : "";
+			args.inlineToolbarCloneLink           = args.inlineToolbarCanCloneDashboard  ? dashboardService.buildDashboardCloneLink( dashboardId=dashboardId, contextData=contextData )      : "";
+			args.inlineToolbarDeleteLink          = args.inlineToolbarCanDeleteDashboard ? dashboardService.buildDashboardDeleteLink( dashboardId=dashboardId, contextData=contextData )     : "";
 		} else {
 			args.showInlineDashboardEditToolbar   = false;
 			args.inlineToolbarPostAddDashboardUrl = "";
