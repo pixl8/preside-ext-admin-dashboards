@@ -47,13 +47,16 @@ component {
 	}
 
 	public query function getUserDashboards(
-		  string  adminUserId  = $getAdminLoggedInUserId()
-		, array   extraFilters = []
-		, string  orderBy      = "name"
-		, numeric maxRows      = 0
+		  string  adminUserId        = $getAdminLoggedInUserId()
+		, array   extraFilters       = []
+		, string  orderBy            = "name"
+		, numeric maxRows            = 0
+		, boolean skipNoContextFilter = false
 	) {
 		_prepareNonSystemDashboardFilter( argumentCollection=arguments );
-		_prepareNoContextDashboardFilter( argumentCollection=arguments );
+		if ( !arguments.skipNoContextFilter ) {
+			_prepareNoContextDashboardFilter( argumentCollection=arguments );
+		}
 
 		return $getPresideObject( "admin_dashboard" ).selectData(
 			  filter       = { owner=arguments.adminUserId }
@@ -64,14 +67,17 @@ component {
 	}
 
 	public query function getUserAccessibleDashboards(
-		  string  adminUserId  = $getAdminLoggedInUserId()
-		, array   extraFilters = []
-		, string  orderBy      = "name"
-		, numeric maxRows      = 0
-		, string  groupBy      = "admin_dashboard.id"
+		  string  adminUserId         = $getAdminLoggedInUserId()
+		, array   extraFilters        = []
+		, string  orderBy             = "name"
+		, numeric maxRows             = 0
+		, string  groupBy             = "admin_dashboard.id"
+		, boolean skipNoContextFilter = false
 	) {
 		_prepareNonSystemDashboardFilter( argumentCollection=arguments );
-		_prepareNoContextDashboardFilter( argumentCollection=arguments );
+		if ( !arguments.skipNoContextFilter ) {
+			_prepareNoContextDashboardFilter( argumentCollection=arguments );
+		}
 
 		var adminUserGroups = _getAdminUserGroups( adminUserId=arguments.adminUserId );
 
@@ -154,7 +160,8 @@ component {
 			}
 		}
 
-		var userDashboards = getUserDashboards( argumentCollection=arguments, extraFilters=userExtraFilters );
+		var hasContext     = Len( context ) > 0;
+		var userDashboards = getUserDashboards( argumentCollection=arguments, extraFilters=userExtraFilters, skipNoContextFilter=hasContext );
 		if ( userDashboards.recordcount ) {
 			var userDashboardItems = [];
 
@@ -177,7 +184,7 @@ component {
 			} );
 		}
 
-		var accessDashboards = getUserAccessibleDashboards( argumentCollection=arguments, extraFilters=accessExtraFilters );
+		var accessDashboards = getUserAccessibleDashboards( argumentCollection=arguments, extraFilters=accessExtraFilters, skipNoContextFilter=hasContext );
 		if ( accessDashboards.recordcount ) {
 			var accessDashboardItems = [];
 
@@ -383,6 +390,102 @@ component {
 			, paramName = "adminDashboardEditLayout"
 			, value     = "true"
 		);
+	}
+
+	public string function buildDashboardShareLink(
+		  required string dashboardId
+		,          struct contextData = {}
+	) {
+		var ctx = Trim( arguments.contextData.context ?: "" );
+
+		if ( Len( ctx ) ) {
+			var viewlet = "admin.adminDashboards.context.#ctx#.dashboardShareLink";
+
+			if ( $getColdbox().viewletExists( viewlet ) ) {
+				var dashboardData             = getDashboard( dashboardId=arguments.dashboardId );
+				    dashboardData.contextData = arguments.contextData;
+
+				var customLink = $renderViewlet( event=viewlet, args=dashboardData );
+
+				if ( IsSimpleValue( customLink ) && Len( Trim( customLink ) ) ) {
+					return Trim( customLink );
+				}
+			}
+		}
+
+		return $getRequestContext().buildAdminLink( objectName="admin_dashboard", operation="sharing", recordId=arguments.dashboardId );
+	}
+
+	public string function buildDashboardEditRecordLink(
+		  required string dashboardId
+		,          struct contextData = {}
+	) {
+		var ctx = Trim( arguments.contextData.context ?: "" );
+
+		if ( Len( ctx ) ) {
+			var viewlet = "admin.adminDashboards.context.#ctx#.dashboardEditRecordLink";
+
+			if ( $getColdbox().viewletExists( viewlet ) ) {
+				var dashboardData             = getDashboard( dashboardId=arguments.dashboardId );
+				    dashboardData.contextData = arguments.contextData;
+
+				var customLink = $renderViewlet( event=viewlet, args=dashboardData );
+
+				if ( IsSimpleValue( customLink ) && Len( Trim( customLink ) ) ) {
+					return Trim( customLink );
+				}
+			}
+		}
+
+		return $getRequestContext().buildAdminLink( objectName="admin_dashboard", operation="editRecord", recordId=arguments.dashboardId );
+	}
+
+	public string function buildDashboardCloneLink(
+		  required string dashboardId
+		,          struct contextData = {}
+	) {
+		var ctx = Trim( arguments.contextData.context ?: "" );
+
+		if ( Len( ctx ) ) {
+			var viewlet = "admin.adminDashboards.context.#ctx#.dashboardCloneLink";
+
+			if ( $getColdbox().viewletExists( viewlet ) ) {
+				var dashboardData             = getDashboard( dashboardId=arguments.dashboardId );
+				    dashboardData.contextData = arguments.contextData;
+
+				var customLink = $renderViewlet( event=viewlet, args=dashboardData );
+
+				if ( IsSimpleValue( customLink ) && Len( Trim( customLink ) ) ) {
+					return Trim( customLink );
+				}
+			}
+		}
+
+		return $getRequestContext().buildAdminLink( objectName="admin_dashboard", operation="cloneRecord", recordId=arguments.dashboardId );
+	}
+
+	public string function buildDashboardDeleteLink(
+		  required string dashboardId
+		,          struct contextData = {}
+	) {
+		var ctx = Trim( arguments.contextData.context ?: "" );
+
+		if ( Len( ctx ) ) {
+			var viewlet = "admin.adminDashboards.context.#ctx#.dashboardDeleteLink";
+
+			if ( $getColdbox().viewletExists( viewlet ) ) {
+				var dashboardData             = getDashboard( dashboardId=arguments.dashboardId );
+				    dashboardData.contextData = arguments.contextData;
+
+				var customLink = $renderViewlet( event=viewlet, args=dashboardData );
+
+				if ( IsSimpleValue( customLink ) && Len( Trim( customLink ) ) ) {
+					return Trim( customLink );
+				}
+			}
+		}
+
+		return $getRequestContext().buildAdminLink( objectName="admin_dashboard", operation="deleteRecordAction", recordId=arguments.dashboardId );
 	}
 
 	public string function getValidatedAdminReturnUrlOrDefault(

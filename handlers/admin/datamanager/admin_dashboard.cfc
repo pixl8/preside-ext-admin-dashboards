@@ -507,7 +507,21 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 	}
 
 	public void function sharingAction( event, rc, prc, args={} ) {
-		var recordId = rc.id ?: "";
+		var recordId           = rc.id                 ?: "";
+		var redirectObjectName = rc.redirectObjectName ?: "";
+		var redirectRecordId   = rc.redirectRecordId   ?: "";
+		var successUrl         = event.buildAdminLink( objectName="admin_dashboard", recordId=recordId );
+		var errorUrl           = event.buildAdminLink( objectName="admin_dashboard", recordId=recordId, operation="sharing" );
+
+		if ( Len( redirectObjectName ) ) {
+			successUrl = event.buildAdminLink( objectName=redirectObjectName, recordId=redirectRecordId );
+			errorUrl   = event.buildAdminLink(
+				  objectName  = "admin_dashboard"
+				, operation   = "sharing"
+				, recordId    = recordId
+				, queryString = "redirectObjectName=#redirectObjectName#&redirectRecordId=#redirectRecordId#"
+			);
+		}
 
 		if ( !dashboardService.userCanShareDashboard( recordId, event.getAdminUserId() ) ) {
 			event.adminAccessDenied();
@@ -529,8 +543,8 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 			, eventArguments = {
 				  object      = "admin_dashboard"
 				, formName    = "preside-objects.admin_dashboard.sharing"
-				, errorUrl    = event.buildAdminLink( objectName="admin_dashboard", recordId=recordId, operation="sharing" )
-				, successUrl  = event.buildAdminLink( objectName="admin_dashboard", recordId=recordId )
+				, errorUrl    = errorUrl
+				, successUrl  = successUrl
 				, audit       = true
 				, auditAction = "edit_sharing_options"
 			  }
@@ -585,6 +599,54 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 		}
 
 		return event.buildAdminLink( linkto="datamanager.admin_dashboard.editdashboardlayout", querystring=qs );
+	}
+
+	private any function editRecordAction( event, rc, prc, args={} ) {
+		var redirectObjectName = rc.redirectObjectName ?: "";
+		var redirectRecordId   = rc.redirectRecordId   ?: "";
+
+		if ( Len( redirectObjectName ) ) {
+			args.successUrl = event.buildAdminLink( objectName=redirectObjectName, recordId=redirectRecordId );
+		}
+
+		runEvent(
+			  event          = "admin.DataManager._editRecordAction"
+			, prePostExempt  = true
+			, private        = true
+			, eventArguments = args
+		);
+	}
+
+	private any function cloneRecordAction( event, rc, prc, args={} ) {
+		var redirectObjectName = rc.redirectObjectName ?: "";
+		var redirectRecordId   = rc.redirectRecordId   ?: "";
+
+		if ( Len( redirectObjectName ) ) {
+			args.successUrl = event.buildAdminLink( objectName=redirectObjectName, recordId=redirectRecordId ) & "&currentDashboard={id}";
+		}
+
+		runEvent(
+			  event          = "admin.DataManager._cloneRecordAction"
+			, prePostExempt  = true
+			, private        = true
+			, eventArguments = args
+		);
+	}
+
+	private any function deleteRecordAction( event, rc, prc, args={} ) {
+		var redirectObjectName = rc.redirectObjectName ?: "";
+		var redirectRecordId   = rc.redirectRecordId   ?: "";
+
+		if ( Len( redirectObjectName ) ) {
+			args.postActionUrl = event.buildAdminLink( objectName=redirectObjectName, recordId=redirectRecordId );
+		}
+
+		runEvent(
+			  event          = "admin.DataManager._deleteRecordAction"
+			, prePostExempt  = true
+			, private        = true
+			, eventArguments = args
+		);
 	}
 
 // PRIVATE HELPER METHODS
