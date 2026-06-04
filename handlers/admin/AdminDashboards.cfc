@@ -411,7 +411,7 @@ component extends="preside.system.base.AdminHandler" {
 
 		var evt = LCase( ListLast( rc.event ?: "", "." ) );
 
-		if ( evt == "editdashboardlayout" || evt == "viewrecord" ) {
+		if ( evt == "editdashboardlayout" ) {
 			return evt;
 		}
 
@@ -421,6 +421,10 @@ component extends="preside.system.base.AdminHandler" {
 			 dashboardService.userCanEditDashboard( dashboardId, event.getAdminUserId() )
 		) {
 			return "editdashboardlayout";
+		}
+
+		if ( evt == "viewrecord" ) {
+			return evt;
 		}
 
 		return "viewrecord";
