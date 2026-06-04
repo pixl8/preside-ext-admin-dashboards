@@ -356,6 +356,13 @@ component {
 			StructAppend( renderFormArgs.savedData, arguments.configData );
 		}
 
+		if ( _isUserGeneratedDashboard( arguments.dashboardId ) && !Len( renderFormArgs.savedData.widget_title ?: "" ) ) {
+			var defaultTitle = getWidgetDefaultTitle( dashboardId=arguments.dashboardId, widgetId=arguments.widgetId );
+			if ( Len( defaultTitle ) ) {
+				renderFormArgs.savedData.widget_title = defaultTitle;
+			}
+		}
+
 		$announceInterception( "onRenderWidgetConfigForm", renderFormArgs );
 
 		return _getFormsService().renderForm( argumentCollection=renderFormArgs );
@@ -685,6 +692,38 @@ component {
 		var title     = baseTitle;
 		var dao       = $getPresideObject( "admin_dashboard_widget" );
 
+		var filter    = { dashboard=arguments.dashboardId, title=title };
+		var increment = 0;
+
+		while( dao.dataExists( filter=filter ) ) {
+			title = baseTitle & " (#++increment#)";
+			filter.title = title;
+		}
+
+		return title;
+	}
+
+	public string function getWidgetDefaultTitle(
+		  required string dashboardId
+		, required string widgetId
+	) {
+		var baseTitle = "";
+		var viewlet   = "admin.admindashboards.widget.#arguments.widgetId#.getDefaultTitle";
+
+		if ( $getColdbox().viewletExists( viewlet ) ) {
+			baseTitle = $renderViewlet( event=viewlet, args={ dashboardId=arguments.dashboardId } );
+		}
+
+		if ( !Len( baseTitle ) ) {
+			baseTitle = $translateResource( uri="admin.admindashboards.widget.#arguments.widgetId#:default.title", defaultValue="" );
+		}
+
+		if ( !Len( baseTitle ) ) {
+			return "";
+		}
+
+		var title     = baseTitle;
+		var dao       = $getPresideObject( "admin_dashboard_widget" );
 		var filter    = { dashboard=arguments.dashboardId, title=title };
 		var increment = 0;
 
