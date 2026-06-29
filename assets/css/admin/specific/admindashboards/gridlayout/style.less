@@ -100,6 +100,7 @@
 					position        : sticky;
 					top             : 0;
 					z-index         : 1;
+					transform       : translate(0);
 
 					&:before,
 					&:after {
@@ -223,6 +224,13 @@
 							}
 						}
 					}
+				}
+			}
+
+			&:has( .dataviz-single-metric-cta ) {
+				
+				.widget-header > .widget-title {
+					padding-right : 20px;
 				}
 			}
 		}

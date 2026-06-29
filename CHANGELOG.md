@@ -1,5 +1,9 @@
 # Changelog
 
+## v3.2.3
+
+* Widget header missing on collapsed sidebar, and overlapping to icon
+
 ## v3.2.2
 
 * Admin add widget flow select widget step search bar styling issue
