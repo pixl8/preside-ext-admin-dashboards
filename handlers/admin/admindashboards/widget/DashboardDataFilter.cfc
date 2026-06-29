@@ -45,7 +45,8 @@ component extends="preside.system.base.AdminHandler" {
 			}
 		}
 
-		return renderView( view="/admin/datamanager/_objectDataTable", args={
+		args.autoCtaLinkUrl = _buildAutoCtaLink( event=event, args=args );
+		args.tableHtml      = renderView( view="/admin/datamanager/_objectDataTable", args={
 			  objectName        = objectName
 			, useMultiActions   = false
 			, allowSearch       = false
@@ -55,6 +56,8 @@ component extends="preside.system.base.AdminHandler" {
 			, sortableFields    = listToArray( sortableFields )
 			, filterContextData = { widgetInstanceId=args.instanceId ?: "" }
 		} );
+
+		return renderView( view="/admin/admindashboards/widget/dashboardDataFilter/render", args=args );
 	}
 
 	private boolean function isUserDashboardWidget( event, rc, prc, args={} ) {
@@ -124,6 +127,58 @@ component extends="preside.system.base.AdminHandler" {
 				, extraFilters = extraFilters
 			}
 		);
+	}
+
+// PRIVATE HELPERs
+	private string function _buildAutoCtaLink( event, args={} ) {
+		var objectName  = Trim( args.config.applies_to ?: "" );
+		var savedFilter = Trim( args.config.filter     ?: "" );
+
+		if ( !Len( objectName ) ) {
+			return "";
+		}
+
+		if ( isWidgetSupportContext( argumentCollection=arguments ) ) {
+			var ctaViewlet = "admin.admindashboards.context.#objectName#.dashboardDataFilter.buildCtaLink";
+			var coldbox    = getController();
+
+			if ( coldbox.viewletExists( ctaViewlet ) ) {
+				var ctaResult = coldbox.renderViewlet(
+					  event          = ctaViewlet
+					, args           = args
+					, throwOnMissing = false
+				);
+
+				if ( Len( Trim( ctaResult ?: "" ) ) ) {
+					return ctaResult;
+				}
+			}
+		}
+
+		if ( !( dataManagerService.isObjectAvailableInDataManager( objectName=objectName ) ) ||
+		     !( dataManagerService.isOperationAllowed( objectName=objectName, operation="read" ) ) ||
+		     !( hasCmsPermission( permissionKey="datamanager.navigate", context="datamanager", contextKeys=[ objectName ] ) )
+		) {
+			return "";
+		}
+
+		if ( Len( savedFilter ) ) {
+			var filterExpressions = getPresideObject( "rules_engine_condition" ).selectData(
+				  id           = savedFilter
+				, selectFields = [ "expressions" ]
+				, returntype   = "singleValue"
+				, columnKey    = "expressions"
+			);
+
+			if ( Len( filterExpressions ) ) {
+				return event.buildAdminLink(
+					  objectName  = objectName
+					, queryString = "filter=#UrlEncode( ToBase64( filterExpressions ) )#"
+				);
+			}
+		}
+
+		return event.buildAdminLink( objectName=objectName );
 	}
 
 	public void function getObjectGridFieldsForAjaxControl( event, rc, prc ) {
