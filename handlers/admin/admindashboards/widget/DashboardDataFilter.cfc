@@ -156,7 +156,7 @@ component extends="preside.system.base.AdminHandler" {
 			}
 		}
 
-		if ( !( dataManagerService.isObjectAvailableInDataManager( objectName=objectName ) ) ||
+		if ( !( dataManagerService.objectIsIndexedInDatamanagerUi( objectName=objectName ) ) ||
 		     !( dataManagerService.isOperationAllowed( objectName=objectName, operation="read" ) ) ||
 		     !( hasCmsPermission( permissionKey="datamanager.navigate", context="datamanager", contextKeys=[ objectName ] ) )
 		) {
