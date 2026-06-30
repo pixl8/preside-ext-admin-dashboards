@@ -93,6 +93,7 @@ component extends="preside.system.base.AdminHandler" {
 	private void function ajaxIncludes( event, rc, prc, args={} ) {
 		event.include( "/js/admin/specific/datamanager/object/");
 		event.include( "/css/admin/specific/datamanager/object/");
+		event.include( "/css/admin/specific/admindashboards/dataviz/", false );
 		event.includeData( data={ defaultPageLength=5 } );
 
 		event.includeInlineJs( "( function( $ ){ widget_#replace( args.configInstanceId, "-", "", "all" )#_init = function() { $( 'div[data-config-instance-id=#args.configInstanceId#].admin-dashboard-widget .object-listing-table' ).dataListingTable(); }; } )( presideJQuery );" );
