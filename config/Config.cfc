@@ -25,6 +25,8 @@ component {
 		settings.enum.adminDashboardEditAccess = [ "private", "specific" ];
 		settings.enum.adminDashboardWidgetType = [ "gallery", "scratch", "import" ];
 		settings.enum.adminDashboardContexts   = settings.enum.adminDashboardContexts ?: [];
+
+		settings.enum.dashboardDataFilterDisplayMode = [ "standard", "contextual" ];
 	}
 
 	private void function _setupPermissionsAndRoles( required struct settings ) {

@@ -1,19 +1,9 @@
 component {
-	property name="presideObjectService" inject="presideObjectService";
 
 	public string function index( event, rc, prc, args={} ) {
-		args.values = [ "" ];
-		args.labels = [ "" ];
+		args.remoteUrl   = event.buildAdminLink( linkTo="ajaxProxy", querystring="action=admindashboards.widget.DashboardDataFilter.getObjectsForAjaxControl" );
+		args.prefetchUrl = event.buildAdminLink( linkTo="ajaxProxy", querystring="action=admindashboards.widget.DashboardDataFilter.getObjectsForAjaxControl" );
 
-		var objects = presideObjectService.listObjects();
-
-		for( var object in objects ) {
-			if ( !presideObjectService.isPageType( object ) ) {
-				args.values.append( object );
-				args.labels.append( translateObjectName( object ) );
-			}
-		}
-
-		return renderView( view="formcontrols/select/index", args=args );
+		return renderView( view="formcontrols/objectPicker/index", args=args );
 	}
 }

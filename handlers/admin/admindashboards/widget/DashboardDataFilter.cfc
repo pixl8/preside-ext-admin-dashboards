@@ -65,26 +65,19 @@ component extends="preside.system.base.AdminHandler" {
 	}
 
 	private boolean function isWidgetSupportContext( event, rc, prc, args={} ) {
-		var targetObject = Trim( args.config.applies_to ?: args.contextData.applies_to ?: "" );
+		var displayMode = Trim( args.config.display_mode ?: ( args.contextData.display_mode ?: "standard" ) );
+
+		if ( Len( displayMode ) && displayMode != "contextual" ) {
+			return false;
+		}
+
+		var targetObject = Trim( args.config.applies_to ?: ( args.contextData.applies_to ?: "" ) );
 
 		if ( isEmptyString( targetObject ) ) {
 			return false;
 		}
 
-		var supportViewlet = "admin.admindashboards.context.#targetObject#.dashboardDataFilter.supportContext";
-		var coldbox        = getController();
-
-		if ( !coldbox.viewletExists( supportViewlet ) ) {
-			return false;
-		}
-
-		var viewletResult = coldbox.renderViewlet(
-			  event          = supportViewlet
-			, args           = args
-			, throwOnMissing = false
-		);
-
-		return isTrue( viewletResult ?: "" );
+		return _objectSupportsContextualDisplay( targetObject );
 	}
 
 	private string function ajaxCallback( event, rc, prc, args={} ) {
@@ -189,7 +182,7 @@ component extends="preside.system.base.AdminHandler" {
 			var fields = datamanagerService.listGridFields( rc.object );
 
 			for( var field in fields ){
-				arrayAppend( result, {
+				ArrayAppend( result, {
 					  value = field
 					, text  = translatePropertyName( rc.object, field )
 				} );
@@ -197,5 +190,41 @@ component extends="preside.system.base.AdminHandler" {
 		}
 
 		event.renderData( type="json", data=result );;
+	}
+
+	public void function getObjectsForAjaxControl( event, rc, prc ) {
+		var displayMode = rc.displayMode ?: "";
+		var result      = [];
+		var objects     = presideObjectService.listObjects();
+
+		for( var object in objects ) {
+			if ( presideObjectService.isPageType( object ) ) {
+				continue;
+			}
+
+			if ( displayMode == "contextual" && !_objectSupportsContextualDisplay( object ) ) {
+				continue;
+			}
+
+			ArrayAppend( result, {
+				  value = object
+				, text  = translateObjectName( object )
+			} );
+		}
+
+		event.renderData( type="json", data=result );
+	}
+
+	private boolean function _objectSupportsContextualDisplay( required string objectName ) {
+		var supportViewlet = "admin.admindashboards.context.#arguments.objectName#.dashboardDataFilter.supportContext";
+		var coldbox        = getController();
+
+		if ( !coldbox.viewletExists( supportViewlet ) ) {
+			return false;
+		}
+
+		var viewletResult = coldbox.renderViewlet( event=supportViewlet, throwOnMissing=false );
+
+		return isTrue( viewletResult ?: "" );
 	}
 }
