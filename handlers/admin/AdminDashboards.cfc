@@ -35,10 +35,20 @@ component extends="preside.system.base.AdminHandler" {
 			event.notFound();
 		}
 
+		var contextData = Duplicate( rc );
+		StructDelete( contextData, "widgetId" );
+		StructDelete( contextData, "dashboardId" );
+		StructDelete( contextData, "configInstanceId" );
+		StructDelete( contextData, "instanceId" );
+		StructDelete( contextData, "event" );
+		StructDelete( contextData, "handler" );
+		StructDelete( contextData, "action" );
+
 		prc.configForm = widgetService.renderWidgetConfigForm(
 			  dashboardId = dashboardId
 			, widgetId    = widgetId
 			, instanceId  = instanceId
+			, contextData = contextData
 		);
 
 		event.include( "/js/admin/specific/admindashboards/configmodal/" );

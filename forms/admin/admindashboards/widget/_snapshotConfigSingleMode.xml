@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form i18nBaseUri="admin.admindashboards.widget.snapshotConfig:">
+
+	<tab id="default">
+		<fieldset id="snapshot_settings" sortorder="100" title="admin.admindashboards.widget.snapshotConfig:fieldset.snapshot_settings.title">
+			<field name="data_source" sortorder="10" control="enumRadioList" enum="adminDashboardWidgetDataSource" defaultValue="live" required="true" />
+		</fieldset>
+	</tab>
+
+</form>
