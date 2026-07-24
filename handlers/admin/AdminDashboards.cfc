@@ -142,7 +142,7 @@ component extends="preside.system.base.AdminHandler" {
 		var includePageHeader = isTrue( args.includePageHeader ?: "" );
 		var adminUserId       = event.getAdminUserId();
 		var viewLink          = dashboardService.buildDashboardViewLink( dashboardId=dashboardId, contextData=contextData );
-		var canCloneDashboard = dashboardService.hasFullAccess( adminUserId ) || dashboardService.userCanViewDashboard( dashboardId, adminUserId );
+		var canCloneDashboard = dashboardService.userCanCloneDashboard( dashboardId, adminUserId );
 		var canEditDashboard  = allowEditing && dashboardService.userCanEditDashboard( dashboardId, adminUserId );
 		var editLayoutLink    = canEditDashboard ? dashboardService.buildDashboardEditLayoutLink( dashboardId=dashboardId, contextData=contextData ) : "";
 		var deleteReturnUrl   = "";

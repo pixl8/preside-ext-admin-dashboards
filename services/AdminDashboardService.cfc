@@ -227,6 +227,18 @@ component {
 		);
 	}
 
+	public boolean function userCanCloneDashboard( required string dashboardId, string adminUserId=$getAdminLoggedInUserId() ) {
+		if ( hasFullAccess( arguments.adminUserId ) ) {
+			return true;
+		}
+
+		if ( !permissionService.hasPermission( permissionKey="adminDashboards.clone", userId=arguments.adminUserId ) ) {
+			return false;
+		}
+
+		return userCanViewDashboard( argumentCollection=arguments );
+	}
+
 	public boolean function userCanEditDashboard( required string dashboardId, string adminUserId=$getAdminLoggedInUserId() ) {
 		if ( isSystemDashboard( arguments.dashboardId ) ) {
 			return false;
