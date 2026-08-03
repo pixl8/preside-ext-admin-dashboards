@@ -25,8 +25,10 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 		if ( hasPermission && len( recordId ) ) {
 			switch( args.key ) {
 				case "read":
-				case "clone":
 					hasPermission = dashboardService.userCanViewDashboard( recordId, adminUserId );
+					break;
+				case "clone":
+					hasPermission = dashboardService.userCanCloneDashboard( recordId, adminUserId );
 					break;
 				case "edit":
 					hasPermission = dashboardService.userCanEditDashboard( recordId, adminUserId );
@@ -599,6 +601,22 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 		}
 
 		return event.buildAdminLink( linkto="datamanager.admin_dashboard.editdashboardlayout", querystring=qs );
+	}
+
+	private string function buildViewRecordLink( event, rc, prc, args={} ) {
+		var redirectObjectName = rc.redirectObjectName ?: "";
+		var redirectRecordId   = rc.redirectRecordId   ?: "";
+
+		if ( Len( redirectObjectName ) ) {
+			return event.buildAdminLink( objectName=redirectObjectName, recordId=redirectRecordId ) & "&currentDashboard=#( args.recordId ?: "" )#";
+		}
+
+		return runEvent(
+			  event          = "admin.objectLinks.buildViewRecordLink"
+			, prePostExempt  = true
+			, private        = true
+			, eventArguments = { args=args }
+		);
 	}
 
 	private any function editRecordAction( event, rc, prc, args={} ) {
