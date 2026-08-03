@@ -611,12 +611,7 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 			return event.buildAdminLink( objectName=redirectObjectName, recordId=redirectRecordId ) & "&currentDashboard=#( args.recordId ?: "" )#";
 		}
 
-		return runEvent(
-			  event          = "admin.objectLinks.buildViewRecordLink"
-			, prePostExempt  = true
-			, private        = true
-			, eventArguments = { args=args }
-		);
+		return super.buildViewRecordLink( argumentCollection=arguments );
 	}
 
 	private any function editRecordAction( event, rc, prc, args={} ) {
