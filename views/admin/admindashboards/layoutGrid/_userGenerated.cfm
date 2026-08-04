@@ -36,7 +36,7 @@
 
 		<cfif canEditDashboard && isEditDashboardLayout>
 			<div class="grid-stack-add">
-				<a href="#addLink#" data-toggle="bootbox-modal" data-buttons="cancel" data-modal-class="full-screen-dialog" data-title="#HtmlEditFormat( addTitle )#">
+				<a href="#addLink#" class="widget-add-trigger" data-toggle="bootbox-modal" data-buttons="cancel" data-modal-class="full-screen-dialog" data-title="#HtmlEditFormat( addTitle )#">
 					<i class="fa fa-fw fa-plus"></i>
 					#addTitle#
 				</a>

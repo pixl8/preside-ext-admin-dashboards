@@ -29,7 +29,7 @@
 									#importTitle#
 								</button>
 							</a>
-							<a href="#replace( addLink, "{column}", c )#" data-toggle="bootbox-modal" data-target="##add-widget-modal" data-buttons="cancel" data-modal-class="full-screen-dialog" title="#addTitle#">
+							<a href="#replace( addLink, "{column}", c )#" class="widget-add-trigger" data-toggle="bootbox-modal" data-target="##add-widget-modal" data-buttons="cancel" data-modal-class="full-screen-dialog" title="#addTitle#">
 								<button class="btn btn-success btn-sm">
 									<i class="fa fa-fw fa-plus"></i>
 									#addTitle#
