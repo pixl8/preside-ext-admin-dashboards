@@ -13,8 +13,11 @@ component  {
 	property name="name"         type="string"  dbtype="varchar" maxlength="50" required=true uniqueIndexes="dashboardName";
 	property name="description"  type="string"  dbtype="varchar" maxlength="300";
 	property name="column_count" type="numeric" dbtype="int"     default=2;
+	property name="contexts"     type="string"  dbtype="varchar" maxlength="300"                  batcheditable=false adminRenderer="adminDashboardContexts";
+	property name="is_system"    type="boolean" dbtype="boolean" default=false indexes="issystem" batcheditable=false control="none"                                   cloneable=false;
+	property name="system_id"    type="string"  dbtype="varchar" maxlength="300"                  batcheditable=false control="none" uniqueIndexes="systemDashboardId" cloneable=false;
 
-	property name="owner"        relationship="many-to-one" relatedTo="security_user" required=true generate="insert" generator="adminDashboard.owner" cloneable=false;
+	property name="owner"        relationship="many-to-one" relatedTo="security_user" required=false generate="insert" generator="adminDashboard.owner" cloneable=false;
 	property name="widgets"      relationship="one-to-many" relatedto="admin_dashboard_widget" relationshipKey="dashboard" cloneable=true;
 
 	property name="view_access" type="string" dbtype="varchar" maxlength=10 enum="adminDashboardViewAccess" default="private";

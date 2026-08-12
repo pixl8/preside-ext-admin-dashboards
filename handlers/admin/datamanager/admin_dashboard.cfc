@@ -25,8 +25,10 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 		if ( hasPermission && len( recordId ) ) {
 			switch( args.key ) {
 				case "read":
-				case "clone":
 					hasPermission = dashboardService.userCanViewDashboard( recordId, adminUserId );
+					break;
+				case "clone":
+					hasPermission = dashboardService.userCanCloneDashboard( recordId, adminUserId );
 					break;
 				case "edit":
 					hasPermission = dashboardService.userCanEditDashboard( recordId, adminUserId );
@@ -47,12 +49,32 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 	public void function preRenderListing( event, rc, prc, args={} ) {
 		prc.adminSidebarItems = prc.adminSidebarItems ?: [];
 
+		var curEvent  = event.getCurrentEvent();
+		var curObject = prc.objectName ?: "";
+		var forSystem = isTrue( rc.systemOnly ?: "" );
+
+		if ( forSystem ) {
+			prc.gridFields       = [ "name", "description", "datecreated" ];
+			prc.hiddenGridFields = prc.hiddenGridFields ?: [];
+			ArrayAppend( prc.hiddenGridFields, [ "view_access", "edit_access" ], true );
+		}
+
 		ArrayAppend( prc.adminSidebarItems, {
-			  active = event.getCurrentEvent() == "admin.datamanager.object"
+			  active = !forSystem && ( curEvent == "admin.datamanager.object" ) && ( curObject == "admin_dashboard" )
 			, title  = translateResource( uri="preside-objects.admin_dashboard:sidenav.all.label" )
 			, link   = event.buildAdminLink( objectName="admin_dashboard" )
 			, icon   = "fa-tachometer"
 		} );
+
+		prc.hasSystemDashboards = prc.hasSystemDashboards ?: getPresideObject( "admin_dashboard" ).dataExists( filter={ is_system=true, owner="", contexts="" } );
+		if ( isTrue( prc.hasSystemDashboards ) ) {
+			ArrayAppend( prc.adminSidebarItems, {
+				  active = forSystem && ( curEvent == "admin.datamanager.object" ) && ( curObject == "admin_dashboard" )
+				, title  = translateResource( uri="preside-objects.admin_dashboard:sidenav.systemdashboards.title" )
+				, link   = event.buildAdminLink( objectName="admin_dashboard", queryString="systemOnly=true" )
+				, icon   = "fa-th-large"
+			} );
+		}
 
 		var createdByMeDashboards = _getCreatedByMeSidenav( argumentCollection=arguments );
 		if ( !StructIsEmpty( createdByMeDashboards ) ) {
@@ -69,14 +91,24 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 		prc.pageIcon           = "";
 	}
 
+	private string function getAdditionalQueryStringForBuildAjaxListingLink( event, rc, prc, args={} ) {
+		if ( isTrue( rc.systemOnly ?: "" ) ) {
+			return "systemOnly=true";
+		}
+
+		return "";
+	}
+
 	private void function preFetchRecordsForGridListing( event, rc, prc, args={} ) {
+		args.extraFilters = args.extraFilters ?: [];
+
+		var systemOnly  = isTrue( rc.systemOnly ?: "" );
 		var adminUserId = event.getAdminUserId();
 
 		if ( !dashboardService.hasFullAccess( adminUserId ) ) {
 			var adminUserGroups = _getAdminUserGroups( adminUserId );
 
 			args.selectFields = args.selectFields ?: [];
-			args.extraFilters = args.extraFilters ?: [];
 			args.extraFilters.append( {
 				  filter       = "view_access = 'public'
 						or admin_dashboard.owner = :adminUserId
@@ -94,6 +126,13 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 			ArrayAppend( args.selectFields, "edit_groups_list" );
 			ArrayAppend( args.selectFields, "edit_users_list"  );
 		}
+
+		if ( systemOnly ) {
+			ArrayAppend( args.extraFilters, { filter={ is_system=true, owner="", contexts="" } } );
+		} else {
+			ArrayAppend( args.extraFilters, { filter={ is_system=false } } );
+		}
+
 	}
 
 	private void function postFetchRecordsForGridListing( event, rc, prc, args={} ) {
@@ -108,16 +147,27 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 		var canClone        = [];
 		var canViewThis     = false;
 		var canEditThis     = false;
+		var isSystem        = false;
 		var hasFullAccess   = dashboardService.hasFullAccess( adminUserId );
 
 		for ( var r in records ) {
 			canEditThis = ( prc.canEdit ?: false ) && ( r.owner_id == adminUserId || ( r.edit_access == "specific" && ( listFind( r.edit_users_list, adminUserId ) || _listFindOneOf( r.edit_groups_list, adminUserGroups ) ) ) );
-			canViewThis = canEditThis || r.view_access == "public" || ( r.view_access == "specific" && ( listFind( r.view_users_list, adminUserId ) || _listFindOneOf( r.view_groups_list, adminUserGroups ) ) )
-			ArrayAppend( canEdit  , hasFullAccess || canEditThis );
+			canViewThis = canEditThis || r.view_access == "public" || ( r.view_access == "specific" && ( listFind( r.view_users_list, adminUserId ) || _listFindOneOf( r.view_groups_list, adminUserGroups ) ) );
+			isSystem    = isTrue( r.is_system ?: dashboardService.isSystemDashboard( dashboardId=r.id ) );
+
+			ArrayAppend( canEdit  , !isSystem && ( hasFullAccess || canEditThis ) );
 			ArrayAppend( canView  , hasFullAccess || canViewThis );
-			ArrayAppend( canShare , hasFullAccess || r.owner_id == adminUserId );
-			ArrayAppend( canDelete, hasFullAccess || ( ( prc.canDelete ?: false ) && r.owner_id == adminUserId ) );
+			ArrayAppend( canShare , !isSystem && ( hasFullAccess || r.owner_id == adminUserId ) );
+			ArrayAppend( canDelete, !isSystem && ( hasFullAccess || ( ( prc.canDelete ?: false ) && r.owner_id == adminUserId ) ) );
 			ArrayAppend( canClone , hasFullAccess || ( ( prc.canClone  ?: false ) && canViewThis ) );
+
+			if ( StructKeyExists( r, "contexts" ) ) {
+				QuerySetCell( records, "contexts", renderContent(
+					  renderer = "adminDashboardContexts"
+					, data     = r.contexts
+					, args     = r
+				), QueryCurrentRow( records ) );
+			}
 		}
 
 		QueryAddColumn( records, "canView"  , canView   );
@@ -215,12 +265,25 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 	}
 
 	private string function renderSidebarHeader( event, rc, prc, args={} ) {
+		var curEvent           = event.getCurrentEvent();
+		var curObject          = prc.objectName ?: "";
+		var forSystem          = isTrue( rc.systemOnly ?: "" );
 		var customSidebarItems = [ {
-			  active = event.getCurrentEvent() == "admin.datamanager.object"
+			  active = !forSystem && ( curEvent == "admin.datamanager.object" ) && ( curObject == "admin_dashboard" )
 			, title  = translateResource( uri="preside-objects.admin_dashboard:sidenav.all.label" )
 			, link   = event.buildAdminLink( objectName="admin_dashboard" )
 			, icon   = "fa-tachometer"
 		} ];
+
+		prc.hasSystemDashboards = prc.hasSystemDashboards ?: getPresideObject( "admin_dashboard" ).dataExists( filter={ is_system=true, owner="", contexts="" } );
+		if ( isTrue( prc.hasSystemDashboards ) ) {
+			ArrayAppend( customSidebarItems, {
+				  active = forSystem && ( curEvent == "admin.datamanager.object" ) && ( curObject == "admin_dashboard" )
+				, title  = translateResource( uri="preside-objects.admin_dashboard:sidenav.systemdashboards.title" )
+				, link   = event.buildAdminLink( objectName="admin_dashboard", queryString="systemOnly=true" )
+				, icon   = "fa-th-large"
+			} );
+		}
 
 		var createdByMeDashboards = _getCreatedByMeSidenav( argumentCollection=arguments );
 		if ( !StructIsEmpty( createdByMeDashboards ) ) {
@@ -446,7 +509,21 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 	}
 
 	public void function sharingAction( event, rc, prc, args={} ) {
-		var recordId = rc.id ?: "";
+		var recordId           = rc.id                 ?: "";
+		var redirectObjectName = rc.redirectObjectName ?: "";
+		var redirectRecordId   = rc.redirectRecordId   ?: "";
+		var successUrl         = event.buildAdminLink( objectName="admin_dashboard", recordId=recordId );
+		var errorUrl           = event.buildAdminLink( objectName="admin_dashboard", recordId=recordId, operation="sharing" );
+
+		if ( Len( redirectObjectName ) ) {
+			successUrl = event.buildAdminLink( objectName=redirectObjectName, recordId=redirectRecordId );
+			errorUrl   = event.buildAdminLink(
+				  objectName  = "admin_dashboard"
+				, operation   = "sharing"
+				, recordId    = recordId
+				, queryString = "redirectObjectName=#redirectObjectName#&redirectRecordId=#redirectRecordId#"
+			);
+		}
 
 		if ( !dashboardService.userCanShareDashboard( recordId, event.getAdminUserId() ) ) {
 			event.adminAccessDenied();
@@ -468,8 +545,8 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 			, eventArguments = {
 				  object      = "admin_dashboard"
 				, formName    = "preside-objects.admin_dashboard.sharing"
-				, errorUrl    = event.buildAdminLink( objectName="admin_dashboard", recordId=recordId, operation="sharing" )
-				, successUrl  = event.buildAdminLink( objectName="admin_dashboard", recordId=recordId )
+				, errorUrl    = errorUrl
+				, successUrl  = successUrl
 				, audit       = true
 				, auditAction = "edit_sharing_options"
 			  }
@@ -480,7 +557,7 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 		var objectName = "admin_dashboard"
 		var recordId   = rc.id ?: "";
 
-		if ( !dashboardService.userCanEditDashboard( recordId, event.getAdminUserId() ) ) {
+		if ( dashboardService.isSystemDashboard( recordId ) || !dashboardService.userCanEditDashboard( recordId, event.getAdminUserId() ) ) {
 			event.adminAccessDenied();
 		}
 
@@ -524,6 +601,65 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 		}
 
 		return event.buildAdminLink( linkto="datamanager.admin_dashboard.editdashboardlayout", querystring=qs );
+	}
+
+	private string function buildViewRecordLink( event, rc, prc, args={} ) {
+		var redirectObjectName = rc.redirectObjectName ?: "";
+		var redirectRecordId   = rc.redirectRecordId   ?: "";
+
+		if ( Len( redirectObjectName ) ) {
+			return event.buildAdminLink( objectName=redirectObjectName, recordId=redirectRecordId ) & "&currentDashboard=#( args.recordId ?: "" )#";
+		}
+
+		return super.buildViewRecordLink( argumentCollection=arguments );
+	}
+
+	private any function editRecordAction( event, rc, prc, args={} ) {
+		var redirectObjectName = rc.redirectObjectName ?: "";
+		var redirectRecordId   = rc.redirectRecordId   ?: "";
+
+		if ( Len( redirectObjectName ) ) {
+			args.successUrl = event.buildAdminLink( objectName=redirectObjectName, recordId=redirectRecordId );
+		}
+
+		runEvent(
+			  event          = "admin.DataManager._editRecordAction"
+			, prePostExempt  = true
+			, private        = true
+			, eventArguments = args
+		);
+	}
+
+	private any function cloneRecordAction( event, rc, prc, args={} ) {
+		var redirectObjectName = rc.redirectObjectName ?: "";
+		var redirectRecordId   = rc.redirectRecordId   ?: "";
+
+		if ( Len( redirectObjectName ) ) {
+			args.successUrl = event.buildAdminLink( objectName=redirectObjectName, recordId=redirectRecordId ) & "&currentDashboard={id}";
+		}
+
+		runEvent(
+			  event          = "admin.DataManager._cloneRecordAction"
+			, prePostExempt  = true
+			, private        = true
+			, eventArguments = args
+		);
+	}
+
+	private any function deleteRecordAction( event, rc, prc, args={} ) {
+		var redirectObjectName = rc.redirectObjectName ?: "";
+		var redirectRecordId   = rc.redirectRecordId   ?: "";
+
+		if ( Len( redirectObjectName ) ) {
+			args.postActionUrl = event.buildAdminLink( objectName=redirectObjectName, recordId=redirectRecordId );
+		}
+
+		runEvent(
+			  event          = "admin.DataManager._deleteRecordAction"
+			, prePostExempt  = true
+			, private        = true
+			, eventArguments = args
+		);
 	}
 
 // PRIVATE HELPER METHODS

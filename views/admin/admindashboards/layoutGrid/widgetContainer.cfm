@@ -26,10 +26,25 @@
 
 	event.includeData( { "#args.instanceId#"=args.contextData } );
 
-	action = ListLast( rc.event ?: "", "." );
+	action = LCase( args.dashboardLayoutAction ?: "" );
+
+	if ( !Len( action ) ) {
+		action = LCase( ListLast( rc.event ?: "", "." ) );
+	}
+
+	if ( action != "editdashboardlayout" && action != "viewrecord" ) {
+		action = "viewrecord";
+	}
 
 	isViewRecord          = ( action == "viewrecord" );
 	isEditDashboardLayout = ( action == "editdashboardlayout" );
+	hasToolbarActions     = isEditDashboardLayout || Len( Trim( args.additionalMenu ) );
+
+	deleteQs = "dashboardId=#args.dashboardId#&instanceId=#args.configInstanceId#";
+
+	if ( Len( Trim( args.deleteWidgetReturnUrl ?: "" ) ) ) {
+		deleteQs &= "&returnUrl=#UrlEncodedFormat( args.deleteWidgetReturnUrl )#";
+	}
 </cfscript>
 
 <cfoutput>
@@ -46,17 +61,18 @@
 				<h4 class="widget-title">
 					<span>#args.title#</span>
 				</h4>
-				<div class="widget-toolbar">
+				<div class="widget-toolbar<cfif hasToolbarActions> has-actions</cfif>">
 					<cfif isEditDashboardLayout>
-						#args.additionalMenu#
 						<a class="widget-draggable-handle" title="#HtmlEditFormat( moveTitle )#"><i class="fa fa-fw fa-arrows"></i></a>
 						<cfif args.hasConfig>
 							<a class="widget-export-config-link" href="##" title="#HtmlEditFormat( exportConfigTitle )#"><i class="fa fa-fw fa-share"></i></a>
 							<a class="widget-configuration-link" href="##" title="#HtmlEditFormat( configureTitle )#"><i class="fa fa-fw fa-pencil"></i></a>
 						</cfif>
 						<cfif args.canDeleteWidget>
-							<a class="widget-delete-link" title="#HtmlEditFormat( deletePrompt )#" href="#event.buildAdminLink( linkTo="adminDashboards.deleteWidget", queryString="dashboardId=#args.dashboardId#&instanceId=#args.configInstanceId#" )#"><i class="fa fa-fw fa-trash"></i></a>
+							<a class="widget-delete-link" title="#HtmlEditFormat( deletePrompt )#" href="#event.buildAdminLink( linkTo="adminDashboards.deleteWidget", queryString=deleteQs )#"><i class="fa fa-fw fa-trash"></i></a>
 						</cfif>
+					<cfelseif Len( Trim( args.additionalMenu ) )>
+						#args.additionalMenu#
 					</cfif>
 				</div>
 			</div>
