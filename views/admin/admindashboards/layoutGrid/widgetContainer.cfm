@@ -38,6 +38,7 @@
 
 	isViewRecord          = ( action == "viewrecord" );
 	isEditDashboardLayout = ( action == "editdashboardlayout" );
+	hasToolbarActions     = isEditDashboardLayout || Len( Trim( args.additionalMenu ) );
 
 	deleteQs = "dashboardId=#args.dashboardId#&instanceId=#args.configInstanceId#";
 
@@ -60,9 +61,8 @@
 				<h4 class="widget-title">
 					<span>#args.title#</span>
 				</h4>
-				<div class="widget-toolbar">
+				<div class="widget-toolbar<cfif hasToolbarActions> has-actions</cfif>">
 					<cfif isEditDashboardLayout>
-						#args.additionalMenu#
 						<a class="widget-draggable-handle" title="#HtmlEditFormat( moveTitle )#"><i class="fa fa-fw fa-arrows"></i></a>
 						<cfif args.hasConfig>
 							<a class="widget-export-config-link" href="##" title="#HtmlEditFormat( exportConfigTitle )#"><i class="fa fa-fw fa-share"></i></a>
@@ -71,6 +71,8 @@
 						<cfif args.canDeleteWidget>
 							<a class="widget-delete-link" title="#HtmlEditFormat( deletePrompt )#" href="#event.buildAdminLink( linkTo="adminDashboards.deleteWidget", queryString=deleteQs )#"><i class="fa fa-fw fa-trash"></i></a>
 						</cfif>
+					<cfelseif Len( Trim( args.additionalMenu ) )>
+						#args.additionalMenu#
 					</cfif>
 				</div>
 			</div>
