@@ -1,8 +1,9 @@
 component extends="preside.system.base.AdminHandler" {
 
-	property name="widgetService"    inject="adminDashboardWidgetService";
-	property name="dashboardService" inject="adminDashboardService";
-	property name="siteService"      inject="delayedInjector:siteService";
+	property name="widgetService"          inject="adminDashboardWidgetService";
+	property name="dashboardService"       inject="adminDashboardService";
+	property name="siteService"            inject="delayedInjector:siteService";
+	property name="webflowInstanceService" inject="webflowInstanceService";
 
 	public void function renderWidgetContent( event, rc, prc ) {
 		var widgetId         = rc.widgetId         ?: "";
@@ -162,6 +163,8 @@ component extends="preside.system.base.AdminHandler" {
 		event.noLayout();
 		prc.widgets = _getSortedAndTranslatedAdminWidgets();
 
+		_resetAddWidgetWebflow( event.getAdminUserId() & "_" & ( rc.dashboard ?: "" ) );
+
 		event.setView( view="admin/admindashboards/browserDialog" );
 	}
 
@@ -275,6 +278,13 @@ component extends="preside.system.base.AdminHandler" {
 
 
 // private helpers
+	private void function _resetAddWidgetWebflow( required string instanceRef ) {
+		webflowInstanceService.archiveWorkflow(
+			  webflowId     = "adminDashboardsAddWidget"
+			, instanceRef   = arguments.instanceRef
+			, archiveReason = "cancelled"
+		);
+	}
 
 	private query function _getSortedAndTranslatedAdminWidgets() {
 		// todo, cache this operation (per locale)
