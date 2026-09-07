@@ -1,5 +1,10 @@
 # Changelog
 
+## v3.2.4
+
+* After creation of a dashboard it should go into edit mode
+* Cancelling the dashboard widget should cancel the webflow
+
 ## v3.2.3
 
 * Widget header missing on collapsed sidebar, and overlapping to icon
