@@ -411,6 +411,10 @@ component extends="preside.system.base.EnhancedDataManagerBase" {
 		args.formData.edit_access = "private";
 	}
 
+	private void function preAddRecordAction( event, rc, prc, args={} ) {
+		args.successUrl = event.buildAdminLink( objectName="admin_dashboard", operation="editdashboardlayout", recordId="{newid}" );
+	}
+
 	public void function sharing() {
 		var recordId = rc.id ?: "";
 
