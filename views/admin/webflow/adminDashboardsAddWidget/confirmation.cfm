@@ -1,7 +1,13 @@
 <cfscript>
-	introText   = Trim( args.stepConfig.intro ?: "" );
-	dashboardId = Trim( args.dashboardId      ?: ( rc.dashboard ?: "" ) );
-	buttonUrl   = Len( dashboardId ) ? event.buildAdminLink( objectName="admin_dashboard", operation="editdashboardlayout", recordId=dashboardId ) : ( cgi.http_referer ?: "" );
+	introText    = Trim( args.stepConfig.intro ?: "" );
+	dashboardId  = Trim( args.dashboardId      ?: ( rc.dashboard ?: "" ) );
+	postAddUrl   = Trim( args.post_add_dashboard_url ?: "" );
+	defaultEdit  = Len( dashboardId ) ? event.buildAdminLink( objectName="admin_dashboard", operation="editdashboardlayout", recordId=dashboardId ) : "";
+	buttonUrl    = Len( postAddUrl ) ? postAddUrl : defaultEdit;
+
+	if ( !Len( buttonUrl ) ) {
+		buttonUrl = cgi.http_referer ?: "";
+	}
 </cfscript>
 
 <cfoutput>

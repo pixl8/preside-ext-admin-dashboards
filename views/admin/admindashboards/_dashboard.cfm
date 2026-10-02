@@ -3,6 +3,8 @@
 </cfscript>
 
 <cfoutput>
+	#renderViewlet( event="admin.adminDashboards.renderDashboardHeader", args=args )#
+
 	<div class="admin-dashboard-container" data-dashboard-id="#args.dashboardId#">
 		<div class="row">#widgets#</div>
 

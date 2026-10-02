@@ -1,36 +1,55 @@
 <cfscript>
-	dashboardId      = args.id           ?: "";
+	dashboardId      = args.dashboardId  ?: args.id ?: "";
 	widgets          = args.widgets      ?: [];
 	canEditDashboard = isTrue( args.canEdit ?: "" );
 
 	addTitle = translateResource( "preside-objects.admin_dashboard:widget.add.btn" );
-	addLink  = event.buildAdminLink( linkTo="adminDashboards.widgetDialog", queryString="dashboard=#dashboardId#" );
+	addQs    = "dashboard=#dashboardId#";
+
+	if ( Len( Trim( args.inlineToolbarPostAddDashboardUrl ?: "" ) ) ) {
+		addQs &= "&post_add_dashboard_url=#UrlEncodedFormat( args.inlineToolbarPostAddDashboardUrl )#";
+	}
+
+	addLink  = event.buildAdminLink( linkTo="adminDashboards.widgetDialog", queryString=addQs );
 
 	event.include( "/js/admin/specific/admindashboards/gridlayout/" )
 		 .include( "/css/admin/specific/admindashboards/gridlayout/" );
 
-	action = LCase( ListLast( rc.event ?: "", "." ) );
+	action = LCase( args.dashboardLayoutAction ?: "" );
+
+	if ( !Len( action ) ) {
+		action = LCase( ListLast( rc.event ?: "", "." ) );
+
+		if ( action != "editdashboardlayout" && action != "viewrecord" ) {
+			action = "viewrecord";
+		}
+	}
 
 	isViewRecord          = ( action == "viewrecord" );
 	isEditDashboardLayout = ( action == "editdashboardlayout" );
 
 	event.includeData( { dashboard_action=action } )
 
-	includePageHeader = IsTrue( args.includePageHeader ?:  "" );
+	includePageHeader = isTrue( args.includePageHeader ?:  "" );
+	hasContextData    = isTrue( args.hasContextData ?: "" );
+	nonContextWidgets = args.nonContextWidgets ?: [];
+
+	args.pageHeaderButtons = args.pageHeaderButtons ?: renderView( view="/admin/admindashboards/layoutGrid/_inlineDashboardEditToolbar", args=args );
 </cfscript>
 
 <cfoutput>
-	<cfif includePageHeader>
-		#renderView(
-			view="/admin/admindashboards/layoutGrid/_pageTitle"
-			, args={
-				title             = ( prc.pageTitle         ?: "" )
-				, subTitle          = ( prc.pageSubTitle      ?: "" )
-				, icon              = ( prc.pageIcon          ?: "" )
-				, pageHeaderButtons = ( prc.pageHeaderButtons ?: "" )
-			}
-		)#
+	<cfif hasContextData and ArrayLen( nonContextWidgets )>
+		<div class="alert alert-warning no-margin-bottom">
+			<p><i class="fa fa-fw fa-exclamation-triangle"></i> #translateResource( uri="admindashboards:non.contextual.widgets.message" )#</p>
+			<ul>
+				<cfloop array="#nonContextWidgets#" item="nonContextWidget">
+					<li>#nonContextWidget.title#</li>
+				</cfloop>
+			</ul>
+		</div>
 	</cfif>
+
+	#renderViewlet( event="admin.adminDashboards.renderDashboardHeader", args=args )#
 
 	<div class="admin-dashboard-container" data-dashboard-id="#dashboardId#">
 

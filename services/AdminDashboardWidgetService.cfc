@@ -94,8 +94,9 @@ component {
 
 	public struct function renderUserGeneratedDashboard(
 		  required string  dashboardId
-		,          boolean allowEditing = true
-		,          struct  contextData  = {}
+		,          boolean allowEditing          = true
+		,          struct  contextData           = {}
+		,          string  deleteWidgetReturnUrl = ""
 	) {
 		var dashboard     = $getPresideObject( "admin_dashboard" ).selectData( id=arguments.dashboardId );
 		var savedWidgets  = $getPresideObject( "admin_dashboard_widget" ).selectData(
@@ -130,12 +131,13 @@ component {
 			widget.contextData.canEditDashboard = canEdit;
 
 			widgets[ widget.column ].append( renderWidgetContainer(
-				  dashboardId      = arguments.dashboardId
-				, widgetId         = widget.id
-				, contextData      = _namespaceContextData( widget.contextData )
-				, configInstanceId = widget.configInstanceId
-				, title            = widget.title ?: ""
-				, ajax             = widget.ajax
+				  dashboardId           = arguments.dashboardId
+				, widgetId              = widget.id
+				, contextData           = _namespaceContextData( widget.contextData )
+				, configInstanceId      = widget.configInstanceId
+				, title                 = widget.title ?: ""
+				, ajax                  = widget.ajax
+				, deleteWidgetReturnUrl = arguments.deleteWidgetReturnUrl
 			) );
 		}
 
@@ -147,9 +149,11 @@ component {
 
 	public struct function renderUserGeneratedGridDashboard(
 		  required string  dashboardId
-		,          boolean allowEditing    = true
-		,          struct  contextData     = {}
-		,          boolean showTempWidgets = false
+		,          boolean allowEditing          = true
+		,          struct  contextData           = {}
+		,          boolean showTempWidgets       = false
+		,          string  deleteWidgetReturnUrl = ""
+		,          string  dashboardLayoutAction = ""
 	) {
 		var dashboard           = $getPresideObject( "admin_dashboard" ).selectData( id=arguments.dashboardId );
 		var widget              = {};
@@ -197,21 +201,32 @@ component {
 				, contextData      = IsJSON( savedWidget.config ) ? DeserializeJSON( savedWidget.config ) : {}
 				, ajax             = true
 			};
+
+			if ( !StructIsEmpty( arguments.contextData ) ) {
+				StructAppend( widget.contextData, arguments.contextData );
+			}
+
 			widget.contextData.canEditDashboard = canEdit;
 
-			widgets.append( {
-				  gridConfig         = gridConfig
-				, editTempGridConfig = editTempGridConfig
-				, html               = renderWidgetContainer(
-					  dashboardId      = arguments.dashboardId
-					, widgetId         = widget.id
-					, contextData      = _namespaceContextData( widget.contextData )
-					, configInstanceId = widget.configInstanceId
-					, title            = widget.title ?: ""
-					, ajax             = widget.ajax
-					, layout           = "grid"
-				)
-			} );
+			if ( userCanViewWidget( widgetId=widget.id, widgetConfig=widget ) ) {
+				ArrayAppend( widgets, {
+					  title              = savedWidget.title
+					, supportContext     = isWidgetSupportContext( widgetId=widget.id, widgetConfig=widget )
+					, gridConfig         = gridConfig
+					, editTempGridConfig = editTempGridConfig
+					, html               = renderWidgetContainer(
+						  dashboardId           = arguments.dashboardId
+						, widgetId              = widget.id
+						, contextData           = _namespaceContextData( widget.contextData )
+						, configInstanceId      = widget.configInstanceId
+						, title                 = widget.title ?: ""
+						, ajax                  = widget.ajax
+						, layout                = "grid"
+						, deleteWidgetReturnUrl = arguments.deleteWidgetReturnUrl
+						, dashboardLayoutAction = arguments.dashboardLayoutAction
+					)
+				} );
+			}
 		}
 
 		dashboardArgs.widgets = widgets;
@@ -229,6 +244,8 @@ component {
 		,          string  title            = ""
 		,          boolean ajax             = true
 		,          string  layout           = "default"
+		,          string  deleteWidgetReturnUrl = ""
+		,          string  dashboardLayoutAction = ""
 	) {
 		var instanceId             = "dashboard-widget-" & LCase( Hash( arguments.dashboardId & arguments.widgetId & SerializeJson( arguments.contextData ) ) );
 		var menuViewlet            = "admin.admindashboards.widget.#arguments.widgetId#.additionalMenu";
@@ -282,6 +299,8 @@ component {
 			, additionalMenu         = additionalMenu
 			, content                = content
 			, layout                 = arguments.layout
+			, deleteWidgetReturnUrl  = arguments.deleteWidgetReturnUrl
+			, dashboardLayoutAction  = arguments.dashboardLayoutAction
 		};
 
 		$announceInterception( "onRenderAdminWidgetContainer", args );
@@ -309,6 +328,11 @@ component {
 
 		if ( isUserDashboard ) {
 			formName = _getFormsService().getMergedFormName( formName, "admin.admindashboards.config" );
+
+			var contextFormName = "admin.admindashboards.widget.#arguments.widgetId#.userContext";
+			if ( _getFormsService().formExists( contextFormName ) ) {
+				formName = _getFormsService().getMergedFormName( formName, contextFormName );
+			}
 		}
 
 		var formArgs = { formName=formName, widget=arguments, isUserDashboard=isUserDashboard };
@@ -330,6 +354,13 @@ component {
 
 		if ( !StructIsEmpty( arguments.configData ) ) {
 			StructAppend( renderFormArgs.savedData, arguments.configData );
+		}
+
+		if ( _isUserGeneratedDashboard( arguments.dashboardId ) && !Len( renderFormArgs.savedData.widget_title ?: "" ) ) {
+			var defaultTitle = getWidgetDefaultTitle( dashboardId=arguments.dashboardId, widgetId=arguments.widgetId );
+			if ( Len( defaultTitle ) ) {
+				renderFormArgs.savedData.widget_title = defaultTitle;
+			}
 		}
 
 		$announceInterception( "onRenderWidgetConfigForm", renderFormArgs );
@@ -429,7 +460,10 @@ component {
 		return IsStruct( result ) ? result : {};
 	}
 
-	public boolean function userCanViewWidget( required string widgetId ) {
+	public boolean function userCanViewWidget(
+		  required string widgetId
+		,          struct widgetConfig = {}
+	) {
 		var coldbox         = $getColdbox();
 		var permissionEvent = "admin.admindashboards.widget.#widgetId#.hasPermission";
 		var result          = true;
@@ -439,6 +473,7 @@ component {
 				  event         = permissionEvent
 				, private       = true
 				, prePostExempt = true
+				, eventArguments = { args=arguments.widgetConfig }
 			);
 		}
 
@@ -455,6 +490,26 @@ component {
 				  event         = isUserDashboardWidgetEvent
 				, private       = true
 				, prePostExempt = true
+			);
+		}
+
+		return $helpers.isTrue( result ?: "" );
+	}
+
+	public boolean function isWidgetSupportContext(
+		  required string widgetId
+		,          struct widgetConfig = {}
+	) {
+		var coldbox      = $getColdbox();
+		var viewletEvent = "admin.admindashboards.widget.#widgetId#.isWidgetSupportContext";
+		var result       = false;
+
+		if ( coldbox.handlerExists( viewletEvent ) ) {
+			result = coldbox.runEvent(
+				  event         = viewletEvent
+				, private       = true
+				, prePostExempt = true
+				, eventArguments = { args=arguments.widgetConfig }
 			);
 		}
 
@@ -637,6 +692,38 @@ component {
 		var title     = baseTitle;
 		var dao       = $getPresideObject( "admin_dashboard_widget" );
 
+		var filter    = { dashboard=arguments.dashboardId, title=title };
+		var increment = 0;
+
+		while( dao.dataExists( filter=filter ) ) {
+			title = baseTitle & " (#++increment#)";
+			filter.title = title;
+		}
+
+		return title;
+	}
+
+	public string function getWidgetDefaultTitle(
+		  required string dashboardId
+		, required string widgetId
+	) {
+		var baseTitle = "";
+		var viewlet   = "admin.admindashboards.widget.#arguments.widgetId#.getDefaultTitle";
+
+		if ( $getColdbox().viewletExists( viewlet ) ) {
+			baseTitle = $renderViewlet( event=viewlet, args={ dashboardId=arguments.dashboardId } );
+		}
+
+		if ( !Len( baseTitle ) ) {
+			baseTitle = $translateResource( uri="admin.admindashboards.widget.#arguments.widgetId#:default.title", defaultValue="" );
+		}
+
+		if ( !Len( baseTitle ) ) {
+			return "";
+		}
+
+		var title     = baseTitle;
+		var dao       = $getPresideObject( "admin_dashboard_widget" );
 		var filter    = { dashboard=arguments.dashboardId, title=title };
 		var increment = 0;
 
