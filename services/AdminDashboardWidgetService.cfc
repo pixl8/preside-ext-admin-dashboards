@@ -766,7 +766,7 @@ component {
 				, "min-h" : "2"
 			}
 			, "dashboardDataFilter" = {
-				  "min-w" : "3"
+				  "min-w" : "2"
 				, "min-h" : "2"
 			}
 		}
