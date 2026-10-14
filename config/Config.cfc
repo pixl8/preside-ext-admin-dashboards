@@ -4,6 +4,7 @@ component {
 		var conf     = arguments.config;
 		var settings = conf.settings ?: {};
 
+		_setupFeatures( settings );
 		_setupEnums( settings );
 		_setupPermissionsAndRoles( settings );
 		_setupInterceptors( conf );
@@ -15,14 +16,24 @@ component {
 		};
 	}
 
+	private void function _setupFeatures( required struct settings ) {
+		settings.features.adminDashboards         = { enabled=true };
+		settings.features.adminDashboardSnapshots = { enabled=true, dependsOn="adminDashboards" };
+	}
+
 	private void function _setupEnums( settings ) {
 		settings.enum.adminDashboardViewAccess = [ "private", "public", "specific" ];
 		settings.enum.adminDashboardEditAccess = [ "private", "specific" ];
 		settings.enum.adminDashboardWidgetType = [ "gallery", "scratch", "import" ];
+
+		settings.enum.adminDashboardSnapshotStatus   = [ "pending", "running", "complete", "failed" ];
+		settings.enum.adminDashboardSnapshotTrigger  = [ "scheduled", "manual", "backfill" ];
+		settings.enum.adminDashboardSnapshotMode     = [ "single", "daily" ];
+		settings.enum.adminDashboardWidgetDataSource = [ "live", "snapshot" ];
 	}
 
 	private void function _setupPermissionsAndRoles( required struct settings ) {
-		settings.adminPermissions.adminDashboards = [ "navigate", "read", "add", "edit", "clone", "delete", "fullaccess" ];
+		settings.adminPermissions.adminDashboards = [ "navigate", "read", "add", "edit", "clone", "delete", "fullaccess", "manageSnapshots" ];
 
 		settings.adminRoles.dashBoardSuperAdmin = [ "adminDashboards.*" ];
 		settings.adminRoles.dashBoardAdmin      = [ "adminDashboards.*", "!adminDashboards.fullaccess" ];

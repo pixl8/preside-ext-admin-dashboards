@@ -322,11 +322,12 @@ component {
 		  required string dashboardId
 		, required string widgetId
 		, required string instanceId
-		,          struct configData = {}
+		,          struct configData  = {}
+		,          struct contextData = {}
 	) {
 		var formName        = getWidgetConfigFormName( argumentCollection=arguments );
 		var savedConfigData = getWidgetConfiguration( arguments.dashboardId, arguments.widgetId, arguments.instanceId );
-		var renderFormArgs  = { formName=formName, savedData=savedConfigData, widget=arguments };
+		var renderFormArgs  = { formName=formName, savedData=savedConfigData, widget=arguments, contextData=arguments.contextData };
 
 		if ( !StructIsEmpty( arguments.configData ) ) {
 			StructAppend( renderFormArgs.savedData, arguments.configData );
