@@ -84,8 +84,10 @@ component extends="preside.system.base.AdminHandler" {
 		return "widget_#replace( args.configInstanceId, "-", "", "all"  )#_init";
 	}
 	private void function ajaxIncludes( event, rc, prc, args={} ) {
-		event.include( "/js/admin/specific/datamanager/object/");
-		event.include( "/css/admin/specific/datamanager/object/");
+		var modernDataTables = isLabEnabled( "datatablesOverhaul" );
+
+		event.include( modernDataTables ? "/js/admin/specific/datamanager/objectModern/" : "/js/admin/specific/datamanager/object/" );
+		event.include( modernDataTables ? "/css/admin/specific/datamanager/objectModern/" : "/css/admin/specific/datamanager/object/" );
 		event.include( "/css/admin/specific/admindashboards/dataviz/", false );
 		event.includeData( data={ defaultPageLength=5 } );
 
