@@ -2,8 +2,13 @@
 
 	var $dashBoardContainer = $( ".admin-dashboard-container" )
 	  , $widgets            = $( ".admin-dashboard-container .admin-dashboard-widget" )
+	  , $widgetAddTriggers  = $( ".admin-dashboard-container .widget-add-trigger" )
 	  , openWidgetConfigDialog, exportWidgetConfigDialog, importWidgetConfigDialog, loadContent, getWidgetDetails
 	  , onWidgetContentFetchSuccess, onWidgetContentFetchError;
+
+	$widgetAddTriggers.on( "click", function(){
+		$( this ).removeData( "bootboxModalConfig" );
+	} );
 
 	openWidgetConfigDialog = function( $widgetEl ){
 		var iframeSrc       = buildAdminLink( "admindashboards", "configModal", getWidgetDetails( $widgetEl ) )
