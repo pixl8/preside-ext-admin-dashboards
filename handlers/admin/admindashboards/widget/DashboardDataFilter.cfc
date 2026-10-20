@@ -84,7 +84,7 @@ component extends="preside.system.base.AdminHandler" {
 		return "widget_#replace( args.configInstanceId, "-", "", "all"  )#_init";
 	}
 	private void function ajaxIncludes( event, rc, prc, args={} ) {
-		var modernDataTables = isLabEnabled( "datatablesOverhaul" );
+		var modernDataTables = isFeatureEnabled( "labs" ) && isLabEnabled( "datatablesOverhaul" );
 
 		event.include( modernDataTables ? "/js/admin/specific/datamanager/objectModern/" : "/js/admin/specific/datamanager/object/" );
 		event.include( modernDataTables ? "/css/admin/specific/datamanager/objectModern/" : "/css/admin/specific/datamanager/object/" );
