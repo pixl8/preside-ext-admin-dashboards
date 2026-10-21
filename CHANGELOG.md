@@ -1,5 +1,13 @@
 # Changelog
 
+## v3.3.0
+
+* Add Dashboard Selector
+* Context for a dashboard
+* System dashboard
+* Manage admin dashboard widgets inline within context
+* Support context display selection for dashboard data filter widget
+
 ## v3.2.4
 
 * After creation of a dashboard it should go into edit mode
