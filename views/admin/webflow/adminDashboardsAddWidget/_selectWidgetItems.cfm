@@ -23,6 +23,14 @@
 					</div>
 
 					<div class="widget-item-content">
+						<cfif isTrue( availableWidgets.supportContext ?: "" )>
+							<div class="widget-item-precontent">
+								<span class="badge badge-success radius-5">
+									#translateResource( uri="webflow.adminDashboardsAddWidget:step.selectWidget.tag.contextual.label" )#
+								</span>
+							</div>
+						</cfif>
+
 						<p class="widget-item-title">#availableWidgets.title#</p>
 
 						<cfif Len( availableWidgets.description ?: "" )>
@@ -31,15 +39,15 @@
 							</p>
 						</cfif>
 
-						<div class="widget-item-tags">
-							<cfif Len( Trim( availableWidgets.group ?: "" ) )>
+						<cfif Len( Trim( availableWidgets.group ?: "" ) )>
+							<div class="widget-item-tags">
 								<cfloop list="#availableWidgets.group#" item="group">
 									<span class="widget-item-tag">
 										#translateResource( uri="admindashboards:group.#group#.label", defaultValue=UcFirst( group ) )#
 									</span>
 								</cfloop>
-							</cfif>
-						</div>
+							</div>
+						</cfif>
 					</div>
 				</cfif>
 			</label>

@@ -1,0 +1,80 @@
+.dashboard-selector {
+	display     : flex;
+	align-items : center;
+	gap         : 12px;
+
+	&-label {
+		font-weight : var( --font-weight-bold, 600 );
+	}
+
+	.dropdown {
+
+		> .btn {
+			min-width        : 255px;
+			background-color : transparent !important;
+			display          : flex;
+			justify-content  : space-between;
+			align-items      : center;
+
+			&:focus:hover,
+			&:active:hover {
+				background-color : var( --color-neutral-5, #f6f7f5 ) !important;
+			}
+		}
+
+		.dropdown-menu-dashboard {
+			padding : 0;
+			width   : 100%;
+
+			> li {
+				margin        : 0;
+				border-bottom : 1px solid var( --color-neutral-20, #D2D3D5 );
+
+				&:last-child {
+					border-bottom : none;
+				}
+
+				h6 {
+					color         : var( --color-neutral-40, #A4A7AA );
+					display       : flex;
+					gap           : 6px;
+					padding       : 0 16px;
+					margin-top    : 20px;
+					margin-bottom : 7px;
+
+					.fa {
+						color: var( --color-secondary-100, #1DD3B0 );
+					}
+				}
+
+				ul {
+					margin     : 0;
+					padding    : 0;
+					list-style : none;
+				}
+
+				.dashboard-list-item {
+
+					a {
+						flex-direction : column;
+						align-items    : flex-start;
+						padding        : 10px 16px;
+
+						&:hover,
+						&:focus {
+							background-color : var( --color-neutral-5, #f6f7f5 );
+						}
+					}
+
+					.dashboard-title {
+						color: var( --color-neutral-100, #21262B );
+					}
+
+					.dashboard-subtitle {
+						color: var( --color-neutral-60, #757B80 );
+					}
+				}
+			}
+		}
+	}
+}
