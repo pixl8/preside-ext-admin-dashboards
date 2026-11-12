@@ -1,5 +1,9 @@
 # Changelog
 
+## v3.1.7
+
+* Filter widget not supporting 2 column
+
 ## v3.1.6
 
 * [DASH-65](https://projects.pixl8.london/browse/DASH-65) - Unsaved dashboard widgets alert and confirmation
