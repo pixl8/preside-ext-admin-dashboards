@@ -1,5 +1,9 @@
 # Changelog
 
+## v3.2.5
+
+* Filter widget not supporting 2 column
+
 ## v3.2.4
 
 * After creation of a dashboard it should go into edit mode
