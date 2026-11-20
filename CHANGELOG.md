@@ -1,5 +1,9 @@
 # Changelog
 
+## v3.3.2
+
+* Fix grunt build failed
+
 ## v3.3.0
 
 * Add Dashboard Selector
