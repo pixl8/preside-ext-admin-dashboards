@@ -1,5 +1,9 @@
 # Changelog
 
+## v3.2.6
+
+* Fix grunt build failed
+
 ## v3.2.5
 
 * Filter widget not supporting 2 column
